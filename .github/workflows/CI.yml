@@ -54,6 +54,7 @@ jobs:
           load: true
           tags: ${{ env.IMAGE_NAME }}:test
           cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Run notebooks and build website
         uses: addnab/docker-run-action@v3
@@ -74,6 +75,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Deploy Website
