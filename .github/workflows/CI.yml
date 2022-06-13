@@ -62,7 +62,7 @@ jobs:
           image: ${{ env.IMAGE_NAME }}:test
           options: -v ${{ github.workspace }}:/work
           run: |
-            find /work/docs -type f -name "*.ipynb" -print0 | parallel -0 -j2 jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=600 --ExecutePreprocessor.kernel_name=julia-1.7 --execute --inplace {}
+            find /work/docs -type f -name "*.ipynb" -print0 | parallel -0 -j2 jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=600 --execute --inplace {}
             jupyter-book build /work/docs -v
 
       - name: Push Docker Image
