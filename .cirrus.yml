@@ -1,18 +1,11 @@
 jupyter_book_task:
   auto_cancellation: true
   container:
-    image: ghcr.io/sosiristseng/docker-juliabook:1.7.3.4
+    dockerfile: .ci/Dockerfile
     cpu: 2
     memory: 8G
     use_in_memory_disk: true
-  pip_script: pip install -r requirements.txt
-  julia_cache:
-    folder: ~/.julia
-    fingerprint_script:
-      - cat Project.toml
-      - cat Manifest.toml
-    populate_script: julia --threads=auto --project=@. --color=yes -e 'import Pkg; Pkg.instantiate()'
-  install_script: julia --threads=auto --project=@. --color=yes build.jl
+  # notebook_script: find docs/ -type f -name "*.ipynb" -print0 | parallel -0 -j2 jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=600 --execute --inplace {}
   build_script: jupyter-book build docs --warningiserror --keep-going -v
 
   # pages_script: |
