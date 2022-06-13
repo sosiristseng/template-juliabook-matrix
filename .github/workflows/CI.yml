@@ -1,0 +1,83 @@
+name: Build Jupyter Notebooks
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  JULIA_VER: "1.7"
+  PYTHON_VER: "3.10"
+  JULIA_NUM_THREADS: 2
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      # Python part
+      - name: Setup Python ${{ env.PYTHON_VER }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VER }}
+      - name: Restore Python virtualenv
+        uses: syphar/restore-virtualenv@v1
+        id: cache-virtualenv
+      - name: Download Pip cache
+        uses: syphar/restore-pip-download-cache@v1
+        if: steps.cache-virtualenv.outputs.cache-hit != 'true'
+      - name: Install Python dependencies if cache miss
+        run: pip install -r .ci/requirements.txt -r requirements.txt
+        if: steps.cache-virtualenv.outputs.cache-hit != 'true'
+      # Julia part
+      - name: Setup Julia ${{ env.JULIA_VER }}
+        uses: julia-actions/setup-julia@v1
+        with:
+          version: ${{ env.JULIA_VER }}
+      - name: Cache Julia
+        uses: actions/cache@v3
+        id: cachejulia
+        env:
+          cache-name: "julia"
+        with:
+          path: |
+            ~/.julia
+          key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/Project.toml') }}-${{ hashFiles('**/Manifest.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/Project.toml') }}-
+            ${{ runner.os }}-${{ env.cache-name }}-
+      - name: Install Julia dependencies
+        # if: steps.cachejulia.outputs.cache-hit != 'true'
+        run: |
+          julia --threads=auto --project=@. --color=yes -e 'using Pkg; Pkg.instantiate();'
+      - name: Install IJulia kernel
+        run: |
+          julia --threads=auto --project=@. --color=yes build.jl
+      # Jupyter Book part
+      - name: Cache Jupyter book outputs
+        uses: actions/cache@v3
+        env:
+          cache-name: "jb-01"
+        with:
+          path: docs/_build/.jupyter_cache
+          key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/Manifest.toml', '**/requirements.txt') }}-${{ hashFiles('docs/**/*.md', 'docs/**/*.ipynb') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/Manifest.toml', '**/requirements.txt') }}
+
+      - name: Build Jupyter Books
+        run: jb build docs --warningiserror --keep-going -v
+
+      - name: Deploy Website
+        uses: peaceiris/actions-gh-pages@v3.8.0
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          force_orphan: true
+          publish_dir: docs/_build/html
+          full_commit_message: ${{ github.event.head_commit.message }}
