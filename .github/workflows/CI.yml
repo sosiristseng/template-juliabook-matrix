@@ -43,7 +43,7 @@ jobs:
       fail-fast: false
       matrix:
         notebook:
-          - plots.ipynb
+          - plots
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -64,13 +64,13 @@ jobs:
           cache-from: type=gha
 
       - name: Build a Notebook
-        run: docker run -v ${{ github.workspace }}:/work ${{ env.IMAGE_NAME }}:test jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=600 --execute --inplace /work/docs/${{ matrix.notebook }}
+        run: docker run -v ${{ github.workspace }}:/work ${{ env.IMAGE_NAME }}:test jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=600 --execute --inplace /work/docs/${{ matrix.notebook }}.ipynb
 
       - name: Upload a Notebook
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.notebook }}
-          path: docs/${{ matrix.notebook }}
+          path: docs/${{ matrix.notebook }}.ipynb
 
   jupyter-book:
     needs: [execute, docker]
@@ -84,8 +84,8 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: docs/
-      - name: List notebooks
-        run: ls -la docs/
+      - name: Move notebooks
+        run: find docs/ -type f -name '*.ipynb' -exec mv {} docs/ +
       - uses: docker/setup-buildx-action@v2
       - uses: docker/login-action@v2
         with:
