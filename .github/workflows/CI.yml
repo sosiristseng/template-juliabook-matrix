@@ -78,8 +78,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Remove existing notebooks
-        run: find docs/ -type f -name '*.ipynb' -exec rm {} +
       - name: Download notebooks
         uses: actions/download-artifact@v3
         with:
