@@ -91,18 +91,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,priority=600, event=pr
-            type=ref,priority=600, event=tag
-            type=raw,value=latest,priority=600, enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
-            type=sha,enable=true,priority=100,prefix=,suffix=,format=long
-          flavor: |
-            latest=false
       - name: Build Docker Image
         # if: github.event_name != 'pull_request'
         uses: docker/build-push-action@v3
@@ -115,6 +103,19 @@ jobs:
 
       - name: Build website
         run: docker run -v ${{ github.workspace }}:/work ${{ env.IMAGE_NAME }}:test jupyter-book build /work/docs -v
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,priority=600, event=pr
+            type=ref,priority=600, event=tag
+            type=raw,value=latest,priority=600, enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
+            type=sha,enable=true,priority=100,prefix=,suffix=,format=long
+          flavor: |
+            latest=false
 
       - name: Push Docker Image
         # Do not push on PR's
