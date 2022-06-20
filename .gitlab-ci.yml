@@ -5,7 +5,6 @@ include:
 stages:
   - build
   - test
-  - site
   - deploy
 
 # GitLab CI: Auto dependency updates https://thacoon.com/posts/gitlab-ci-auto-dependency-update/
@@ -87,18 +86,27 @@ build-notebooks:
       - out
 
 jupyter-book:
-  image: ghcr.io/sosiristseng/docker-juliabook:1.7.3.4
-  stage: site
+  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  stage: deploy
   rules:
-    - if: $CI_PIPELINE_SOURCE != "schedule"
-  script:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  before_script:
     - find out/ -type f -iname '*.ipynb' -exec mv -t docs/ {} +
     - jupyter-book build docs/ -v
+  script:
+    - echo "Done!"
+
+pages:
+  extends: jupyter-book
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
+  script:
+    - mv docs/_build/html public
+    - find public -type f -regex '.*\.\(htm\|html\|txt\|text\|js\|css\|svg\|xml\)$' -exec gzip -f -k {} \; -exec brotli -f -k {} \; || echo 'Compression failed. Skipping...'
   artifacts:
     paths:
-      - docs/_build/html
+      - public
 
-# Default: main = latest
 push-docker:
   image: docker:20.10
   services:
@@ -115,16 +123,3 @@ push-docker:
     - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:$TAG
     - docker push $CI_REGISTRY_IMAGE:$TAG
-
-pages:
-  image: ghcr.io/sosiristseng/docker-juliabook:1.7.3.4
-  stage: deploy
-  dependencies: ["jupyter-book"]
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
-  script:
-    - mv docs/_build/html public
-    - find public -type f -regex '.*\.\(htm\|html\|txt\|text\|js\|css\|svg\|xml\)$' -exec gzip -f -k {} \; -exec brotli -f -k {} \; || echo 'Compression failed. Skipping...'
-  artifacts:
-    paths:
-      - public
