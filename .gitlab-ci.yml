@@ -80,8 +80,8 @@ build-notebooks:
       - NOTEBOOK:
           - plots
   script:
-    - mkdir -p out
-    - jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=600 --execute docs/${NOTEBOOK}.ipynb --output out/${NOTEBOOK}.ipynb
+    - jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=600 --execute --inplace docs/${NOTEBOOK}.ipynb
+    - mkdir -p out && cp docs/${NOTEBOOK}.ipynb out/
   artifacts:
     paths:
       - out
