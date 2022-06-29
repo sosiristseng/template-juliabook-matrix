@@ -9,12 +9,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Build Julia environment
-COPY Project.toml Manifest.toml build.jl ./
+COPY Project.toml Manifest.toml ./
 # COPY src/ src
-RUN julia --threads=auto --color=yes --project=@. build.jl
+RUN julia --threads=auto --color=yes --project=@. -e 'import Pkg; Pkg.instantiate()'
 
-# Julia command
-CMD ["julia"]
-
-# If using sysimage
-# CMD ["julia", "-Jsysimage.so"]
+CMD ["jupyter-book"]
