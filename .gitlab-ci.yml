@@ -42,7 +42,7 @@ update-julia:
       fi
 
 build-notebooks:
-  image: registry.gitlab.com/sosiristseng/docker-juliabook:1.7.3.3
+  image: registry.gitlab.com/sosiristseng/docker-juliabook:1.7.3.5
   # tags:
   #   - your_runner
   stage: test
