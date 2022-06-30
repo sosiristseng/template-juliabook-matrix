@@ -64,6 +64,8 @@ jobs:
   jupyter-book:
     needs: [execute, docker]
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/sosiristseng/docker-juliabook:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -74,19 +76,8 @@ jobs:
           path: out/
       - name: Move notebooks
         run: find out/ -type f -iname '*.ipynb' -exec mv -t docs/ {} +
-      - uses: docker/setup-buildx-action@v2
-      - name: Build Docker Image
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: .ci/Dockerfile
-          load: true
-          tags: ${{ env.IMAGE_NAME }}:test
-          cache-from: type=gha
-
       - name: Build website
-        run: docker run -v ${{ github.workspace }}:/work ${{ env.IMAGE_NAME }}:test jupyter-book build /work/docs -v
-
+        run: jupyter-book build docs/ -v
       - name: Deploy Website
         uses: peaceiris/actions-gh-pages@v3.8.0
         if: github.ref == 'refs/heads/main'
