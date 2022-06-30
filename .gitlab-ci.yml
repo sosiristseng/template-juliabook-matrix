@@ -1,6 +1,6 @@
 # Using "merge_request into main" workflow (https://docs.gitlab.com/ee/ci/yaml/workflow.html)
 include:
-  - template: "Workflows/MergeRequest-Pipelines.gitlab-ci.yml"
+  - template: 'Workflows/MergeRequest-Pipelines.gitlab-ci.yml'
 
 stages:
   - build
@@ -10,13 +10,12 @@ stages:
 # GitLab CI: Auto dependency updates https://thacoon.com/posts/gitlab-ci-auto-dependency-update/
 # `GIT_PUSH_TOKEN` CI/CD variable = personal access token (PAT) with write access
 update-julia:
-  image: julia:1.7
+  image: registry.gitlab.com/sosiristseng/docker-juliabook:1.7.3.9
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
   variables:
     JULIA_PKG_PRECOMPILE_AUTO: 0
   script:
-    - apt-get update && apt-get install -y --no-install-recommends git
     - julia --color=yes --threads=auto --project=@. -e 'import Pkg; Pkg.update()'
     # Open a MR when there is a update, requires GIT_PUSH_TOKEN` CI/CD variable = personal access token (PAT) with write access
     - |
@@ -117,7 +116,7 @@ push-docker:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
   variables:
     GIT_STRATEGY: none
-    TAG: "latest"
+    TAG: 'latest'
   script:
     - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
     - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
