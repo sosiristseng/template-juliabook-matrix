@@ -87,7 +87,7 @@ jobs:
           publish_dir: docs/_build/html
           full_commit_message: ${{ github.event.head_commit.message }}
 
-  dockerpush:
+  docker-push:
     needs: [execute, docker]
     runs-on: ubuntu-latest
     steps:
