@@ -1,4 +1,4 @@
-FROM registry.gitlab.com/sosiristseng/docker-juliabook:1.7.3.9
+FROM registry.gitlab.com/sosiristseng/docker-juliabook:1.7.3.11
 
 ENV LC_ALL C.UTF-8
 

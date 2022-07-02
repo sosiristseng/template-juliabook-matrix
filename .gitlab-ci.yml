@@ -10,7 +10,7 @@ stages:
 # GitLab CI: Auto dependency updates https://thacoon.com/posts/gitlab-ci-auto-dependency-update/
 # `GIT_PUSH_TOKEN` CI/CD variable = personal access token (PAT) with write access
 update-julia:
-  image: registry.gitlab.com/sosiristseng/docker-juliabook:1.7.3.9
+  image: registry.gitlab.com/sosiristseng/docker-juliabook:1.7.3.11
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
   variables:
