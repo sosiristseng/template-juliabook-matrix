@@ -77,7 +77,7 @@ jobs:
       - name: Move notebooks
         run: find out/ -type f -iname '*.ipynb' -exec mv -t docs/ {} +
       - name: Build website
-        run: docker run -v ${{ github.workspace }}:/work ghcr.io/sosiristseng/docker-jupyterbook:latest jb build /work/docs/ -v
+        run: docker run -v ${{ github.workspace }}:/work ${{ env.IMAGE_NAME }}:test jb build /work/docs/ -v
       - name: Upload page artifact
         uses: actions/upload-pages-artifact@v1
         with:
