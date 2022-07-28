@@ -18,11 +18,7 @@ ENV JULIA_PATH /usr/local/julia/
 ENV PATH $JULIA_PATH/bin:$PATH
 COPY --from=julia:1.7.3 ${JULIA_PATH} /usr/local/
 
-# Julia dependencies
-COPY setup.jl .
-RUN julia --threads=auto --color=yes setup.jl
-
-# Build Julia environment
+# Julia environment
 COPY Project.toml Manifest.toml ./
 # COPY src/ src # If you have this
 RUN julia --threads=auto --color=yes --project=@. -e 'import Pkg; Pkg.instantiate()'
