@@ -1,4 +1,6 @@
 jupyter_book_task:
+  env:
+    JULIA_NUM_THREADS: '2'
   auto_cancellation: true
   container:
     dockerfile: .ci/Dockerfile

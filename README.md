@@ -14,6 +14,14 @@ GitHub actions and GitLab CI/CD are setup to build and publish the website whene
 - Execution results are executed on the fly so you can push notebooks with empty output cells and received the results once the pipeline is completed.
 - Execution results are cached so only the edited notebooks would be executed to save CI time.
 
+### On GitHub
+
+Click `Use this template` green button to copy this repository to your place.
+
+Open your repository settings => Pages => GitHub Pages
+=> Build and deployment => Source, Select `GitHub actions`
+
+
 ## Auto update
 
 This template is able to periodically update Julia dependencies and make a MR (PR) if the docker images and notebooks are built successfully.
