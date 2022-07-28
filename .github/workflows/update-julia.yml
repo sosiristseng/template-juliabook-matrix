@@ -1,13 +1,13 @@
 name: Auto update Julia dependencies
 
-env:
-  JULIA_PKG_PRECOMPILE_AUTO: 0
-  JULIA_NUM_THREADS: 2
-
 on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 1' # Every week
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   update-notebook:
