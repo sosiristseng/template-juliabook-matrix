@@ -85,6 +85,7 @@ jobs:
 
   docker-push:
     needs: [execute, docker]
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -105,8 +106,6 @@ jobs:
           flavor: |
             latest=false
       - name: Push Docker Image
-        # Do not push on PR's
-        if: github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v3
         with:
           context: .
@@ -120,6 +119,7 @@ jobs:
   # Deployment job
   deploy:
     needs: jupyter-book
+    if: github.ref == 'refs/heads/main'
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
       pages: write # to deploy to Pages
