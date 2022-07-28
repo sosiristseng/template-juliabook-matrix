@@ -69,6 +69,8 @@ build-docker:
 
 build-notebooks:
   image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  variables:
+    JULIA_NUM_THREADS: 2
   # tags:
   #   - your_runner
   stage: test
