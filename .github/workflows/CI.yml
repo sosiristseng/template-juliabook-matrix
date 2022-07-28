@@ -71,7 +71,7 @@ jobs:
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v1
-      - run: mkdir out
+      - run: mkdir -p out _temp
       - name: Download notebooks
         uses: actions/download-artifact@v3
         with:
