@@ -61,17 +61,15 @@ jobs:
           path: docs/${{ matrix.notebook }}.ipynb
 
   jupyter-book:
-    needs: [execute, docker]
+    needs: execute
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/sosiristseng/docker-jupyterbook:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v1
-      - run: mkdir -p out _temp
+      - run: mkdir -p out
       - name: Download notebooks
         uses: actions/download-artifact@v3
         with:
@@ -79,8 +77,8 @@ jobs:
       - name: Move notebooks
         run: find out/ -type f -iname '*.ipynb' -exec mv -t docs/ {} +
       - name: Build website
-        run: jupyter-book build docs/ -v
-      - name: Upload artifact
+        run: docker run -v ${{ github.workspace }}:/work ghcr.io/sosiristseng/docker-jupyterbook:latest jb build /work/docs/ -v
+      - name: Upload page artifact
         uses: actions/upload-pages-artifact@v1
         with:
           path: docs/_build/html
