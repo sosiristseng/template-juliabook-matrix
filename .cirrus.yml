@@ -8,7 +8,7 @@ jupyter_book_task:
     memory: 8G
     use_in_memory_disk: true
   notebook_script: |
-    find docs/ -type f -name "*.ipynb" -print0 | parallel -0 -j2 jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=600 --execute --inplace {}
+    parallel -0 -j2 jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=600 --execute --inplace {} ::: docs/*.ipynb
   build_script: |
     jupyter-book build docs --warningiserror --keep-going -v
 

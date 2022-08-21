@@ -21,8 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: docker/setup-buildx-action@v2
-      - name: Build Docker Image
-        # if: github.event_name != 'pull_request'
+      - name: Build and cache Docker Image
         uses: docker/build-push-action@v3
         with:
           context: .
@@ -52,7 +51,12 @@ jobs:
           cache-from: type=gha
 
       - name: Build a Notebook
-        run: docker run -v ${{ github.workspace }}:/work -e JULIA_NUM_THREADS=$JULIA_NUM_THREADS ${{ env.IMAGE_NAME }}:test jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=600 --execute --inplace /work/docs/${{ matrix.notebook }}.ipynb
+        run: >
+          docker run -v ${{ github.workspace }}:/work
+          -e JULIA_NUM_THREADS=${{ env.JULIA_NUM_THREADS }}
+          ${{ env.IMAGE_NAME }}:test
+          jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=600 --execute --inplace
+          /work/docs/${{ matrix.notebook }}.ipynb
 
       - name: Upload a Notebook
         uses: actions/upload-artifact@v3
