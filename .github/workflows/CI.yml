@@ -26,8 +26,8 @@ jobs:
         with:
           context: .
           file: .ci/Dockerfile
-          push: false
           tags: ${{ env.IMAGE_NAME }}:test
+          outputs: type=cacheonly
           cache-from: type=gha
           cache-to: type=gha,mode=max
   execute:
