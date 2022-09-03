@@ -14,6 +14,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   JULIA_NUM_THREADS: 2
+  PYTHON_VER: '3.10'
 
 jobs:
   docker:
@@ -29,7 +30,7 @@ jobs:
           tags: ${{ env.IMAGE_NAME }}:test
           outputs: type=cacheonly
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=max,compression=zstd
   execute:
     needs: docker
     strategy:
@@ -70,11 +71,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - name: Setup Julia ${{ env.PYTHON_VER }}
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: ${{ env.PYTHON_VER }}
           cache: 'pip'
-          cache-dependency-path: '**/requirements.txt'
+          cache-dependency-path: '.ci/requirements.txt'
       - name: Install dependencies
         run: pip install -r .ci/requirements.txt
       - name: Setup Pages
@@ -88,7 +90,7 @@ jobs:
       - name: Move notebooks
         run: find out/ -type f -iname '*.ipynb' -exec mv -t docs/ {} +
       - name: Build website
-        run: jb build docs/ -v
+        run: jupyter-book build docs/ -W -v
       - name: Upload page artifact
         uses: actions/upload-pages-artifact@v1
         with:
@@ -125,7 +127,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=max,compression=zstd
 
   # Deployment job
   deploy:
