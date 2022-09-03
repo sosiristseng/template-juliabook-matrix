@@ -30,7 +30,7 @@ jobs:
           tags: ${{ env.IMAGE_NAME }}:test
           outputs: type=cacheonly
           cache-from: type=gha
-          cache-to: type=gha,mode=max,compression=zstd
+          cache-to: type=gha,mode=max
   execute:
     needs: docker
     strategy:
@@ -127,7 +127,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max,compression=zstd
+          cache-to: type=gha,mode=max
 
   # Deployment job
   deploy:
