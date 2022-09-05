@@ -1,6 +1,7 @@
 jupyter_book_task:
   env:
     JULIA_NUM_THREADS: '2'
+    JOBS: '2'
   auto_cancellation: true
   container:
     dockerfile: .ci/Dockerfile
@@ -8,7 +9,7 @@ jupyter_book_task:
     memory: 8G
     use_in_memory_disk: true
   notebook_script: |
-    parallel -j2 jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=600 --execute --inplace {} ::: docs/*.ipynb
+    parallel -j${JOBS} jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=600 --execute --inplace {} ::: docs/*.ipynb
   build_script: |
     jupyter-book build docs --warningiserror --keep-going -v
   # Requires a PAT `GH_TOKEN` with repo scope access
