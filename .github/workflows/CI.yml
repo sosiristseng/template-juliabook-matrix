@@ -118,6 +118,14 @@ jobs:
             type=sha,enable=true,priority=100,prefix=,suffix=,format=long
           flavor: |
             latest=false
+      - name: Cache Image
+        uses: actions/cache@v3
+        with:
+          path: /tmp/myimage.tar
+          key: ${{ runner.os }}-docker-${{ hashFiles('**/requirements.txt', '**/Dockerfile', '**/Manifest.toml', '**/Project.toml') }}
+      - name: Load Docker Image
+        run: |
+          docker load --input /tmp/myimage.tar
       - name: Push Docker Image
         uses: docker/build-push-action@v3
         with:
