@@ -88,7 +88,7 @@ jobs:
       - name: Move notebooks
         run: find out/ -type f -iname '*.ipynb' -exec mv -t docs/ {} +
       - name: Build website
-        run: jupyter-book build docs/ -W -v
+        run: jupyter-book build docs/
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v2
