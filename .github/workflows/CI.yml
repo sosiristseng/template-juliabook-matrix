@@ -31,11 +31,11 @@ jobs:
           outputs: type=docker,dest=/tmp/myimage.tar
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      - name: Cache Image
-        uses: actions/cache@v3
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
         with:
+          name: myimage
           path: /tmp/myimage.tar
-          key: ${{ runner.os }}-docker-${{ hashFiles('**/requirements.txt', '**/Dockerfile', '**/Manifest.toml', '**/Project.toml') }}
 
   execute:
     needs: docker
@@ -47,11 +47,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Cache Image
-        uses: actions/cache@v3
+      - name: Download artifact
+        uses: actions/download-artifact@v3
         with:
-          path: /tmp/myimage.tar
-          key: ${{ runner.os }}-docker-${{ hashFiles('**/requirements.txt', '**/Dockerfile', '**/Manifest.toml', '**/Project.toml') }}
+          name: myimage
+          path: /tmp
       - name: Load Docker Image
         run: |
           docker load --input /tmp/myimage.tar
