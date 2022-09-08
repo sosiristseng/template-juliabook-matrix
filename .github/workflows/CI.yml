@@ -29,7 +29,8 @@ jobs:
           file: .ci/Dockerfile
           tags: ${{ env.IMAGE_NAME }}:test
           outputs: type=docker,dest=/tmp/myimage.tar
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       - name: Cache Image
         uses: actions/cache@v3
         with:
@@ -126,8 +127,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          cache-to: type=inline
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   # Deployment job
   deploy:
