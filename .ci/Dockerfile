@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y git parallel --no-install-recommends &&
 # Julia
 ENV JULIA_PATH /usr/local/julia/
 ENV PATH $JULIA_PATH/bin:$PATH
-COPY --from=julia:1.8.0 ${JULIA_PATH} /usr/local/
+COPY --from=julia:1.8.1 ${JULIA_PATH} /usr/local/
 
 # Python dependencies
 COPY requirements.txt .
