@@ -17,9 +17,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VER }}
-          cache: 'pip'
-          cache-dependency-path: '.ci/requirements.txt'
       - name: Install dependencies
-        run: pip install -r .ci/requirements.txt
+        run: pip install jupyter-book
       - name: Check Links
         run: jupyter-book build docs/ --builder linkcheck
