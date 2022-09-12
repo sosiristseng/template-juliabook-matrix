@@ -1,11 +1,13 @@
 FROM python:3.10-slim
 
+#c Set anything you link
 WORKDIR /usr/src/app
 
+# Supress warning emitted by parallel
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
-# System packages
+# System packages required by cirrus CI
 RUN apt-get update && apt-get install -y git parallel --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
 # Julia
