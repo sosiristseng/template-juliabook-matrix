@@ -28,7 +28,7 @@ jobs:
           context: .
           file: .ci/Dockerfile
           tags: ${{ env.IMAGE_NAME }}:test
-          outputs: type=docker,dest=/tmp/myimage.tar
+          outputs: type=cacheonly
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Upload artifact
@@ -53,8 +53,13 @@ jobs:
           name: myimage
           path: /tmp
       - name: Load Docker Image
-        run: |
-          docker load --input /tmp/myimage.tar
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: .ci/Dockerfile
+          tags: ${{ env.IMAGE_NAME }}:test
+          load: true
+          cache-from: type=gha
       - name: Execute Notebook
         run: >
           docker run -v ${{ github.workspace }}:/work
