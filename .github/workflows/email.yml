@@ -1,8 +1,9 @@
+name: Email about Cirrus CI failures
+
 on:
   check_suite:
     type: ['completed']
 
-name: Email about Cirrus CI failures
 jobs:
   continue:
     name: After Cirrus CI Failure
