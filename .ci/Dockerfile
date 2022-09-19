@@ -1,6 +1,5 @@
 FROM python:3.10-slim
 
-#c Set anything you link
 WORKDIR /usr/src/app
 
 # Supress warning emitted by parallel
