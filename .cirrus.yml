@@ -1,6 +1,6 @@
 jupyter_book_task:
   env:
-    JULIA_NUM_THREADS: '2'
+    JULIA_NUM_THREADS: auto
     JOBS: '2'
   auto_cancellation: true
   container:
