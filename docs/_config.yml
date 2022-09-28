@@ -59,7 +59,7 @@ launch_buttons:
 
 # Information about where the book exists on the web
 repository:
-  url: https://github.com/sosiris-jlbooks/template-juliabook-docker # Online location of your book (GitHub is recommended)
+  url: https://github.com/sosiristseng/template-docker-juliabook # Online location of your book (GitHub is recommended)
   path_to_book: docs # Optional path to your book, relative to the repository root
   branch: main # Which branch of the repository should be used when creating links (optional)
 
