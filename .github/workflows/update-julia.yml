@@ -4,6 +4,12 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 1' # Every week
+  push:
+    paths:
+      - '.github/workflows/**'
+
+env:
+  JULIA_PKG_PRECOMPILE_AUTO: '0'
 
 jobs:
   update-notebook:
@@ -15,8 +21,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Update Julia dependencies
-        env:
-          JULIA_PKG_PRECOMPILE_AUTO: '0'
         run: julia --color=yes --project=@. --threads=auto -e 'import Pkg; Pkg.update()'
       - name: Create Pull Request
         id: cpr
