@@ -1,8 +1,5 @@
 # Jupyter book template for Julia Jupyter notebooks
 
-- Gitlab: https://gitlab.com/ww-juliabooks/template-juliabook-docker
-- GitHub: https://github.com/sosiristseng/template-juliabook-docker
-
 ## Jupyter Book
 
 [Jupyter book](https://jupyterbook.org/index.html) creates a beautiful website from Markdown and Jupyter Notebook files.
