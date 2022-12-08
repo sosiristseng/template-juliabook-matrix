@@ -1,4 +1,4 @@
-FROM python:3.11.0-slim
+FROM python:3.11.1-slim
 
 # System packages
 # RUN apt-get update && apt-get install -y git parallel --no-install-recommends && rm -rf /var/lib/apt/lists/*
