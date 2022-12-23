@@ -6,22 +6,24 @@
 
 ## CI/CD
 
-GitHub actions and GitLab CI/CD are setup to build and publish the website whenever changes are committed.
+GitHub actions build and publish the website whenever changes are pushed.
 
 - Execution results are executed on the fly so you can push notebooks with empty output cells and received the results once the pipeline is completed.
 - Execution results are cached so only the edited notebooks would be executed to save CI time.
-
-### On GitHub
 
 Click `Use this template` green button to copy this repository to your place.
 
 Open your repository settings => Pages => GitHub Pages
 => Build and deployment => Source, Select `GitHub actions`
 
-
 ## Auto update
 
-This template is able to periodically update Julia dependencies and make a MR (PR) if the docker images and notebooks are built successfully.
+### Julia dependencies
+
+This template is able to periodically update Julia dependencies and make a PR if the docker images and notebooks are built successfully.
 
 - For GitHub: [See the instructions](https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#triggering-further-workflow-runs) in `create pull request` action about how to trigger further CI workflows.
-- For GitLab: Requires `GIT_PUSH_TOKEN` [CI/CD variable](https://docs.gitlab.com/ee/ci/variables/index.html), a PAT with `write_repo` access.
+
+### Other dependencies
+
+Other dependency updates are handled by the [Renovate bot](https://docs.renovatebot.com/). Please enable [Renovate Github APP](https://github.com/apps/renovate).
