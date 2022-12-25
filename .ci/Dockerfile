@@ -8,9 +8,11 @@ ENV JULIA_PATH /usr/local/julia/
 ENV PATH $JULIA_PATH/bin:$PATH
 COPY --from=julia:1.8.3 ${JULIA_PATH} /usr/local/
 
-# Python dependencies e.g. matplotlib
+# Python dependencies
+# e.g. matplotlib
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir nbconvert
 
 # Julia environment
 COPY Project.toml Manifest.toml ./
