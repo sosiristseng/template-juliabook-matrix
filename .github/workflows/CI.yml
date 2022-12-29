@@ -70,16 +70,14 @@ jobs:
   jupyter-book:
     needs: execute
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/sosiristseng/docker-jupyterbook:latest
     # store success output flag for the ci job
     outputs:
       success: ${{ steps.setoutput.outputs.success }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-      - run: pip install jupyter-book
       - name: Download notebooks
         uses: actions/download-artifact@v3
         with:
@@ -91,15 +89,13 @@ jobs:
       - name: Set output flag
         id: setoutput
         run: echo "success=true" >> $GITHUB_OUTPUT
-      - name: Setup Pages
-        id: pages
-        uses: actions/configure-pages@v2
-      - name: Upload page artifact
+      - name: Upload pages artifact
+        if: github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v1
         with:
           path: docs/_build/html
 
-  # This job is for GitHub status check
+  # GitHub status check job
   # https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
   ci:
     needs: [execute, jupyter-book]
