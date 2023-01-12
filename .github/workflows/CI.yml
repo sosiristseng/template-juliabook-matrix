@@ -11,7 +11,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   TIMEOUT: 600
 
@@ -25,14 +24,9 @@ jobs:
         with:
           file: .ci/Dockerfile
           tags: ${{ env.IMAGE_NAME }}:test
-          outputs: type=docker,dest=/tmp/myimage.tar
+          outputs: type=cacheonly
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      - name: Cache Docker image
-        uses: actions/cache@v3
-        with:
-          path: /tmp/myimage.tar
-          key: ${{ runner.os }}-${{ github.sha }}
 
   execute:
     needs: docker
@@ -46,13 +40,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - uses: docker/setup-buildx-action@v2
       - name: Restore Docker image
-        uses: actions/cache@v3
+        uses: docker/build-push-action@v3
         with:
-          path: /tmp/myimage.tar
-          key: ${{ runner.os }}-${{ github.sha }}
-      - name: Load Docker Image
-        run: docker load --input /tmp/myimage.tar
+          context: .
+          file: .ci/Dockerfile
+          tags: ${{ env.IMAGE_NAME }}:test
+          load: true
+          cache-from: type=gha
       - name: Execute Notebook
         run: >
           docker run
