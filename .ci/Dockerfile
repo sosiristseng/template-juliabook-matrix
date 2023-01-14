@@ -13,11 +13,12 @@ COPY --from=julia:1.8.5 ${JULIA_PATH} /usr/local/
 # e.g. matplotlib
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir nbconvert
+    pip install --no-cache-dir -U nbconvert
 
 # Julia environment
 COPY Project.toml Manifest.toml ./
-# COPY src/ src # If you have this
+# If you have src folder for the custom package, uncomment this
+# COPY src/ src
 RUN julia --project="" -e 'import Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")' && \
     julia --project=@. -e 'import Pkg; Pkg.instantiate()'
 
