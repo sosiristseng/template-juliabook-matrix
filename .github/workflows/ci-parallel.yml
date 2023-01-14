@@ -52,7 +52,7 @@ jobs:
       - name: Install IJulia
         shell: julia --project="" {0}
         run: |
-          ENV["PYCALL_JL_RUNTIME_PYTHON"] = Sys.which("python")
+          ENV["PYTHON"] = Sys.which("python")
           import Pkg
           Pkg.add("IJulia")
           Pkg.build("IJulia")
