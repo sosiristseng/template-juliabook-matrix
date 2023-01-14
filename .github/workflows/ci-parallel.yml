@@ -1,0 +1,78 @@
+name: Build Jupyter Notebooks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JULIA_NUM_THREADS: 2
+  PYTHON_VER: '3.11'
+  JULIA_VER: '1.8.5'
+  TIMEOUT: 600
+
+jobs:
+  ci:
+    name: CI (parallel)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup Python ${{ env.PYTHON_VER }}
+        uses: actions/setup-python@v4
+        id: python
+        with:
+          python-version: ${{ env.PYTHON_VER }}
+          cache: 'pip'
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt -r .ci/requirements.txt
+      - name: Setup Julia ${{ env.JULIA_VER }}
+        uses: julia-actions/setup-julia@v1
+        with:
+          version: ${{ env.JULIA_VER }}
+      - name: Cache Julia deps
+        uses: actions/cache@v3
+        with:
+          path: ~/.julia
+          key: ${{ runner.os }}-julia-${{ env.JULIA_VER }}-${{ hashFiles('**/Manifest.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-julia-${{ env.JULIA_VER }}-
+      - name: Install Julia deps
+        env:
+          PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          julia --project="" -e 'import Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")'
+          julia --project=@. -e 'import Pkg; Pkg.instantiate()'
+      - name: Build Notebooks
+        run: |
+          parallel --joblog /tmp/log -j2 jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=${{ env.TIMEOUT }} --execute --inplace {} ::: docs/*.ipynb
+          cat /tmp/log
+      - name: Build website
+        run: jupyter-book build docs/ --warningiserror --keep-going -v
+      - name: Upload page artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: docs/_build/html
+
+  # Deployment job
+  # deploy:
+  #   needs: ci-parallel
+  #   if: github.ref == 'refs/heads/main'
+  #   # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+  #   permissions:
+  #     pages: write # to deploy to Pages
+  #     id-token: write # to verify the deployment originates from an appropriate source
+  #   environment:
+  #     name: github-pages
+  #     url: ${{ steps.deployment.outputs.page_url }}
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Deploy to GitHub Pages
+  #       id: deployment
+  #       uses: actions/deploy-pages@v1
