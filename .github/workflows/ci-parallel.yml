@@ -51,7 +51,7 @@ jobs:
             ${{ runner.os }}-julia-${{ env.JULIA_VER }}-
       - name: Install Julia deps
         env:
-          PYTHON: ${{ steps.python.outputs.python-path }}
+          PYTHON: python
         run: |
           julia --project="" -e 'import Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")'
           julia --project=@. -e 'import Pkg; Pkg.instantiate()'
