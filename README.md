@@ -8,11 +8,21 @@ Click `Use this template` green button to copy this repository to your account.
 
 ## CI/CD
 
+### GitHub actions
+
 Whan changes are pushed to the GitHub repo, GitHub actions will build and publish the website. Execution results are executed on the fly so you can push notebooks with empty output cells and obtain the execution results.
 
 To enable GitHub pages for the generated website:
 Open your repository settings => Pages => GitHub Pages
 => Build and deployment => Source, Select `GitHub actions`
+
+### Cirrus CI
+
+Whan changes are pushed to the GitHub repo, [Cirrus CI](https://cirrus-ci.com/) actions will build and publish the website. Execution results are executed on the fly so you can push notebooks with empty output cells and obtain the execution results.
+
+To enable GitHub pages for the generated website:
+Open your repository settings => Pages => GitHub Pages
+=> Build and deployment => Source, Select the `gh-pages` branch.
 
 ## Auto update Julia dependencies
 
