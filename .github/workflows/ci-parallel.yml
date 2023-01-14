@@ -49,18 +49,12 @@ jobs:
           key: ${{ runner.os }}-julia-${{ env.JULIA_VER }}-${{ hashFiles('**/Manifest.toml') }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ env.JULIA_VER }}-
-      - name: Install IJulia
-        shell: julia --project="" {0}
-        run: |
-          ENV["PYCALL_JL_RUNTIME_PYTHON"] = Sys.which("python")
-          import Pkg
-          Pkg.add("IJulia")
-          Pkg.build("IJulia")
       - name: Install Julia deps
-        shell: julia --project=@. {0}
+        env:
+          PYTHON: python
         run: |
-          import Pkg
-          Pkg.instantiate()
+          julia --project="" -e 'import Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")'
+          julia --project=@. -e 'import Pkg; Pkg.instantiate()'
       - name: Build Notebooks
         run: |
           parallel --joblog /tmp/log -j2 jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=${{ env.TIMEOUT }} --execute --inplace {} ::: docs/*.ipynb
