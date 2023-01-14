@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  JULIA_NUM_THREADS: 2
+  JULIA_NUM_THREADS: auto
   PYTHON_VER: '3.11'
   JULIA_VER: '1.8.5'
   TIMEOUT: 600
@@ -28,9 +28,16 @@ jobs:
         id: python
         with:
           python-version: ${{ env.PYTHON_VER }}
-          cache: 'pip'
+      - name: Restore Python venv
+        uses: syphar/restore-virtualenv@v1
+        id: cache-virtualenv
+      - uses: syphar/restore-pip-download-cache@v1
+        if: steps.cache-virtualenv.outputs.cache-hit != 'true'
+        # the package installation will only be executed when the
+        # requirements-files have changed.
       - name: Install Python dependencies
         run: pip install -r requirements.txt -r .ci/requirements.txt
+        if: steps.cache-virtualenv.outputs.cache-hit != 'true'
       - name: Setup Julia ${{ env.JULIA_VER }}
         uses: julia-actions/setup-julia@v1
         with:
