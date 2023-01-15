@@ -1,6 +1,4 @@
-FROM ghcr.io/sosiristseng/template-juliabook:main
+FROM ghcr.io/sosiristseng/template-juliabook:binder
 
-COPY --chown=1000:1000 . /home/jojo
-USER jojo
-
-CMD ["jupyter", "notebook", "--ip", "0.0.0.0"]
+COPY --chown=1000:100 . /home/jovyan
+USER jovyan
