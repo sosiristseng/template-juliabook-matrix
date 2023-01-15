@@ -30,7 +30,9 @@ jobs:
           python-version: ${{ env.PYTHON_VER }}
           cache: 'pip'
       - name: Install Python dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          pip install -U nbconvert
       - name: Setup Julia ${{ env.JULIA_VER }}
         uses: julia-actions/setup-julia@v1
         with:
