@@ -1,4 +1,4 @@
-FROM ghcr.io/sosiristseng/template-docker-juliabook:latest
+FROM ghcr.io/sosiristseng/template-juliabook:latest
 
 COPY --chown=${NB_UID}:${NB_UID} . ${HOME}
 USER ${USER}
