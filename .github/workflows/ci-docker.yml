@@ -53,11 +53,11 @@ jobs:
       - name: Execute Notebook
         run: >
           docker run
-          --user=1000
-          -v ${{ github.workspace }}/docs:/home/jojo/docs
+          --user=root
+          -v ${{ github.workspace }}:/work
           ${{ env.IMAGE_NAME }}:test
           jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=${{ env.TIMEOUT }} --execute --inplace
-          /home/jojo/docs/${{ matrix.notebook }}.ipynb
+          /work/docs/${{ matrix.notebook }}.ipynb
       - name: Upload Notebook
         uses: actions/upload-artifact@v3
         with:
