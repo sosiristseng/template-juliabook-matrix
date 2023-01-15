@@ -69,7 +69,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 USER ${NB_USER}
 COPY --chown=${NB_UID}:${NB_UID} Project.toml Manifest.toml ${HOME}
 COPY --chown=${NB_UID}:${NB_UID} src/ src
-RUN julia --project="" -e "import Pkg; Pkg.add(\"IJulia\"); using IJulia; installkernel(\"Julia\", \"--project=${REPO_DIR}\");" && \
+RUN julia --project="" -e "import Pkg; Pkg.add(\"IJulia\"); using IJulia; installkernel(\"Julia\", \"--project=${HOME}\");" && \
     julia --project=@. -e 'import Pkg; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
 
 # We always want containers to run as non-root
