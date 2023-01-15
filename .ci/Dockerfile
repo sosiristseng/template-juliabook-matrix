@@ -37,7 +37,7 @@ RUN julia --project="" -e "import Pkg; Pkg.add(\"IJulia\"); using IJulia; instal
 
 # Make the Julia kernel available for both user and root
 USER root
-RUN julia --project="" -e "import Pkg; using IJulia; installkernel(\"Julia\", \"--project={HOME}\");"
+RUN julia --project="" -e "import Pkg; using IJulia; installkernel(\"Julia\", \"--project=${HOME}\");"
 
 # We always want containers to run as non-root
 USER jovyan
