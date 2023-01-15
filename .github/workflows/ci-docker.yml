@@ -112,7 +112,6 @@ jobs:
           file: .ci/Dockerfile
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           push: true
-          outputs: type=cacheonly
           cache-from: type=gha
 
   # GitHub status check job
