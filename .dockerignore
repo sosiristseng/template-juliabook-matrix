@@ -1,0 +1,8 @@
+**/.git
+*.log
+Dockerfile*
+docker-compose*
+.dockerignore
+.git
+.gitignore
+.vscode
