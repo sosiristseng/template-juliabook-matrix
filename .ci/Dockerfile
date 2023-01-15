@@ -15,11 +15,11 @@ ENV HOME /home/${NB_USER}
 RUN groupadd \
         --gid ${NB_UID} \
         ${NB_USER} && \
-    adduser \
+    useradd \
         --comment "Default user" \
         --create-home \
         --gid ${NB_UID} \
-        --disabled-password \
+        --no-log-init \
         --shell /bin/bash \
         --uid ${NB_UID} \
         ${NB_USER}
@@ -43,7 +43,7 @@ ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US.UTF-8
 
-# Add apt packages
+# Set up locales properly
 RUN apt-get update -qq && \
     apt-get upgrade -qqy && \
     apt-get install -qqy --no-install-recommends \
@@ -68,7 +68,7 @@ COPY --chown=${NB_UID}:${NB_UID} src/ src
 RUN julia --project="" -e "import Pkg; Pkg.add(\"IJulia\"); using IJulia; installkernel(\"Julia\", \"--project=${HOME}\");" && \
     julia --project=@. -e 'import Pkg; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
 
-# Make the Julia kernel available from both user and root
+# Make the Julia kernel available for both user and root
 USER root
 RUN julia --project="" -e "import Pkg; using IJulia; installkernel(\"Julia\", \"--project=${HOME}\");"
 
