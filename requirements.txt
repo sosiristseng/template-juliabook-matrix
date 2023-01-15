@@ -1,1 +1,4 @@
 matplotlib==3.6.3
+notebook
+jupyterlab
+nbconvert

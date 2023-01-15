@@ -13,6 +13,7 @@ concurrency:
 env:
   IMAGE_NAME: ${{ github.repository }}
   TIMEOUT: 600
+  REGISTRY: ghcr.io
 
 jobs:
   docker:
@@ -52,6 +53,7 @@ jobs:
       - name: Execute Notebook
         run: >
           docker run
+          --user=root
           -v ${{ github.workspace }}:/work
           -e JULIA_NUM_THREADS=auto
           ${{ env.IMAGE_NAME }}:test
@@ -90,6 +92,29 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           path: docs/_build/html
+
+  push-docker:
+    name: Push to docker registry
+    needs: [execute, jupyter-book]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Login to ${{ env.REGISTRY }}
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build and cache Docker Image
+        uses: docker/build-push-action@v3
+        with:
+          file: .ci/Dockerfile
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          push: true
+          outputs: type=cacheonly
+          cache-from: type=gha
 
   # GitHub status check job
   # https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
