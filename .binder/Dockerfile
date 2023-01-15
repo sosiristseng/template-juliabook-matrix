@@ -1,4 +1,4 @@
-FROM ghcr.io/sosiristseng/template-juliabook:latest
+FROM ghcr.io/sosiristseng/template-juliabook:main
 
 COPY --chown=1000:1000 . /home/jojo
 USER jojo

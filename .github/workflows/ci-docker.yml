@@ -110,7 +110,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           file: .ci/Dockerfile
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
           push: true
           cache-from: type=gha
 
