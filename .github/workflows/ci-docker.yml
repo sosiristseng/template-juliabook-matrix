@@ -56,7 +56,7 @@ jobs:
           -v ${{ github.workspace }}/docs:/home/jojo/docs
           ${{ env.IMAGE_NAME }}:test
           jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=${{ env.TIMEOUT }} --execute --inplace
-          /work/docs/${{ matrix.notebook }}.ipynb
+          /home/jojo/docs/${{ matrix.notebook }}.ipynb
       - name: Upload Notebook
         uses: actions/upload-artifact@v3
         with:
