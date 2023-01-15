@@ -77,5 +77,7 @@ USER ${NB_USER}
 
 EXPOSE 8888
 
+ENTRYPOINT [ ]
+
 # Specify the default command to run
 CMD ["jupyter", "notebook", "--ip", "0.0.0.0"]
