@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt && \
 
 # Julia environment
 COPY Project.toml Manifest.toml ./
-# COPY src/ src # If you have this
+COPY src/ src
 RUN julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")' && \
     julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate()'
 
