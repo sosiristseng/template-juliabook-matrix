@@ -24,5 +24,5 @@ jobs:
         IMAGE_NAME: ${{ github.repository }}
         DOCKER_USERNAME: ${{ github.repository_owner }}
         DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        BINDER_CACHE: true
+        ADDITIONAL_TAG: binder
         PUBLIC_REGISTRY_CHECK: true
