@@ -25,4 +25,5 @@ jobs:
         DOCKER_USERNAME: ${{ github.repository_owner }}
         DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         ADDITIONAL_TAG: binder
+        LATEST_TAG_OFF: true
         PUBLIC_REGISTRY_CHECK: true
