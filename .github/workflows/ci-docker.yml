@@ -13,7 +13,6 @@ concurrency:
 env:
   IMAGE_NAME: ${{ github.repository }}
   TIMEOUT: 600
-  REGISTRY: ghcr.io
 
 jobs:
   docker:
