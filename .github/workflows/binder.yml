@@ -13,8 +13,17 @@ jobs:
   binder:
     runs-on: ubuntu-latest
     steps:
+    - name: Generate token
+      uses: tibdex/github-app-token@v1
+      id: generate-token
+      with:
+        app_id: ${{ secrets.APP_ID }}
+        private_key: ${{ secrets.APP_PRIVATE_KEY }}
     - name: Checkout Code
       uses: actions/checkout@v3
+      with:
+        token: ${{ steps.generate-token.outputs.token }}
+        fetch-depth: 0
     - name: Remove binder folder if present
       run: rm -rf ./.binder/ || true
     - name: update jupyter dependencies with repo2docker
@@ -34,5 +43,4 @@ jobs:
     - name: Add and commit
       uses: EndBug/add-and-commit@v9
       with:
-        default_author: github_actions
-        message: "Update Binder Dockerfile"
+        message: "[skip ci] Update Binder Dockerfile"
