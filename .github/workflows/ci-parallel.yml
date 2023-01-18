@@ -13,7 +13,6 @@ concurrency:
 env:
   JULIA_NUM_THREADS: 2
   PYTHON_VER: '3.11'
-  JULIA_VER: '1.8.5'
   TIMEOUT: 600
 
 jobs:
@@ -33,17 +32,23 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install -U nbconvert
-      - name: Setup Julia ${{ env.JULIA_VER }}
+      - name: Read Julia vesion
+        uses: SebRollen/toml-action@v1.0.2
+        id: read_toml
+        with:
+          file: 'Manifest.toml'
+          field: 'julia_version'
+      - name: Setup Julia ${{ steps.read_toml.outputs.value }}
         uses: julia-actions/setup-julia@v1
         with:
-          version: ${{ env.JULIA_VER }}
+          version: ${{ steps.read_toml.outputs.value }}
       - name: Cache Julia deps
         uses: actions/cache@v3
         with:
           path: ~/.julia
-          key: ${{ runner.os }}-julia-${{ env.JULIA_VER }}-${{ hashFiles('**/Manifest.toml') }}
+          key: ${{ runner.os }}-julia-${{ steps.read_toml.outputs.value }}-${{ hashFiles('**/Manifest.toml') }}
           restore-keys: |
-            ${{ runner.os }}-julia-${{ env.JULIA_VER }}-
+            ${{ runner.os }}-julia-${{ steps.read_toml.outputs.value}}-
       - name: Install Julia deps
         env:
           PYTHON: ${{ steps.python.outputs.python-path }}
