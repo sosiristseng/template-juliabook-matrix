@@ -52,7 +52,6 @@ jobs:
       - name: Execute Notebook
         run: >
           docker run
-          --user=root
           -v ${{ github.workspace }}:/work
           ${{ env.IMAGE_NAME }}:test
           jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=${{ env.TIMEOUT }} --execute --inplace
