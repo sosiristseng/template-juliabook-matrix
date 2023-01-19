@@ -1,4 +1,4 @@
-FROM sosiristseng/docker-jupyterbook:0.13
+FROM sosiristseng/docker-jupyterbook:0.13.1.3
 
 # Supress warning emitted by parallel
 ENV LANG C.UTF-8
