@@ -1,9 +1,5 @@
 FROM sosiristseng/docker-jupyterbook:0.13.1.5
 
-# Supress warning emitted by parallel
-ENV LANG C.UTF-8
-ENV LC_ALL C.UTF-8
-
 # System packages
 # RUN apt-get update && apt-get install -y git parallel --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
