@@ -1,4 +1,4 @@
-FROM sosiristseng/docker-jupyterbook:0.13.1.5
+FROM sosiristseng/docker-jupyterbook:0.13.1.6
 
 # System packages
 # RUN apt-get update && apt-get install -y git parallel --no-install-recommends && rm -rf /var/lib/apt/lists/*
