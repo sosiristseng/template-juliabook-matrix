@@ -59,7 +59,7 @@ jobs:
       - name: Upload Notebook
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.notebook }}
+          name: notebook
           path: docs/${{ matrix.notebook }}.ipynb
 
   jupyter-book:
