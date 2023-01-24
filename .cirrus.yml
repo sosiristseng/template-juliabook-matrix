@@ -2,7 +2,7 @@ jupyter_book_task:
   env:
     JULIA_NUM_THREADS: auto
     JOBS: '1'
-    GH_TOKEN: ENCRYPTED[!df6346b908c8e71496ebac131796cea4508c686223f7455f554ee23e7221e22e0593f696cdc2b046178c771262b82996!]
+    # GH_TOKEN: ENCRYPTED[!df6346b908c8e71496ebac131796cea4508c686223f7455f554ee23e7221e22e0593f696cdc2b046178c771262b82996!]
   auto_cancellation: true
   container:
     dockerfile: cirrus.Dockerfile
