@@ -31,8 +31,6 @@ jobs:
           target: base
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      - name: Setup Julia
-        uses: julia-actions/setup-julia@v1
       - name: Update Julia dependencies
         run: >
           docker run --rm
