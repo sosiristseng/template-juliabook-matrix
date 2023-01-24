@@ -1,4 +1,4 @@
-name: Alert Cirrus CI failures
+name: Notify Cirrus CI failures
 
 on:
   check_suite:
