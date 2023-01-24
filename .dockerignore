@@ -1,4 +1,4 @@
-.dockerignore
-.git
+.git/
+.github/
 .gitignore
-.vscode
+.vscode/
