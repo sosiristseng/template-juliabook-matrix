@@ -1,2 +1,2 @@
 jupyter-book==0.13.1
-jupyter-server < 2
+jupyter-server < 3
