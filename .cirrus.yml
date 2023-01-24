@@ -1,6 +1,7 @@
 jupyter_book_task:
+  # Only on the main branch, tags, and PR
+  only_if: $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_TAG != '' || $CIRRUS_PR != ''
   env:
-    JULIA_NUM_THREADS: auto
     JOBS: '1'
     # GH_TOKEN: ENCRYPTED[!df6346b908c8e71496ebac131796cea4508c686223f7455f554ee23e7221e22e0593f696cdc2b046178c771262b82996!]
   auto_cancellation: true
@@ -12,8 +13,8 @@ jupyter_book_task:
     parallel --joblog /tmp/log -j${JOBS} jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=600 --execute --inplace {} ::: docs/*.ipynb
     cat /tmp/log
   build_script: |
-    jupyter-book build docs --warningiserror --keep-going -v
-  # Requires a `GH_TOKEN` PAT with repo scope access
+    jupyter-book build docs/ --warningiserror --keep-going -v
+  # Requires a repo scope access `GH_TOKEN` PAT to push
   # pages_script: |
   #   if [[ $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH ]]; then
   #     git remote set-url origin https://${GH_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git
