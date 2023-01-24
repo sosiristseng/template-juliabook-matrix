@@ -21,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Update Julia dependencies
-        uses: docker://julia:1.8.5-alpine
+        uses: docker://julia:1.8.5
         with:
           args: --color=yes --project=@. -e "import Pkg; Pkg.update()"
 
