@@ -20,11 +20,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Setup Julia
+        uses: julia-actions/setup-julia@v1
       - name: Update Julia dependencies
-        uses: docker://julia:1.8.5
-        with:
-          args: --color=yes --project=@. -e "import Pkg; Pkg.update()"
-
+        run: julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate()'
       # Authenticate using a custom GitHub APP
       # https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#authenticating-with-github-app-generated-tokens
       - name: Generate token
