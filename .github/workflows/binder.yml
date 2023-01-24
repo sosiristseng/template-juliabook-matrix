@@ -38,7 +38,8 @@ jobs:
         --image-name ghcr.io/${{ github.repository }}:binder
         --cache-from ghcr.io/${{ github.repository }}:binder
         --push
-        --no-run --user-id 1000 --user-name jovyan
+        --no-run
+        --user-id 1000 --user-name jovyan
         .
     - name: Add back binder folder
       run: |
