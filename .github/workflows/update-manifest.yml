@@ -21,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Update Julia dependencies
-        uses: docker://julia:1.8.5
+        uses: docker://julia:1.8.5-alpine
         with:
           args: >-  # allows you to break string into multiple lines
             --color=yes
