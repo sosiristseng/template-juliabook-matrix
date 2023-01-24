@@ -24,21 +24,22 @@ jobs:
         python-version: '3.x'
     - name: Install repo2docker
       run: pip install jupyter-repo2docker
-    - name: Build binder image with repo2docker
-      run: >
-        jupyter-repo2docker
-        --image-name ghcr.io/${{ github.repository }}:binder
-        --cache-from ghcr.io/${{ github.repository }}:binder
-        --no-run --user-id 1000 --user-name jovyan
-        .
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
-    - name: Push docker image
-      run: docker push ghcr.io/${{ github.repository }}:binder
+    - name: Pull docker image
+      run: docker pull ghcr.io/${{ github.repository }}:binder || true
+    - name: Build binder image with repo2docker
+      run: >
+        jupyter-repo2docker
+        --image-name ghcr.io/${{ github.repository }}:binder
+        --cache-from ghcr.io/${{ github.repository }}:binder
+        --push
+        --no-run --user-id 1000 --user-name jovyan
+        .
     - name: Add back binder folder
       run: |
         mkdir -p .binder
