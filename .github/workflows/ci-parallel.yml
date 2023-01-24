@@ -54,8 +54,8 @@ jobs:
         env:
           PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          julia --project="" -e 'import Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")'
-          julia --project=@. -e 'import Pkg; Pkg.instantiate()'
+          julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")'
+          julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate()'
       - name: Build Notebooks
         run: |
           parallel --joblog /tmp/log -j${JOBS} jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=${{ env.TIMEOUT }} --execute --inplace {} ::: docs/*.ipynb
@@ -64,7 +64,7 @@ jobs:
         run: >
           docker run
           -v ${{ github.workspace }}:/work
-          ghcr.io/sosiristseng/docker-jupyterbook:0.13
+          ghcr.io/sosiristseng/docker-jupyterbook:latest
           jupyter-book build /work/docs/ --warningiserror --keep-going -v
       - name: Change permission to user
         run: sudo chown -R $USER docs/_build/
