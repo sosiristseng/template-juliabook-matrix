@@ -1,4 +1,4 @@
-FROM python:3.11.1-slim
+FROM python:3.11.1-slim AS base
 
 # Julia
 ENV JULIA_NUM_THREADS "auto"
@@ -6,6 +6,7 @@ ENV JULIA_PATH /usr/local/julia/
 ENV PATH ${JULIA_PATH}/bin:${PATH}
 COPY --from=julia:1.8.5 ${JULIA_PATH} ${JULIA_PATH}
 
+FROM base
 # Python dependencies
 # e.g. matplotlib
 COPY requirements.txt .
