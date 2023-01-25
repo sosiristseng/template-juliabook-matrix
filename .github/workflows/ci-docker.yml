@@ -52,8 +52,8 @@ jobs:
           cache-from: type=gha
       - name: Execute Notebook
         run: >
-          docker run
-          -w /work
+          docker run --rm
+          --workdir="/work"
           -v ${{ github.workspace }}:/work
           ${{ env.IMAGE_NAME }}:test
           jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=${{ env.TIMEOUT }} --execute --inplace
