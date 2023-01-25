@@ -40,7 +40,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - uses: docker/setup-buildx-action@v2
+      - name: Setup Buildx
+        uses: docker/setup-buildx-action@v2
       - name: Restore Docker image
         uses: docker/build-push-action@v3
         with:
@@ -52,10 +53,11 @@ jobs:
       - name: Execute Notebook
         run: >
           docker run
+          -w /work
           -v ${{ github.workspace }}:/work
           ${{ env.IMAGE_NAME }}:test
           jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=${{ env.TIMEOUT }} --execute --inplace
-          /work/docs/${{ matrix.notebook }}.ipynb
+          docs/${{ matrix.notebook }}.ipynb
       - name: Upload Notebook
         uses: actions/upload-artifact@v3
         with:
