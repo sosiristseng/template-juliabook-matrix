@@ -11,12 +11,13 @@ COPY --from=julia:1.8.5 ${JULIA_PATH} ${JULIA_PATH}
 
 # Python dependencies e.g. matplotlib
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir -U nbconvert
 
 # Julia environment
 COPY Project.toml Manifest.toml ./
 COPY src/ src
-RUN julia --project="" -e 'import Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")' && \
-    julia --project=@. -e 'import Pkg; Pkg.instantiate()'
+RUN julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); using IJulia; installkernel("Julia", "--project=@.", env=Dict("JULIA_NUM_THREADS"=>"auto"))' && \
+    julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate()'
 
 CMD ["jupyter-book"]
