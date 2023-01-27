@@ -1,0 +1,4 @@
+name: python
+dependencies:
+  - python=3.11
+  - matplotlib
