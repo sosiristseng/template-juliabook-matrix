@@ -53,8 +53,8 @@ jobs:
       - name: Execute Notebook
         run: >
           docker run --rm
-          --workdir="/work"
-          -v ${{ github.workspace }}:/work
+          --workdir=/tmp
+          -v ${{ github.workspace }}:/tmp
           myenv:current
           jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=${{ env.TIMEOUT }} --execute --inplace
           docs/${{ matrix.notebook }}.ipynb
