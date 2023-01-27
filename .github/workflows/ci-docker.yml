@@ -23,7 +23,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           file: .ci/Dockerfile
-          tags: ${{ env.IMAGE_NAME }}:test
+          tags: myenv:current
           outputs: type=cacheonly
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -46,8 +46,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: .ci/Dockerfile
-          tags: ${{ env.IMAGE_NAME }}:test
+          file: julia.Dockerfile
+          tags: myenv:current
           load: true
           cache-from: type=gha
       - name: Execute Notebook
@@ -55,7 +55,7 @@ jobs:
           docker run --rm
           --workdir="/work"
           -v ${{ github.workspace }}:/work
-          ${{ env.IMAGE_NAME }}:test
+          myenv:current
           jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=${{ env.TIMEOUT }} --execute --inplace
           docs/${{ matrix.notebook }}.ipynb
       - name: Upload Notebook
