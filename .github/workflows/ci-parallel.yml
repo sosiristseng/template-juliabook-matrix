@@ -19,6 +19,8 @@ jobs:
   ci:
     name: CI (parallel)
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/sosiristseng/docker-jupyterbook:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -31,8 +33,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip install -r requirements.txt
-          pip install -U nbconvert
-      - name: Read Julia vesion
+      - name: Read Julia version
         uses: SebRollen/toml-action@v1.0.2
         id: read_toml
         with:
@@ -56,17 +57,16 @@ jobs:
           julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); using IJulia; installkernel("Julia", "--project=@.", env=Dict("JULIA_NUM_THREADS"=>"auto"))'
           julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate()'
       - name: Build Notebooks
-        run: |
-          parallel --joblog /tmp/log -j${JOBS} jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=${{ env.TIMEOUT }} --execute --inplace {} ::: docs/*.ipynb
-          cat /tmp/log
-      - name: Build website
         run: >
-          docker run --rm
-          --workdir="/tmp" -v ${{ github.workspace }}:/tmp
-          ghcr.io/sosiristseng/docker-jupyterbook:latest
-          jupyter-book build docs/ --keep-going -v
-      - name: Change permission
-        run: sudo chown -R ${USER} docs/_build/
+          parallel --joblog /tmp/log -j${JOBS}
+          jupyter nbconvert --to notebook
+          --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
+          --execute --inplace
+          {} ::: docs/*.ipynb
+      - name: Execution results
+        run: cat /tmp/log
+      - name: Build website
+        run: jupyter-book build docs/ --keep-going -v
       - name: Upload page artifact
         if: github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v1
