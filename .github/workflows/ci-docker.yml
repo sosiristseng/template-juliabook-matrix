@@ -22,7 +22,7 @@ jobs:
       - name: Build and cache Docker Image
         uses: docker/build-push-action@v3
         with:
-          file: .ci/Dockerfile
+          file: julia.Dockerfile
           tags: myenv:current
           outputs: type=cacheonly
           cache-from: type=gha
