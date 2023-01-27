@@ -5,9 +5,10 @@ jupyter_book_task:
     # GH_TOKEN: ENCRYPTED[!df6346b908c8e71496ebac131796cea4508c686223f7455f554ee23e7221e22e0593f696cdc2b046178c771262b82996!]
   auto_cancellation: true
   container:
-    dockerfile: cirrus.Dockerfile
+    dockerfile: julia.Dockerfile
     cpu: 1
     memory: 4G
+    greedy: true
   notebook_script: |
     parallel --joblog /tmp/log -j${JOBS} jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=600 --execute --inplace {} ::: docs/*.ipynb
     cat /tmp/log

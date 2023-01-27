@@ -10,9 +10,6 @@ on:
     paths:
       - '**/**Dockerfile'
 
-env:
-  JULIA_PKG_PRECOMPILE_AUTO: '0'
-
 jobs:
   update-manifest:
     runs-on: ubuntu-latest
@@ -24,15 +21,15 @@ jobs:
         with:
           context: .
           file: julia.Dockerfile
-          tags: myenv:current
+          tags: myenv:test
           load: true
-          target: base
+          target: julia
       - name: Update Julia dependencies
         run: >
           docker run --rm
           --workdir=/tmp -v ${{ github.workspace }}:/tmp
-          -e JULIA_PKG_PRECOMPILE_AUTO
-          myenv:current
+          -e JULIA_PKG_PRECOMPILE_AUTO=0
+          myenv:test
           julia --color=yes --threads=auto --project=@. -e "import Pkg; Pkg.update()"
       # Authenticate with a custom GitHub APP
       # https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#authenticating-with-github-app-generated-tokens
