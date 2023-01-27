@@ -1,4 +1,4 @@
-name: Build Jupyter Notebooks with a Docker Container
+name: Jupyter Notebooks parallel matrix
 
 on:
   push:
@@ -95,7 +95,7 @@ jobs:
   # GitHub status check job
   # https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
   ci:
-    name: CI (docker)
+    name: CI (matrix)
     needs: jupyter-book
     runs-on: ubuntu-latest
     if: always() # always run, so we never skip the check
