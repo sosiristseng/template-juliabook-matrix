@@ -1,6 +1,5 @@
 jupyter_book_task:
-  # Only on the main branch, tags, and PR
-  only_if: $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_TAG != '' || $CIRRUS_PR != ''
+  only_if: $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BASE_BRANCH == $CIRRUS_DEFAULT_BRANCH
   env:
     JOBS: '1'
     # GH_TOKEN: ENCRYPTED[!df6346b908c8e71496ebac131796cea4508c686223f7455f554ee23e7221e22e0593f696cdc2b046178c771262b82996!]
