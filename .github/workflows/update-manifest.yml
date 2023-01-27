@@ -30,7 +30,7 @@ jobs:
           target: base
       - name: Update Julia dependencies
         run: >
-          docker run --rm --user ${USER}
+          docker run --rm
           --workdir=/tmp -v ${{ github.workspace }}:/tmp
           -e JULIA_PKG_PRECOMPILE_AUTO
           -e JULIA_NUM_THREADS

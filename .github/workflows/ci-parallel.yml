@@ -61,10 +61,12 @@ jobs:
           cat /tmp/log
       - name: Build website
         run: >
-          docker run --rm --user ${USER}
+          docker run --rm
           --workdir="/tmp" -v ${{ github.workspace }}:/tmp
           ghcr.io/sosiristseng/docker-jupyterbook:latest
           jupyter-book build docs/ --keep-going -v
+      - name: Change permission
+        run: sudo chown -R ${USER} docs/_build/
       - name: Upload page artifact
         if: github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v1
