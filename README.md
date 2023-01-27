@@ -22,8 +22,7 @@ Open your repository settings => Pages => GitHub Pages
 
 Related files for [Cirrus CI](https://cirrus-ci.org/) workflow
 - [.cirrus.yml](.cirrus.yml)
-- [cirrus.Dockerfile](cirrus.Dockerfile)
-- [email.yml](.github/workflows/email.yml)
+- [cirrus-notify.yml](.github/workflows/cirrus-notify.yml)
 
 To enable GitHub pages for the generated website:
 Open your repository settings => Pages => GitHub Pages
@@ -36,9 +35,3 @@ See [update-manifest.yml](.github/workflows/update-manifest.yml).
 This template repository periodically updates Julia dependent packages and make a PR if the notebooks are executed successfully with the updated packages.
 
 [See the instructions](https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#triggering-further-workflow-runs) for how to trigger CI workflows in a PR. In this repo, I use a custom [GitHub APP](https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#authenticating-with-github-app-generated-tokens) to generate a temporary token.
-
-## Renovate Bot
-
-Config file: [renovate.json](renovate.json).
-
-Other dependency updates (GitHub actions, python packages, dockerfiles) are done by the [Renovate bot](https://docs.renovatebot.com/). Please enable the [Renovate Github APP](https://github.com/apps/renovate) to use it.
