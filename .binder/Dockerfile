@@ -1,1 +1,1 @@
-FROM ghcr.io/ww-jl/template:binder
+FROM ghcr.io/sosiristseng/template-juliabook:binder
