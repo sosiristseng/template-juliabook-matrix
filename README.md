@@ -1,6 +1,8 @@
 # Jupyter book template for Julia Jupyter notebooks
 
-Click `Use this template` green button to copy this repository to your account.
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/sosiristseng/template-juliabook/main)
+
+Click `Use this template` button to copy this repository to your account.
 
 ## Jupyter Book
 
