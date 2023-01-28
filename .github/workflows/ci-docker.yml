@@ -37,7 +37,6 @@ jobs:
         run: |
           echo "$(find docs/ -type f -iname '*.ipynb')"
           echo "matrix=$(find docs/ -type f -iname '*.ipynb')" >> $GITHUB_OUTPUT
-          echo $GITHUB_OUTPUT
 
   execute:
     needs: docker
