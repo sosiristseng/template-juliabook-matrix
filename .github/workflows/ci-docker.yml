@@ -17,7 +17,7 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.generate.set-matrix.matrix }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
