@@ -11,6 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  JULIA_DEPOT_PATH: '/tmp/juliapkgs'
   TIMEOUT: 600
   JOBS: '1'
 
@@ -23,6 +24,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Install ffmpeg
+        uses: FedericoCarboni/setup-ffmpeg@v2
+        id: setup-ffmpeg
+      - name: Install matplotlib
+        run: pip install -U matplotlib
       - name: Read Julia version
         uses: SebRollen/toml-action@v1.0.2
         id: read_toml
@@ -36,13 +42,11 @@ jobs:
       - name: Cache Julia deps
         uses: actions/cache@v3
         with:
-          path: ~/.julia
-          key: ${{ runner.os }}-julia-${{ steps.read_toml.outputs.value }}-${{ hashFiles('**/Manifest.toml') }}
+          path: ${{ env.JULIA_DEPOT_PATH }}
+          key: ${{ runner.os }}-julia2-${{ steps.read_toml.outputs.value }}-${{ hashFiles('**/Manifest.toml') }}
           restore-keys: |
-            ${{ runner.os }}-julia-${{ steps.read_toml.outputs.value}}-
+            ${{ runner.os }}-julia2-${{ steps.read_toml.outputs.value}}-
       - name: Install Julia deps
-        env:
-          PYTHON: ''
         run: |
           julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); using IJulia; installkernel("Julia", "--project=@.", env=Dict("JULIA_NUM_THREADS"=>"auto"))'
           julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate()'
