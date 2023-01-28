@@ -12,6 +12,8 @@ concurrency:
 jobs:
   binder:
     runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: ghcr.io/${{ github.repository }}:binder
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
@@ -33,14 +35,14 @@ jobs:
     - name: Build binder image with repo2docker
       run: >
         jupyter-repo2docker
-        --image-name ghcr.io/${{ github.repository }}:binder
-        --cache-from ghcr.io/${{ github.repository }}:binder
+        --image-name ${{ env.IMAGE_NAME }}
+        --cache-from ${{ env.IMAGE_NAME }}
         --push --no-run --user-id 1000 --user-name jovyan
         .
     - name: Add back binder folder
       run: |
         mkdir -p .binder
-        echo "FROM ghcr.io/${{ github.repository }}:binder" >> .binder/Dockerfile
+        echo "FROM ${{ env.IMAGE_NAME }}" >> .binder/Dockerfile
     - name: Create Pull Request if binder Dockerfile has changed
       id: cpr
       uses: peter-evans/create-pull-request@v4
