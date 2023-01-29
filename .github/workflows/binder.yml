@@ -39,7 +39,7 @@ jobs:
         --cache-from ${{ env.IMAGE_NAME }}
         --push --no-run --user-id 1000 --user-name jovyan
         .
-    - name: Add back binder folder
+    - name: Add back binder folder and Dockerfile
       run: |
         mkdir -p .binder
         echo "FROM ${{ env.IMAGE_NAME }}" >> .binder/Dockerfile

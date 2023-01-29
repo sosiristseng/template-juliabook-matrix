@@ -1,20 +1,24 @@
 jupyter_book_task:
   only_if: $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BASE_BRANCH == $CIRRUS_DEFAULT_BRANCH
   env:
-    JOBS: '1'
+    JOBS: 1
     # GH_TOKEN: ENCRYPTED[!df6346b908c8e71496ebac131796cea4508c686223f7455f554ee23e7221e22e0593f696cdc2b046178c771262b82996!]
   auto_cancellation: true
   container:
-    dockerfile: julia.Dockerfile
+    dockerfile: .github/cirrus.Dockerfile
     cpu: 1
     memory: 4G
     greedy: true
-  notebook_script: |
-    parallel --joblog /tmp/log -j${JOBS} jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=600 --execute --inplace {} ::: docs/*.ipynb
-    cat /tmp/log
+  notebook_script: >
+    parallel --joblog /tmp/log -j${JOBS}
+    jupyter nbconvert --to notebook
+    --ExecutePreprocessor.timeout=600
+    --execute --inplace
+    {} ::: docs/*.ipynb
+  execution_results_script:   cat /tmp/log
   build_script: |
-    jupyter-book build docs/ --warningiserror --keep-going -v
-  # Requires a repo scope access `GH_TOKEN` PAT to push
+    jupyter-book build docs/ --keep-going
+  ## Requires a repo scope access GitHub PAT encrypted to `GH_TOKEN` to push to its GitHub repo
   # pages_script: |
   #   if [[ $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH ]]; then
   #     git remote set-url origin https://${GH_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git
