@@ -2,7 +2,7 @@ jupyter_book_task:
   only_if: $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BASE_BRANCH == $CIRRUS_DEFAULT_BRANCH
   env:
     JOBS: 1
-    # GH_TOKEN: ENCRYPTED[!df6346b908c8e71496ebac131796cea4508c686223f7455f554ee23e7221e22e0593f696cdc2b046178c771262b82996!]
+    # GH_TOKEN: ENCRYPTED[!04189b6db63eaba858d6fe34cdb03b95e6cae73980fe91b4631181cf2fc8f5dbe376202c32d86be51999e102557d13af!]
   auto_cancellation: true
   container:
     dockerfile: .github/cirrus.Dockerfile
