@@ -2,7 +2,7 @@ name: Notify Cirrus CI failures
 
 on:
   check_suite:
-    type: ['completed']
+    types: ['completed']
 
 jobs:
   continue:
