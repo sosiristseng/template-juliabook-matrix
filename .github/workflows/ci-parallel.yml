@@ -12,6 +12,7 @@ concurrency:
 
 env:
   JULIA_DEPOT_PATH: '/tmp/juliapkgs'
+  JULIA_CACHE_NUM: '1'
   TIMEOUT: 600
   JOBS: '1'
 
@@ -35,29 +36,31 @@ jobs:
         with:
           file: 'Manifest.toml'
           field: 'julia_version'
-      - name: Setup Julia ${{ steps.read_toml.outputs.value }}
+      - name: Write Julia version to env
+        run: echo "jlver=${{ steps.read_toml.outputs.value }}" >> $GITHUB_ENV
+      - name: Setup Julia ${{ env.jlver }}
         uses: julia-actions/setup-julia@v1
         with:
-          version: ${{ steps.read_toml.outputs.value }}
+          version: ${{ env.jlver }}
       - name: Cache Julia deps
         uses: actions/cache@v3
         with:
           path: ${{ env.JULIA_DEPOT_PATH }}
-          key: ${{ runner.os }}-julia2-${{ steps.read_toml.outputs.value }}-${{ hashFiles('**/Manifest.toml') }}
+          key: ${{ runner.os }}-julia-${{ env.jlver }}-${{ env.JULIA_CACHE_NUM }}-${{ hashFiles('**/Manifest.toml') }}
           restore-keys: |
-            ${{ runner.os }}-julia2-${{ steps.read_toml.outputs.value}}-
+            ${{ runner.os }}-julia-${{ env.jlver }}-${{ env.JULIA_CACHE_NUM }}-
       - name: Install Julia deps
         run: |
           julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); using IJulia; installkernel("Julia", "--project=@.", env=Dict("JULIA_NUM_THREADS"=>"auto"))'
           julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate()'
-      - name: Build Notebooks
+      - name: Build notebooks
         run: >
           parallel --joblog /tmp/log -j${JOBS}
           jupyter nbconvert --to notebook
           --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
           --execute --inplace
           {} ::: docs/*.ipynb
-      - name: Execution results
+      - name: Show execution results
         run: cat /tmp/log
       - name: Build website
         run: jupyter-book build docs/ --keep-going -v
@@ -69,8 +72,8 @@ jobs:
 
   # Deployment job
   # deploy:
-  #   needs: ci-parallel
-  #   if: github.ref == 'refs/heads/main'
+  #   needs: ci
+  #   if: ${{ github.ref == 'refs/heads/main' }}
   #   # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
   #   permissions:
   #     pages: write # to deploy to Pages

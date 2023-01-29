@@ -3,7 +3,9 @@ FROM julia:1.8.5 AS julia
 FROM ghcr.io/sosiristseng/docker-jupyterbook:0.13.1.7
 
 # Julia
+ENV JULIA_CI true
 ENV JULIA_PATH /usr/local/julia/
+ENV JULIA_DEPO_PATH /srv/juliapkg/
 ENV PATH ${JULIA_PATH}/bin:${PATH}
 COPY --from=julia ${JULIA_PATH} ${JULIA_PATH}
 
