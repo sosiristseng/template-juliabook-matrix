@@ -43,7 +43,7 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
       - name: Build and cache Docker
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ${{ env.DFILE }}
@@ -80,7 +80,7 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
       - name: Restore Docker container
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ${{ env.DFILE }}
