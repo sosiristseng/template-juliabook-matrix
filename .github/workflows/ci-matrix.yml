@@ -87,7 +87,7 @@ jobs:
         run: >
           docker run --rm
           --workdir=/tmp -v ${{ github.workspace }}:/tmp
-          ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          ${{ env.IMAGE_NAME }}
           jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=${{ env.TIMEOUT }} --execute --inplace
           ${{ matrix.notebook }}
       - name: Upload Notebook
