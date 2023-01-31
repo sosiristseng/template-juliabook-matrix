@@ -80,14 +80,13 @@ jobs:
           context: .
           file: ${{ env.DFILE }}
           load: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: myimage:test
           cache-from: type=registry,ref=${{ steps.meta.outputs.tags }}
       - name: Execute Notebook
         run: >
           docker run --rm
           --workdir=/tmp -v ${{ github.workspace }}:/tmp
-          ${{ env.IMAGE_NAME }}
+          myimage:test
           jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=${{ env.TIMEOUT }} --execute --inplace
           ${{ matrix.notebook }}
       - name: Upload Notebook
