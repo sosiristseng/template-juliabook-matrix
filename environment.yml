@@ -1,4 +1,3 @@
 name: python
 dependencies:
-  - python=3.10
   - matplotlib
