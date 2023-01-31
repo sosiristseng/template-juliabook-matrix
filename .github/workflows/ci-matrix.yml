@@ -118,12 +118,12 @@ jobs:
         id: setoutput
         run: echo "success=true" >> $GITHUB_OUTPUT
       - name: Upload pages artifact
-        if: github.ref == 'refs/heads/main'
+        if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/upload-pages-artifact@v1
         with:
           path: docs/_build/html
 
-  # Jobb for GitHub status check
+  # GitHub status check
   # https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
   ci:
     name: CI (matrix)

@@ -15,21 +15,24 @@ env:
   JULIA_CACHE_NUM: '1'
   TIMEOUT: 600
   JOBS: '1'
+  PYTHON_VER: '3.11'
 
 jobs:
-  ci:
-    name: CI (parallel)
+  execute:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/sosiristseng/docker-jupyterbook:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Install ffmpeg
         uses: FedericoCarboni/setup-ffmpeg@v2
         id: setup-ffmpeg
-      - name: Install matplotlib
-        run: pip install -U matplotlib
+      - name: Setup Python ${{ env.PYTHON_VER }}
+        uses: actions/setup-python@v4
+        id: python
+        with:
+          python-version: ${{ env.PYTHON_VER }}
+      - name: Install Python dependencies
+        run: pip install -U matplotlib nbconvert
       - name: Read Julia version
         uses: SebRollen/toml-action@v1.0.2
         id: read_toml
@@ -42,14 +45,16 @@ jobs:
         uses: julia-actions/setup-julia@v1
         with:
           version: ${{ env.jlver }}
-      - name: Cache Julia deps
+      - name: Cache Julia dependencies
         uses: actions/cache@v3
         with:
           path: ${{ env.JULIA_DEPOT_PATH }}
           key: ${{ runner.os }}-julia-${{ env.jlver }}-${{ env.JULIA_CACHE_NUM }}-${{ hashFiles('**/Manifest.toml') }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ env.jlver }}-${{ env.JULIA_CACHE_NUM }}-
-      - name: Install Julia deps
+      - name: Install Julia dependencies
+        env:
+          PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
           julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); using IJulia; installkernel("Julia", "--project=@.", env=Dict("JULIA_NUM_THREADS"=>"auto"))'
           julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate()'
@@ -62,17 +67,64 @@ jobs:
           {} ::: docs/*.ipynb
       - name: Show execution results
         run: cat /tmp/log
+      - name: Upload Notebook
+        uses: actions/upload-artifact@v3
+        with:
+          name: notebook
+          path: docs/**.ipynb
+
+  jupyter-book:
+    needs: execute
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/sosiristseng/docker-jupyterbook:latest
+    # store success output flag for the ci job
+    outputs:
+      success: ${{ steps.setoutput.outputs.success }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Download notebooks
+        uses: actions/download-artifact@v3
+        with:
+          path: out/
+      - name: Move notebooks
+        run: find out/ -type f -iname '*.ipynb' -exec mv -t docs/ {} +
       - name: Build website
-        run: jupyter-book build docs/ --keep-going -v
-      - name: Upload page artifact
+        run: jupyter-book build docs/
+      - name: Set output flag
+        id: setoutput
+        run: echo "success=true" >> $GITHUB_OUTPUT
+      - name: Upload pages artifact
         if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/upload-pages-artifact@v1
         with:
           path: docs/_build/html
 
+  # GitHub status check
+  # https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
+  ci:
+    name: CI (parallel)
+    needs: jupyter-book
+    runs-on: ubuntu-latest
+    if: always() # always run, so we never skip the check
+    steps:
+      # pass step only when output of previous jupyter-book job is set
+      # in case at least one of the execution fails, jupyter-book is skipped
+      # and the output will not be set, which will then cause the ci job to fail
+      - run: |
+          passed="${{ needs.jupyter-book.outputs.success }}"
+          if [[ $passed == "true" ]]; then
+            echo "Tests passed"
+            exit 0
+          else
+            echo "Tests failed"
+            exit 1
+          fi
+
   # Deployment job
   # deploy:
-  #   needs: ci
+  #   needs: jupyter-book
   #   if: ${{ github.ref == 'refs/heads/main' }}
   #   # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
   #   permissions:
