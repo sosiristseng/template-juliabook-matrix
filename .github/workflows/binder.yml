@@ -9,6 +9,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  packages: write
+
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository }}:binder
 
