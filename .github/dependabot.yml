@@ -3,14 +3,14 @@ updates:
   - package-ecosystem: 'docker'
     directory: '/.github'
     schedule:
-      interval: 'weekly'
+      interval: 'daily'
     labels:
       - 'automerge'
     open-pull-requests-limit: 10
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
-      interval: 'weekly'
+      interval: 'daily'
     labels:
       - 'automerge'
     open-pull-requests-limit: 10
