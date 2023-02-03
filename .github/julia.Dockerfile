@@ -12,7 +12,7 @@ COPY --from=julia:1.8.5 ${JULIA_PATH} ${JULIA_PATH}
 RUN pip install --no-cache-dir matplotlib nbconvert
 
 # Julia environment
-COPY Project.toml Manifest.toml install_kernel.jl ./
+COPY Project.toml Manifest.toml .github/install_kernel.jl ./
 COPY src/ src
 RUN julia --color=yes --project="" install_kernel.jl && \
     julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
