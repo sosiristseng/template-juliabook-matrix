@@ -115,7 +115,11 @@ jobs:
       - name: Download notebooks
         uses: actions/download-artifact@v3
         with:
+          name: notebook
           path: out/
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: out
       - name: Move notebooks
         run: find out/ -type f -iname '*.ipynb' -exec mv -t docs/ {} +
       - name: Build website
