@@ -3,5 +3,7 @@ Pkg.add("IJulia")
 
 using IJulia
 p = installkernel("Julia", "--project=@.")
+newpath = joinpath(dirname(p), "julia")
 
-symlink(p, joinpath(dirname(p), "julia"), dir_target=true)
+@info "Creating symlink " newpath " pointing to" p
+symlink(p, newpath, dir_target=true)
