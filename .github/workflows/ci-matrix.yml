@@ -57,6 +57,7 @@ jobs:
   execute:
     needs: setup
     strategy:
+      max-parallel: 20
       fail-fast: false
       matrix:
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }} # Notebooks need to be executed
@@ -98,6 +99,7 @@ jobs:
         with:
           name: notebook
           path: ${{ matrix.notebook }}
+          retention-days: 1
 
   jupyter-book:
     needs: execute
