@@ -63,7 +63,7 @@ Related files:
 
 Environment files:
 - [apt.txt](apt.txt) for apt-installed dependencies.
-- [runtime.txt](runtime.txt) and [environment.yml](environment.yml) for Python/conda dependencies.
+- [environment.yml](environment.yml) for Python/conda dependencies.
 - [Project.toml](Project.toml), [Manifest.toml](Manifest.toml), and the [src](src/) folder for Julia dependencies.
 
 This GitHub action builds docker images to run notebooks online on [mybinder](https://mybinder.org/) using [repo2docker](https://repo2docker.readthedocs.io/) and pushs the resulting container to [GitHub container registry (GHCR)][ghcr]. The [.binder/Dockerfile](.binder/Dockerfile) that points to the container will be auto generated.
