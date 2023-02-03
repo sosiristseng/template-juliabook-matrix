@@ -13,7 +13,8 @@ RUN pip install --no-cache-dir matplotlib nbconvert
 # Julia environment
 COPY Project.toml Manifest.toml ./
 COPY src/ src
-RUN julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); using IJulia; installkernel("Julia", "--project=@.", env=Dict("JULIA_NUM_THREADS"=>"auto"))' && \
-    julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate()'
+RUN julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); using IJulia; \
+        installkernel("Julia", "--project=@.", specname="julia", env=Dict("JULIA_NUM_THREADS"=>"auto"))' && \
+    julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
 
 CMD ["julia"]
