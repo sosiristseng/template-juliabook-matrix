@@ -87,6 +87,10 @@ jobs:
           load: true
           tags: myimage:test
           cache-from: type=registry,ref=${{ steps.meta.outputs.tags }}
+      - name: Get Julia version
+        run: |
+          echo jl_ver=$(docker run --rm myimage:test julia -e 'print(VERSION.major,".",VERSION.minor)') >> $GITHUB_ENV
+          echo "Julia version: ${{ env.jl_ver }}"
       - name: Execute Notebook
         run: >
           docker run --rm
@@ -94,7 +98,7 @@ jobs:
           myimage:test
           jupyter nbconvert --to notebook --execute --inplace
           --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
-          --ExecutePreprocessor.kernel_name=kernel_name="julia-1.$(julia -e 'print(VERSION.minor)')"
+          --ExecutePreprocessor.kernel_name=kernel_name=julia-${{ env.jl_ver }}
           ${{ matrix.notebook }}
       - name: Upload Notebook
         uses: actions/upload-artifact@v3
