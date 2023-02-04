@@ -16,7 +16,7 @@ permissions:
 
 env:
   TIMEOUT: 600
-  DFILE: '.github/julia.Dockerfile'
+  DFILE: '.github/Dockerfile'
   IMAGE_NAME: app:test
 
 jobs:
