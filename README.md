@@ -17,7 +17,7 @@ Template variants:
 
 Related files:
 - [ci-matrix.yml](.github/workflows/ci-matrix.yml) GitHub actions
-- [julia.Dockerfile](.github/julia.Dockerfile) for runtime environment
+- [Dockerfile](.github/Dockerfile) for runtime environment
 
 When you push a change into the repository, GitHub actions will prepare the runtime environment by `julia.Dockerfile` and execute the notebooks (`*.ipynb` files in the `docs/` folder) in parallel by a job matrix. You can (and should) commit and push notebooks with empty output cells as the xecution results are generated on the fly by GitHub actions.
 
@@ -31,10 +31,10 @@ You need to enable GitHub pages by selecting repository settings -> pages -> Bui
 
 ## Automatic dependency updates
 
-### Dependabot and Kodiak Bot
+### Renovate and Kodiak Bot
 
 Related files:
-- [dependabot.yml](.github/dependabot.yml)
+- [renovate.json](renovate.json)
 - [.kodiak.toml](.github/.kodiak.toml)
 
 This repository uses dependabot to automatically update Julia, Python, and GitHub actions, and [Kodiak bot](https://kodiakhq.com/) to automate dependabot's pull requests. You need to add `automerge` issue label as well as enable [Kodiak bot](https://kodiakhq.com/).
@@ -43,7 +43,7 @@ This repository uses dependabot to automatically update Julia, Python, and GitHu
 
 Related files:
 - [update-manifest.yml](.github/workflows/update-manifest.yml)
-- [update.Dockerfile](.github/update.Dockerfile)
+- [Dockerfile](.github/Dockerfile)
 
 GitHub acttions periodically update Julia dependencies and make a PR if the notebooks are executed successfully with the updated packages.
 
@@ -63,7 +63,7 @@ Related files:
 
 Environment files:
 - [apt.txt](apt.txt) for apt-installed dependencies.
-- [environment.yml](environment.yml) for Python/conda dependencies.
+- [requirements.txt](requirements.txt) for Python/conda dependencies and [runtime.txt](runtime.txt) for Python version.
 - [Project.toml](Project.toml), [Manifest.toml](Manifest.toml), and the [src](src/) folder for Julia dependencies.
 
 This GitHub action builds docker images to run notebooks online on [mybinder](https://mybinder.org/) using [repo2docker](https://repo2docker.readthedocs.io/) and pushs the resulting container to [GitHub container registry (GHCR)][ghcr]. The [.binder/Dockerfile](.binder/Dockerfile) that points to the container will be auto generated.
