@@ -13,15 +13,9 @@ on:
 jobs:
   linkcheck:
     runs-on: ubuntu-latest
+    container: ghcr.io/sosiristseng/docker-jupyterbook:0.14.0
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        id: python
-        with:
-          python-version: '3.x'
-      - name: Install Jupyter Book
-        run: pip install jupyter-book
       - name: Check Links
         run: jupyter-book build docs/ --builder linkcheck
