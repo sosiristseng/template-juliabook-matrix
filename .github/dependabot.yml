@@ -6,19 +6,15 @@ updates:
       interval: 'daily'
     labels:
       - 'automerge'
-    open-pull-requests-limit: 10
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
       interval: 'daily'
     labels:
       - 'automerge'
-    open-pull-requests-limit: 10
   - package-ecosystem: 'pip'
     directory: '/'
     schedule:
       interval: 'daily'
     labels:
       - 'automerge'
-    open-pull-requests-limit: 10
-
