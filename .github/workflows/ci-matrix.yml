@@ -75,7 +75,7 @@ jobs:
           retention-days: 1
 
   jupyter-book:
-    needs: executex
+    needs: execute
     runs-on: ubuntu-latest
     # store success output flag for the ci job
     outputs:
