@@ -77,10 +77,8 @@ jobs:
   jupyter-book:
     needs: execute
     runs-on: ubuntu-latest
-    container: ghcr.io/sosiristseng/docker-jupyterbook:0.14.0
-    # store success output flag for the ci job
-    outputs:
-      success: ${{ steps.setoutput.outputs.success }}
+    env:
+      PYTHON_VER: '3.11'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -94,6 +92,14 @@ jobs:
         working-directory: out
       - name: Move notebooks
         run: find out/ -type f -iname '*.ipynb' -exec mv -t docs/ {} +
+      - name: Setup Python ${{ env.PYTHON_VER }}
+        uses: actions/setup-python@v4
+        id: python
+        with:
+          python-version: ${{ env.PYTHON_VER }}
+          cache: 'pip'
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
       - name: Build website
         run: jupyter-book build docs/
       - name: Upload pages artifact
@@ -101,30 +107,20 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           path: docs/_build/html
-      - name: Set output flag
-        id: setoutput
-        run: echo "success=true" >> $GITHUB_OUTPUT
 
-  # GitHub status check
-  # https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
+  # CI job for GitHub status check
+  # https://docs.github.com/en/actions/learn-github-actions/expressions#status-check-functions
   ci:
     name: CI (matrix)
-    needs: jupyter-book
+    needs: [setup, execute, jupyter-book]
     runs-on: ubuntu-latest
-    if: always() # always run, so we never skip the check
     steps:
-      # pass step only when output of previous jupyter-book job is set
-      # in case at least one of the execution fails, jupyter-book is skipped
-      # and the output will not be set, which will then cause the ci job to fail
-      - run: |
-          passed="${{ needs.jupyter-book.outputs.success }}"
-          if [[ $passed == "true" ]]; then
-            echo "Tests passed"
-            exit 0
-          else
-            echo "Tests failed"
-            exit 1
-          fi
+      - name: The job has succeeded
+        if: ${{ success() }}
+        run: exit 0
+      - name: The job has failed
+        if: ${{ failure() }}
+        run: exit 1
 
   # Deployment job
   deploy:
