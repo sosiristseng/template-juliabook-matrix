@@ -113,6 +113,7 @@ jobs:
   ci:
     name: CI (matrix)
     needs: [setup, execute, jupyter-book]
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
       - name: The job has succeeded
