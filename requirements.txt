@@ -1,3 +1,4 @@
 matplotlib==3.7.1
 jupyter-book==0.14.0
 nbconvert==7.2.9
+sphinx-book-theme~=1.0.0
