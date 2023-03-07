@@ -57,11 +57,11 @@ You need to enable GitHub pages by selecting repository settings -> pages -> Bui
 
 ## Automatic dependency updates
 
-### Renovate and Kodiak Bot
+### Dependabot and Kodiak Bot
 
 Related files:
 
-- [renovate.json](renovate.json)
+- [dependabot.yml](.github/dependabot.yml)
 - [.kodiak.toml](.github/.kodiak.toml)
 
 This repository uses dependabot to automatically update Julia, Python, and GitHub actions, and [Kodiak bot](https://kodiakhq.com/) to automate dependabot's pull requests. You need to add `automerge` issue label as well as enable [Kodiak bot](https://kodiakhq.com/).
@@ -77,7 +77,7 @@ GitHub acttions periodically update Julia dependencies and make a PR if the note
 
 [See the instructions](https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#triggering-further-workflow-runs) for how to trigger CI workflows in a PR. This repo uses a custom [GitHub APP](https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#authenticating-with-github-app-generated-tokens) to generate a temporary token.
 
-## Checking links
+## Checking links in markdown files and notebooks
 
 Related files:
 
