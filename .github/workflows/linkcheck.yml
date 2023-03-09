@@ -24,10 +24,11 @@ jobs:
         id: python
         with:
           python-version: ${{ env.PYTHON_VER }}
-          cache: 'pip'
-          cache-dependency-path: |
-            requirements-jb.txt
+      - name: Disable code cell execution
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq -i '.execute.execute_notebooks = "off"' 'docs/_config.yml'
       - name: Install Python dependencies
-        run: pip install -r requirements-jb.txt
+        run: pip install -r .github/requirements.txt
       - name: Check Links
         run: jupyter-book build docs/ --builder linkcheck
