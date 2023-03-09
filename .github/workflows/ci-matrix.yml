@@ -101,8 +101,10 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VER }}
           cache: 'pip'
+          cache-dependency-path: |
+            requirements-jb.txt
       - name: Install Python dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements-jb.txt
       - name: Build website
         run: jupyter-book build docs/
       - name: Upload pages artifact
