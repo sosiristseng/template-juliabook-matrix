@@ -75,7 +75,7 @@ You need to enable [Kodiak bot](https://kodiakhq.com/) and add `automerge` as an
 Related files:
 
 - [update-manifest.yml](.github/workflows/update-manifest.yml)
-- [update.Dockerfile](.github/update.Dockerfile)
+- [Dockerfile](.github/Dockerfile)
 
 GitHub acttions periodically update Julia dependencies and make a PR if the notebooks are executed successfully with the updated packages.
 
