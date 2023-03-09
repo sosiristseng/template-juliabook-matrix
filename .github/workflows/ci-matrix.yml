@@ -13,7 +13,8 @@ concurrency:
 env:
   TIMEOUT: 600
   DFILE: '.github/Dockerfile'
-  IMAGE_NAME: app:test
+  IMAGE_NAME: 'app:test'
+  PYTHON_VER: '3.11'
 
 jobs:
   setup:
@@ -55,8 +56,8 @@ jobs:
         with:
           context: .
           file: ${{ env.DFILE }}
-          load: true
           tags: ${{ env.IMAGE_NAME }}
+          load: true
           cache-from: type=gha
       - name: Execute Notebook
         run: >
@@ -80,8 +81,6 @@ jobs:
     # store success output flag for the ci job
     outputs:
       success: ${{ steps.setoutput.outputs.success }}
-    env:
-      PYTHON_VER: '3.11'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -100,9 +99,8 @@ jobs:
         id: python
         with:
           python-version: ${{ env.PYTHON_VER }}
-          cache: 'pip'
       - name: Install Python dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r .github/requirements.txt
       - name: Build website
         run: jupyter-book build docs/
       - name: Upload pages artifact

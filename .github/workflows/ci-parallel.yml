@@ -35,8 +35,11 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VER }}
           cache: 'pip'
+          cache-dependency-path: |
+            .github/requirements.txt
+            requirements.txt
       - name: Install Python dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements.txt -r .github/requirements.txt
       - name: Read Julia version
         uses: SebRollen/toml-action@v1.0.2
         id: read_toml
@@ -67,7 +70,7 @@ jobs:
           parallel --joblog /tmp/log -j${{ env.JOBS }}
           jupyter nbconvert --to notebook
           --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
-          --ExecutePreprocessor.kernel_name="julia-1.$(julia -e 'print(VERSION.minor)')"
+          --ExecutePreprocessor.kernel_name=julia-$(julia -e 'print(VERSION.major,".",VERSION.minor)')
           --execute --inplace
           {} ::: docs/*.ipynb
       - name: Display execution stats

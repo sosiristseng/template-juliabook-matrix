@@ -1,19 +1,15 @@
 jupyter_book_task:
   execution_lock: $CIRRUS_BRANCH
   env:
-    LC_ALL: C.UTF-8
     JOBS: 1
     TIMEOUT: 600
     # GH_TOKEN: ENCRYPTED[a83a3d33c85c1d0439cbfdb99f81551f87b7bfc3de072a36822d8019ef5f7d5a4aa6c7f47c975db2afa3a3c60f24384d]
   auto_cancellation: true
   container:
-    dockerfile: .github/Dockerfile
+    dockerfile: .github/cirrus.Dockerfile
     cpu: 1
     memory: 4G
     greedy: true
-  apt_script: |
-    apt-get update
-    apt-get install -y git parallel --no-install-recommends
   notebook_script: >
     parallel --joblog /tmp/log -j${JOBS}
     jupyter nbconvert --to notebook
