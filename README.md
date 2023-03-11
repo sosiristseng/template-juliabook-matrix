@@ -12,8 +12,6 @@ See also:
 
 ## GitHub actions for notebook execution
 
-You need to enable GitHub actions by selecting repository settings -> actions -> general -> Actions permissions -> allow actions.
-
 ### Classic version (using GNU parallel)
 
 See:
@@ -22,8 +20,6 @@ See:
 - [requirements.txt](.github/requirements.txt) in the `.github` folder for `jupyter-book`
 
 When you push a change into the repository, GitHub actions will prepare the runtime environment and execute the notebooks (`*.ipynb` files in the `docs/` folder) in parallel by GNU `parallel`. You can (and should) commit and push notebooks with empty output cells as execution results will be populated by GitHub actions.
-
-You need to enable GitHub pages by selecting repository settings -> pages -> Build and deployment -> `GitHub Actions` as the source.
 
 ### Dynamic matrix
 
@@ -36,11 +32,9 @@ See:
 
 When you push a change into the repository, GitHub actions will prepare the runtime environment by `Dockerfile` and execute the notebooks (`*.ipynb` files in the `docs/` folder) in parallel by a job matrix. You can (and should) commit and push notebooks with empty output cells as execution results will be populated by GitHub actions.
 
-You need to enable GitHub pages by selecting repository settings -> pages -> Build and deployment -> `GitHub Actions` as the source.
-
 ### Cirrus CI for notebook execution and publishing
 
-Related files for [Cirrus CI](https://cirrus-ci.org/) workflow
+[Cirrus CI](https://cirrus-ci.org/) workflow files:
 
 - [.cirrus.yml](.cirrus.yml) for Cirrus CI pipelines
 - [cirrus-notify.yml](.github/workflows/cirrus-notify.yml) for notification in GitHub in case of execution error
@@ -57,33 +51,29 @@ Open your repository settings => Pages => GitHub Pages
 
 [Jupyter book][jupyter-book] creates a beautiful website from Markdown and Jupyter notebook files.
 
+You need to enable GitHub pages by selecting repository settings -> pages -> Build and deployment -> `GitHub Actions` as the source.
+
 ## Automatic dependency updates
 
-### Dependabot and Kodiak Bot
+### Renovate bot and Kodiak Bot
 
-Related files:
-
-- [dependabot.yml](.github/dependabot.yml)
+- [renovate.json](renovate.json)
 - [.kodiak.toml](.github/.kodiak.toml)
 
-This repository uses dependabot to automatically update Julia, Python, and GitHub actions, and [Kodiak bot](https://kodiakhq.com/) to automate dependabot's pull requests.
+This repository uses [Renovate Bot](https://github.com/marketplace/renovate) to automatically update Julia, Python, and GitHub actions, and [Kodiak bot](https://kodiakhq.com/) to automate pull requests.
 
-You need to enable [Kodiak bot](https://kodiakhq.com/) and add `automerge` as an issue label.
+One needs to enable both bots and adds `automerge` as an issue label for them to work properly.
 
-### Auto-update Julia dependencies
-
-Related files:
+### Julia dependencies
 
 - [update-manifest.yml](.github/workflows/update-manifest.yml)
 - [Dockerfile](.github/Dockerfile)
 
-GitHub acttions periodically update Julia dependencies and make a PR if the notebooks are executed successfully with the updated packages.
+The GitHub acttion will periodically update Julia dependencies and make a PR if the notebooks are executed successfully with the updated packages.
 
 See also [the instructions](https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#triggering-further-workflow-runs) for how to trigger CI workflows in a PR. This repo uses a custom [GitHub APP](https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#authenticating-with-github-app-generated-tokens) to generate a temporary token.
 
 ## Checking links in markdown files and notebooks
-
-Related files:
 
 - [linkcheck.yml](.github/workflows/linkcheck.yml)
 
@@ -91,11 +81,9 @@ GitHub actions regularly check if the links are valid.
 
 ## Binder docker images
 
-Related files:
-
 - [binder.yml](.github/workflows/binder.yml) GitHub action
 
-Environment files:
+Binder runtime environment files:
 
 - [apt.txt](apt.txt) for apt-installed dependencies.
 - [requirements.txt](requirements.txt) for Python/conda dependencies and [runtime.txt](runtime.txt) for Python version.
