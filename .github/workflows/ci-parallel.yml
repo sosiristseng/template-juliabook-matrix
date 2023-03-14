@@ -34,12 +34,10 @@ jobs:
         id: python
         with:
           python-version: ${{ env.PYTHON_VER }}
-          cache: 'pip'
-          cache-dependency-path: |
-            .github/requirements.txt
-            requirements.txt
       - name: Install Python dependencies
-        run: pip install -r requirements.txt -r .github/requirements.txt
+        run: |
+          pip install -U jupyter-book nbconvert
+          pip install -r requirements.txt
       - name: Read Julia version
         uses: SebRollen/toml-action@v1.0.2
         id: read_toml
@@ -56,9 +54,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.JULIA_DEPOT_PATH }}
-          key: ${{ runner.os }}-julia-${{ env.jlver }}-${{ env.JULIA_CACHE_NUM }}-${{ hashFiles('**/Manifest.toml') }}
+          key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE_NUM }}-${{ hashFiles('**/Manifest.toml') }}
           restore-keys: |
-            ${{ runner.os }}-julia-${{ env.jlver }}-${{ env.JULIA_CACHE_NUM }}-
+            ${{ runner.os }}-julia-${{ env.JULIA_CACHE_NUM }}-
       - name: Install Julia dependencies
         env:
           PYTHON: ${{ steps.python.outputs.python-path }}
