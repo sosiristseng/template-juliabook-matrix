@@ -14,7 +14,6 @@ env:
   TIMEOUT: 600
   DFILE: '.github/Dockerfile'
   IMAGE_NAME: 'app:test'
-  PYTHON_VER: '3.11'
 
 jobs:
   setup:
