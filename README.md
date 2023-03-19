@@ -12,40 +12,13 @@ See also:
 
 ## GitHub actions for notebook execution
 
-### Classic version (using GNU parallel)
-
-See:
-
-- [ci-parallel.yml](.github/workflows/ci-parallel.yml) GitHub actions
-- [requirements.txt](.github/requirements.txt) in the `.github` folder for `jupyter-book`
-
-When you push a change into the repository, GitHub actions will prepare the runtime environment and execute the notebooks (`*.ipynb` files in the `docs/` folder) in parallel by GNU `parallel`. You can (and should) commit and push notebooks with empty output cells as execution results will be populated by GitHub actions.
-
-### Dynamic matrix
-
 See:
 
 - [ci-matrix.yml](.github/workflows/ci-matrix.yml) GitHub actions
 - [Dockerfile](.github/Dockerfile) for runtime environment
 - [requirements.txt](requirements.txt) in root folder for Python dependencies
-- [requirements.txt](.github/requirements.txt) in the `.github` folder for `jupyter-book`
 
 When you push a change into the repository, GitHub actions will prepare the runtime environment by `Dockerfile` and execute the notebooks (`*.ipynb` files in the `docs/` folder) in parallel by a job matrix. You can (and should) commit and push notebooks with empty output cells as execution results will be populated by GitHub actions.
-
-### Cirrus CI for notebook execution and publishing
-
-[Cirrus CI](https://cirrus-ci.org/) workflow files:
-
-- [.cirrus.yml](.cirrus.yml) for Cirrus CI pipelines
-- [cirrus-notify.yml](.github/workflows/cirrus-notify.yml) for notification in GitHub in case of execution error
-- [cirrus.Dockerfile](.github/cirrus.Dockerfile) for runtime environment
-
-You'll need a repo scope GitHub token (click [here](https://github.com/settings/tokens/new?scopes=repo)) [encrypted](https://cirrus-ci.org/guide/writing-tasks/#encrypted-variables) in cirrus CI. Use the encrypted value as `GH_TOKEN` variable to push the `gh-pages` branch back to GitHub.
-
-GitHub pages may need to be enabled manually:
-
-Open your repository settings => Pages => GitHub Pages
-=> Build and deployment => Source, select the `gh-pages` branch.
 
 ## Jupyter Book and GitHub pages
 
