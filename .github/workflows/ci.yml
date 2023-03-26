@@ -37,7 +37,8 @@ jobs:
           cache-to: type=gha,mode=max
       - name: List notebooks as a JSON array
         id: set-matrix
-        run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("docs/*.ipynb")))')" >> $GITHUB_OUTPUT
+        working-directory: docs
+        run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**.ipynb", recursive=True)))')" >> $GITHUB_OUTPUT
   execute:
     needs: setup
     strategy:
@@ -68,12 +69,12 @@ jobs:
           jupyter nbconvert --to notebook --execute --inplace
           --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
           --ExecutePreprocessor.kernel_name=julia-$(julia -e 'print(VERSION.major,".",VERSION.minor)')
-          ${{ matrix.notebook }}
+          docs/${{ matrix.notebook }}
       - name: Upload Notebook
         uses: actions/upload-artifact@v3
         with:
           name: notebook
-          path: ${{ matrix.notebook }}
+          path: docs*/${{ matrix.notebook }}
           retention-days: 1
 
   jupyter-book:
@@ -96,7 +97,7 @@ jobs:
         run: ls -R
         working-directory: out
       - name: Move notebooks
-        run: find out/ -type f -iname '*.ipynb' -exec mv -t docs/ {} +
+        run: mv -v out/docs/* docs/
       - name: Build website
         run: jupyter-book build docs/
       - name: Upload pages artifact
