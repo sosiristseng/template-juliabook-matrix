@@ -27,6 +27,8 @@ jobs:
         run: apt-get update -q && apt-get install -y git --no-install-recommends
       - name: Checkout
         uses: actions/checkout@v3
+      # workaround: https://github.com/peter-evans/create-pull-request/issues/1170
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Update Julia dependencies
         run: julia --color=yes --project=@. -e "import Pkg; Pkg.update()"
       # Authenticate with a custom GitHub APP
