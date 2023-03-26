@@ -79,7 +79,7 @@ jobs:
   jupyter-book:
     needs: execute
     runs-on: ubuntu-latest
-    # store success output flag for the ci job
+    # output success flag for CI
     outputs:
       success: ${{ steps.setoutput.outputs.success }}
     steps:
@@ -95,10 +95,6 @@ jobs:
         working-directory: out
       - name: Move notebooks
         run: find out/ -type f -iname '*.ipynb' -exec mv -t docs/ {} +
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PY_VER }}
       - name: Build website
         run: pipx run jupyter-book build docs/
       - name: Upload pages artifact
@@ -110,10 +106,9 @@ jobs:
         id: setoutput
         run: echo "success=true" >> $GITHUB_OUTPUT
 
-  # CI job for GitHub status check
+  # CI conclusion for GitHub status check
   # https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
-  ci:
-    name: CI
+  CI:
     needs: jupyter-book
     if: always()
     runs-on: ubuntu-latest
