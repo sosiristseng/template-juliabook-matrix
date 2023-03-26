@@ -97,7 +97,7 @@ jobs:
         run: ls -R
         working-directory: out
       - name: Move notebooks
-        run: mv -v out/* docs/
+        run: mv -v out/docs/* docs/
       - name: Build website
         run: jupyter-book build docs/
       - name: Upload pages artifact
