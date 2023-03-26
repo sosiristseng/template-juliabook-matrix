@@ -1,4 +1,4 @@
-name: Execute Jupyter notebooks with dynamic parallel matrix
+name: CI with dynamic parallel matrix
 
 on:
   push:
@@ -113,7 +113,7 @@ jobs:
   # CI job for GitHub status check
   # https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
   ci:
-    name: CI (matrix)
+    name: CI
     needs: jupyter-book
     if: always()
     runs-on: ubuntu-latest
