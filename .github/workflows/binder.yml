@@ -11,19 +11,27 @@ concurrency:
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository }}:binder
+  PYTHON_VER: '3.11'
 
 jobs:
   binder:
+    runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: write
       pull-requests: write
-    runs-on: ubuntu-latest
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
     - name: Remove binder folder if present
       run: rm -rf .binder/ || true
+    - name: Setup Python ${{ env.PYTHON_VER }}
+      uses: actions/setup-python@v4
+      id: python
+      with:
+        python-version: ${{ env.PYTHON_VER }}
+    - name: Install repo2docker
+      run: pip install https://github.com/jupyterhub/repo2docker/archive/main.zip
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
       with:
@@ -34,7 +42,7 @@ jobs:
       run: docker pull ${{ env.IMAGE_NAME }} || true
     - name: Build binder image with repo2docker
       run: >
-        pipx run https://github.com/jupyterhub/repo2docker/archive/main.zip
+        jupyter-repo2docker
         --image-name ${{ env.IMAGE_NAME }}
         --cache-from ${{ env.IMAGE_NAME }}
         --push --no-run --user-id 1000 --user-name jovyan
