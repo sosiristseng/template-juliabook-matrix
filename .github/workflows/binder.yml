@@ -53,7 +53,7 @@ jobs:
         echo "FROM ${{ env.IMAGE_NAME }}" >> .binder/Dockerfile
     - name: Create Pull Request if binder Dockerfile has changed
       id: cpr
-      uses: peter-evans/create-pull-request@v4
+      uses: peter-evans/create-pull-request@v5
       with:
         title: Binder Dockerfile
         add-paths: .binder/Dockerfile
