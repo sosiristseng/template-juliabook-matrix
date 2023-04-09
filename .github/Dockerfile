@@ -2,6 +2,7 @@ FROM python:3.11.3-slim as base
 
 # Julia
 ENV JULIA_CI true
+ENV JULIA_CONDAPKG_BACKEND "Null"
 ENV JULIA_NUM_THREADS "auto"
 ENV JULIA_PATH /usr/local/julia/
 ENV JULIA_DEPOT_PATH /srv/juliapkg/
@@ -19,7 +20,5 @@ RUN pip install --no-cache-dir -U pip wheel setuptools nbconvert && pip install 
 # Julia environment
 COPY Project.toml Manifest.toml ./
 COPY src/ src
-RUN julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()' && \
-    julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); using IJulia; installkernel("Julia", "--project=@.")'
-
-CMD ["julia"]
+RUN julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); using IJulia; installkernel("Julia", "--project=@.")' && \
+    julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
