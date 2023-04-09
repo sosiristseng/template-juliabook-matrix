@@ -13,7 +13,7 @@ FROM base
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir -U nbconvert maplotlib
+RUN pip install --no-cache-dir -U nbconvert matplotlib
 
 # Julia environment
 COPY Project.toml Manifest.toml ./
