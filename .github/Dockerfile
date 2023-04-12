@@ -13,11 +13,10 @@ COPY --from=julia:1.8.5 ${JULIA_PATH} ${JULIA_PATH}
 
 FROM base as runtime
 USER ${NB_UID}
-COPY --chown=${NB_UID}:${NB_UID} Project.toml Manifest.toml ./
+COPY --chown=${NB_UID}:${NB_UID} *.toml ./
 COPY --chown=${NB_UID}:${NB_UID} src/ src
-RUN julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")' && \
-    julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()' && \
-    julia --color=yes --project="" -e 'import Pkg; Pkg.resolve(); Pkg.precompile()'
+RUN julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia")' && \
+    julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
 
 FROM runtime
 COPY --chown=${NB_UID}:${NB_UID} docs/ docs
