@@ -1,5 +1,5 @@
 [deps]
-PythonPlot = "274fc56d-3b97-40fa-a1cd-1b4a50311bf9"
+PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
 
 [compat]
 julia = "1.8"
