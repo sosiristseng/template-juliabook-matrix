@@ -24,7 +24,10 @@ jupyter_book_task:
   #   if [[ $CIRRUS_BRANCH == 'main' ]]; then
   #     echo "Deploying to GitHub pages..."
   #     git remote set-url origin https://${GH_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git
-  #     cp *.toml *.txt docs/_build/html/_sources
+  #     cp *.txt docs/_build/html/_sources || true
+  #     cp *.toml docs/_build/html/_sources
   #     cp -R src docs/_build/html/_sources
+  #     mkdir -p docs/_build/html/_sources/.github/workflows
+  #     cp .github/workflows/binder.yml docs/_build/html/_sources/.github/workflows
   #     ghp-import -nofp docs/_build/html
   #   fi
