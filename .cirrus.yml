@@ -27,7 +27,7 @@ jupyter_book_task:
   #     cp *.txt docs/_build/html/_sources || true
   #     cp *.toml docs/_build/html/_sources
   #     cp -R src docs/_build/html/_sources
-  #     mkdir -p docs/_build/html/_sources/.github/workflows
-  #     cp .github/workflows/binder.yml docs/_build/html/_sources/.github/workflows
+  #     mkdir -p docs/_build/html/.github/workflows
+  #     cp .github/workflows/binder.yml docs/_build/html/.github/workflows
   #     ghp-import -nofp docs/_build/html
   #   fi
