@@ -1,5 +1,7 @@
 # Template publishing Julia-kerneled Jupyter notebooks
 
+[Jupyter book][jupyter-book] creates a beautiful website from Markdown and Jupyter notebook files. It is done by my [docker-jupyterbook](https://github.com/sosiristseng/docker-jupyterbook) container.
+
 Click `Use this template` button to copy this repository.
 
 See also:
@@ -10,21 +12,32 @@ See also:
 [jupyter-book]: https://jupyterbook.org/
 [Cirrus CI]: https://cirrus-ci.org/
 
-## GitHub actions for notebook execution
+## Notebook execution and publish
 
-See:
+You will need one of "GitHub actions" and "Cirrus CI".
 
-- [ci-matrix.yml](.github/workflows/ci-matrix.yml) GitHub actions
-- [Dockerfile](.github/Dockerfile) for runtime environment
-- [requirements.txt](requirements.txt) in root folder for Python dependencies
+### GitHub actions
 
-When you push a change into the repository, GitHub actions will prepare the runtime environment by `Dockerfile` and execute the notebooks (`*.ipynb` files in the `docs/` folder) in parallel by a job matrix. You can (and should) commit and push notebooks with empty output cells as execution results will be populated by GitHub actions.
+- Workflow file: [ci.yml](.github/workflows/ci.yml)
 
-## Jupyter Book and GitHub pages
+### Cirrus CI for notebook execution and publish
 
-[Jupyter book][jupyter-book] creates a beautiful website from Markdown and Jupyter notebook files.
+[Cirrus CI](https://cirrus-ci.org/) workflow files:
 
-You need to enable GitHub pages by selecting repository settings -> pages -> Build and deployment -> `GitHub Actions` as the source.
+- [.cirrus.yml](.cirrus.yml) for Cirrus CI pipelines
+- [cirrus-notify.yml](.github/workflows/cirrus-notify.yml) for notification in GitHub in case of execution error
+- [Dockerfile](cirrus.Dockerfile) for runtime environment
+
+You'll need a repo scope GitHub token (click [here](https://github.com/settings/tokens/new?scopes=repo)) [encrypted](https://cirrus-ci.org/guide/writing-tasks/#encrypted-variables) in cirrus CI. Use the encrypted value as `GH_TOKEN` variable to push the `gh-pages` branch back to GitHub.
+
+### Jupyter Book
+
+[Jupyter book][jupyter-book] creates a beautiful website from Markdown and Jupyter notebook files. It is done by my [docker-jupyterbook](https://github.com/sosiristseng/docker-jupyterbook) container.
+
+## Enable GitHub pages
+
+Open your repository settings => Pages => GitHub Pages
+=> Build and deployment => Source, select the `gh-pages` branch.
 
 ## Automatic dependency updates
 
@@ -39,8 +52,7 @@ One needs to enable both bots and adds `automerge` as an issue label for them to
 
 ### Julia dependencies
 
-- [update-manifest.yml](.github/workflows/update-manifest.yml)
-- [Dockerfile](.github/Dockerfile)
+- [update-manifest.yml](.github/workflows/update-manifest.yml) workflow file
 
 The GitHub acttion will periodically update Julia dependencies and make a PR if the notebooks are executed successfully with the updated packages.
 
@@ -50,17 +62,17 @@ See also [the instructions](https://github.com/peter-evans/create-pull-request/b
 
 - [linkcheck.yml](.github/workflows/linkcheck.yml)
 
-GitHub actions regularly check if the links are valid.
+GitHub actions regularly check if the links ihn the notebooks are valid.
 
 ## Binder docker images
 
-- [binder.yml](.github/workflows/binder.yml) GitHub action
+- [binder.yml](.github/workflows/binder.yml) workflow file
 
 Binder runtime environment files:
 
-- [apt.txt](apt.txt) for apt-installed dependencies.
-- [requirements.txt](requirements.txt) for Python/conda dependencies and [runtime.txt](runtime.txt) for Python version.
-- [Project.toml](Project.toml), [Manifest.toml](Manifest.toml), and (optionally) the [src](src/) folder for Julia dependencies.
+- [apt.txt](apt.txt) (Optional) for apt-installed dependencies.
+- [requirements.txt](requirements.txt) for Python dependencies and [runtime.txt](runtime.txt) for Python version.
+- [Project.toml](Project.toml), [Manifest.toml](Manifest.toml), and the [src](src/) folder for Julia dependencies.
 
 This GitHub action builds docker images to run notebooks online on [mybinder](https://mybinder.org/) using [repo2docker](https://repo2docker.readthedocs.io/) and pushes the resulting container to [GitHub container registry (GHCR)][ghcr]. The action also generates [.binder/Dockerfile](.binder/Dockerfile) that points to the container.
 
