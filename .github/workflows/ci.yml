@@ -97,19 +97,14 @@ jobs:
   jupyter-book:
     needs: execute
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/sosiristseng/docker-jupyterbook:0.15.3
     # output success flag for CI
     outputs:
       success: ${{ steps.setoutput.outputs.success }}
-    env:
-      PYTHON_VER: '3.11'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Setup Python ${{ env.PYTHON_VER }}
-        uses: actions/setup-python@v4
-        id: python
-        with:
-          python-version: ${{ env.PYTHON_VER }}
       - name: Download notebooks
         uses: actions/download-artifact@v3
         with:
@@ -125,7 +120,7 @@ jobs:
         with:
           cmd: yq -i '.execute.execute_notebooks = "off"' 'docs/_config.yml'
       - name: Build website
-        run: pipx run jupyter-book build docs/
+        run: jupyter-book build docs/
       - name: Copy environment files for binder
         run: |
           cp *.txt docs/_build/html/_sources || true
