@@ -3,7 +3,7 @@ name: Build binder image
 on:
   push:
     branches:
-      - gh-pages
+      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -24,14 +24,13 @@ jobs:
     steps:
     - name: Checkout notebook branch
       uses: actions/checkout@v3
-      with:
-        ref: gh-pages
-        fetch-depth: 0
     - name: Setup Python ${{ env.PYTHON_VER }}
       uses: actions/setup-python@v4
       id: python
       with:
         python-version: ${{ env.PYTHON_VER }}
+    - name: Remove binder dockerfile if present
+      run: rm .binder/Dockerfile || true
     - name: Install repo2docker
       run:
         pip install -U pip setuptools wheel
@@ -50,10 +49,15 @@ jobs:
         --image-name ${{ env.IMAGE_NAME }}
         --cache-from ${{ env.IMAGE_NAME }}
         --push --no-run
-        _sources
+        .
     - name: Add binder Dockerfile
       run: |
         mkdir -p .binder
         echo "FROM ${{ env.IMAGE_NAME }}" > .binder/Dockerfile
-    - name: Push changes
-      uses: stefanzweifel/git-auto-commit-action@v4
+    - name: Create Pull Request if binder Dockerfile has changed
+      id: cpr
+      uses: peter-evans/create-pull-request@v5
+      with:
+        title: Binder Dockerfile
+        add-paths: .binder/Dockerfile
+        branch: binder-dockerfile

@@ -131,8 +131,6 @@ jobs:
           cp *.txt docs/_build/html/_sources || true
           cp *.toml docs/_build/html/_sources
           cp -R src docs/_build/html/_sources
-          mkdir -p docs/_build/html/.github/workflows
-          cp .github/workflows/binder.yml docs/_build/html/.github/workflows
       - name: Deploy Notebooks
         if: ${{ github.ref == 'refs/heads/main' }}
         uses: peaceiris/actions-gh-pages@v3
