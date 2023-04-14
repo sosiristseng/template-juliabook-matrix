@@ -12,6 +12,7 @@ concurrency:
 permissions:
   packages: write
   contents: write
+  pull-requests: write
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository }}:binder
