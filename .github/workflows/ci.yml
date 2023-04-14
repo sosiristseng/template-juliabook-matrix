@@ -49,7 +49,7 @@ jobs:
       - name: List notebooks as a JSON array
         id: set-matrix
         working-directory: docs
-        run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**.ipynb", recursive=True)))')" >> $GITHUB_OUTPUT
+        run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", recursive=True)))')" >> $GITHUB_OUTPUT
 
   execute:
     needs: setup
@@ -91,20 +91,25 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: notebook
-          path: docs*/${{ matrix.notebook }}
+          path: docs*/${{ matrix.notebook }}  # keep folder structure
           retention-days: 1
 
   jupyter-book:
     needs: execute
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/sosiristseng/docker-jupyterbook:0.15.1.3
     # output success flag for CI
     outputs:
       success: ${{ steps.setoutput.outputs.success }}
+    env:
+      PYTHON_VER: '3.11'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Setup Python ${{ env.PYTHON_VER }}
+        uses: actions/setup-python@v4
+        id: python
+        with:
+          python-version: ${{ env.PYTHON_VER }}
       - name: Download notebooks
         uses: actions/download-artifact@v3
         with:
@@ -115,8 +120,12 @@ jobs:
         working-directory: out
       - name: Move notebooks
         run: mv -v out/docs/* docs/
+      - name: Disable code cell execution
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq -i '.execute.execute_notebooks = "off"' 'docs/_config.yml'
       - name: Build website
-        run: jupyter-book build docs/
+        run: pipx run jupyter-book build docs/ --builder linkcheck
       - name: Upload pages artifact
         if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/upload-pages-artifact@v1
@@ -178,7 +187,7 @@ jobs:
           jupyter-repo2docker
           --image-name ${{ env.IMAGE_NAME }}
           --cache-from ${{ env.IMAGE_NAME }}
-          --push --no-run --user-id 1000 --user-name jovyan
+          --push --no-run
           .
       - name: Add back binder folder and Dockerfile
         run: |
