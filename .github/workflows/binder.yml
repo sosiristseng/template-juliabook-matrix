@@ -54,6 +54,6 @@ jobs:
     - name: Add binder Dockerfile
       run: |
         mkdir -p .binder
-        echo "FROM ${{ env.IMAGE_NAME }}" >> .binder/Dockerfile
+        echo "FROM ${{ env.IMAGE_NAME }}" > .binder/Dockerfile
     - name: Push changes
       uses: stefanzweifel/git-auto-commit-action@v4
