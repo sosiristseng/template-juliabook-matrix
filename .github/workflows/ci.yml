@@ -170,6 +170,8 @@ jobs:
         id: python
         with:
           python-version: ${{ env.PYTHON_VER }}
+      - name: Remove binder dockerfile if present
+        run: rm .binder/Dockerfile || true
       - name: Install repo2docker
         run:
           pip install -U pip setuptools wheel
