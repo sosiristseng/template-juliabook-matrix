@@ -43,7 +43,6 @@ docker_builder:
   repo2docker_script: |
     pip install -U pip setuptools wheel
     pip install https://github.com/jupyterhub/repo2docker/archive/main.zip
-  login_script: echo ${DOCKER_PASSWORD} | docker login --username ${DOCKER_USERNAME} --password-stdin
   pull_image_scipt: docker pull ${IMAGE_NAME} || true
   build_image_script: >
     jupyter-repo2docker
@@ -53,5 +52,6 @@ docker_builder:
     .
   push_image_script:
     if [[ ${NO_PUSH} != 'true' ]]; then
+      echo ${DOCKER_PASSWORD} | docker login --username ${DOCKER_USERNAME} --password ${DOCKER_PASSWORD}
       docker push ${IMAGE_NAME}
     fi
