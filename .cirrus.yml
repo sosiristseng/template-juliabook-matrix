@@ -34,6 +34,7 @@ jupyter_book_task:
     fi
 
 docker_builder:
+  name: Build binder image
   only_if: $CIRRUS_BRANCH == 'main'
   auto_cancellation: true
   depends_on:
