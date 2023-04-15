@@ -160,3 +160,4 @@ jobs:
     uses: sosiristseng/jbook-workflows/.github/workflows/binder.yml@main
     with:
        dir: _sources
+       ref: gh-pages
