@@ -38,10 +38,12 @@ docker_builder:
     - jupyter_book
   env:
     IMAGE_NAME: ghcr.io/${CIRRUS_REPO_FULL_NAME}:binder
+    DOCKER_USERNAME: ${CIRRUS_REPO_OWNER}
+    DOCKER_PASSWORD: ${GH_TOKEN}
   repo2docker_script: |
     pip install -U pip setuptools wheel
     pip install https://github.com/jupyterhub/repo2docker/archive/main.zip
-  login_script: echo $GH_TOKEN | docker login --username $CIRRUS_REPO_OWNER --password-stdin
+  login_script: echo ${DOCKER_PASSWORD} | docker login --username ${DOCKER_USERNAME} --password-stdin
   pull_image_scipt: docker pull ${IMAGE_NAME} || true
   build_image_script: >
     jupyter-repo2docker
