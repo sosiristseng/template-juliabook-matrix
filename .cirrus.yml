@@ -29,30 +29,3 @@ jupyter_book_task:
       git remote set-url origin https://${GH_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git
       ghp-import -nofp docs/_build/html
     fi
-
-docker_builder:
-  name: Build binder image
-  only_if: $CIRRUS_BRANCH == 'main'
-  auto_cancellation: true
-  depends_on:
-    - jupyter_book
-  env:
-    IMAGE_NAME: ghcr.io/${CIRRUS_REPO_FULL_NAME}:binder
-    DOCKER_USERNAME: ${CIRRUS_REPO_OWNER}
-    DOCKER_PASSWORD: ${GH_TOKEN}
-  repo2docker_script: |
-    pip install https://github.com/jupyterhub/repo2docker/archive/main.zip
-  pull_image_scipt: |
-    docker pull ${IMAGE_NAME} || true
-    rm .binder/Dockerfile || true
-  build_image_script: >
-    jupyter-repo2docker
-    --no-run --no-push
-    --user-id 1000  --user-name jovyan
-    --image-name ${IMAGE_NAME} --cache-from ${IMAGE_NAME}
-    .
-  push_image_script:
-    if [[ ${NO_PUSH} != 'true' ]]; then
-      echo ${DOCKER_PASSWORD} | docker login --username ${DOCKER_USERNAME} --password ${DOCKER_PASSWORD}
-      docker push ${IMAGE_NAME}
-    fi
