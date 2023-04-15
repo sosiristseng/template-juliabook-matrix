@@ -15,7 +15,5 @@ jobs:
       contents: write
       pull-requests: write
     uses: sosiristseng/jbook-workflows/.github/workflows/update-manifest.yml@main
-    with:
-      julia-version: '1'
     secrets:
       inherit
