@@ -47,6 +47,7 @@ jobs:
     - name: Build binder image with repo2docker
       run: >
         jupyter-repo2docker
+        --user-id 1000 --user-name jovyan
         --image-name ${{ env.IMAGE_NAME }}
         --cache-from ${{ env.IMAGE_NAME }}
         --push --no-run
