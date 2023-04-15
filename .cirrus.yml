@@ -24,7 +24,7 @@ jupyter_book_task:
   stats_script: cat /tmp/log
   build_script: jupyter-book build docs/ --keep-going
   pages_script: |
-    if [[ $CIRRUS_BRANCH == 'main' && NO_PUSH != 'true' ]]; then
+    if [[ ${CIRRUS_BRANCH} == 'main' && ${NO_PUSH} != 'true' ]]; then
       echo "Deploying to GitHub pages..."
       git remote set-url origin https://${GH_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git
       cp *.txt docs/_build/html/_sources || true
@@ -53,6 +53,6 @@ docker_builder:
     --cache-from ${IMAGE_NAME}
     .
   push_image_script:
-    if [[ NO_PUSH != 'true' ]]; then
+    if [[ ${NO_PUSH} != 'true' ]]; then
       docker push ${IMAGE_NAME}
     fi
