@@ -1,10 +1,14 @@
+# Requires a repo & package write access GitHub PAT encrypted to `GH_TOKEN`
+env:
+  GH_TOKEN: ENCRYPTED[a83a3d33c85c1d0439cbfdb99f81551f87b7bfc3de072a36822d8019ef5f7d5a4aa6c7f47c975db2afa3a3c60f24384d]
+  NO_PUSH: "true"
+
 jupyter_book_task:
   only_if: $CIRRUS_BRANCH == 'main' || $CIRRUS_TAG != '' || $CIRRUS_PR != ''
   auto_cancellation: true
   env:
     JOBS: 1
     TIMEOUT: 600
-    # GH_TOKEN: ENCRYPTED[a83a3d33c85c1d0439cbfdb99f81551f87b7bfc3de072a36822d8019ef5f7d5a4aa6c7f47c975db2afa3a3c60f24384d]
   container:
     dockerfile: cirrus.Dockerfile
     cpu: 1
@@ -19,13 +23,35 @@ jupyter_book_task:
     --execute --inplace
   stats_script: cat /tmp/log
   build_script: jupyter-book build docs/ --keep-going
-  ## Requires a repo scope access GitHub PAT encrypted to `GH_TOKEN` to push to its GitHub repo
-  # pages_script: |
-  #   if [[ $CIRRUS_BRANCH == 'main' ]]; then
-  #     echo "Deploying to GitHub pages..."
-  #     git remote set-url origin https://${GH_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git
-  #     cp *.txt docs/_build/html/_sources || true
-  #     cp *.toml docs/_build/html/_sources
-  #     cp -R src docs/_build/html/_sources
-  #     ghp-import -nofp docs/_build/html
-  #   fi
+  pages_script: |
+    if [[ $CIRRUS_BRANCH == 'main' && NO_PUSH != 'true' ]]; then
+      echo "Deploying to GitHub pages..."
+      git remote set-url origin https://${GH_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git
+      cp *.txt docs/_build/html/_sources || true
+      cp *.toml docs/_build/html/_sources
+      cp -R src docs/_build/html/_sources
+      ghp-import -nofp docs/_build/html
+    fi
+
+docker_builder:
+  only_if: $CIRRUS_BRANCH == 'main'
+  auto_cancellation: true
+  depends_on:
+    - jupyter_book
+  env:
+    IMAGE_NAME: ghcr.io/${CIRRUS_REPO_FULL_NAME}:binder
+  repo2docker_script: |
+    pip install -U pip setuptools wheel
+    pip install https://github.com/jupyterhub/repo2docker/archive/main.zip
+  login_script: docker login --username $CIRRUS_REPO_OWNER --password $GH_TOKEN
+  pull_image_scipt: docker pull ${IMAGE_NAME} || true
+  build_image_script: >
+    jupyter-repo2docker
+    --no-run --no-push
+    --image-name ${IMAGE_NAME}
+    --cache-from ${IMAGE_NAME}
+    .
+  push_image_script:
+    if [[ NO_PUSH != 'true' ]]; then
+      docker push ${IMAGE_NAME}
+    fi

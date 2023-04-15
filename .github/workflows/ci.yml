@@ -156,3 +156,54 @@ jobs:
             echo "Tests failed"
             exit 1
           fi
+  binder:
+    name: Build Binder Image
+    needs: jupyter-book
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: write
+      pull-requests: write
+    env:
+      IMAGE_NAME: ghcr.io/${{ github.repository }}:binder
+      PYTHON_VER: '3.11'
+    steps:
+    - name: Checkout notebook branch
+      uses: actions/checkout@v3
+    - name: Setup Python ${{ env.PYTHON_VER }}
+      uses: actions/setup-python@v4
+      id: python
+      with:
+        python-version: ${{ env.PYTHON_VER }}
+    - name: Remove binder dockerfile if present
+      run: rm .binder/Dockerfile || true
+    - name: Install repo2docker
+      run: |
+        pip install -U pip setuptools wheel
+        pip install https://github.com/jupyterhub/repo2docker/archive/main.zip
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Pull Image
+      run: docker pull ${{ env.IMAGE_NAME }} || true
+    - name: Build binder image with repo2docker
+      run: >
+        jupyter-repo2docker
+        --image-name ${{ env.IMAGE_NAME }}
+        --cache-from ${{ env.IMAGE_NAME }}
+        --push --no-run
+        .
+    - name: Add binder Dockerfile
+      run: |
+        mkdir -p .binder
+        echo "FROM ${{ env.IMAGE_NAME }}" > .binder/Dockerfile
+    - name: Create Pull Request if binder Dockerfile has changed
+      id: cpr
+      uses: peter-evans/create-pull-request@v5
+      with:
+        title: Binder Dockerfile
+        add-paths: .binder/Dockerfile
+        branch: binder-dockerfile
