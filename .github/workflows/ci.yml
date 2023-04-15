@@ -14,7 +14,6 @@ concurrency:
 permissions:
   packages: write
   contents: write
-  pull-requests: write
 
 env:
   JULIA_CACHE: '1'
@@ -117,6 +116,13 @@ jobs:
         run: mv -v out/docs/* docs/
       - name: Build website
         run: jupyter-book build docs/
+      - name: Copy environment files for binder
+        env:
+          DEST: docs/_build/html/_sources
+        run: |
+          cp *.txt $DEST || true
+          cp *.toml $DEST
+          cp -R src $DEST
       - name: Deploy Notebooks
         if: ${{ github.ref == 'refs/heads/main' }}
         uses: peaceiris/actions-gh-pages@v3
@@ -147,3 +153,10 @@ jobs:
             echo "Tests failed"
             exit 1
           fi
+
+  binder:
+    needs: jupyter-book
+    if: ${{ github.ref == 'refs/heads/main' }}
+    uses: sosiristseng/jbook-workflows/.github/workflows/binder.yml@main
+    with:
+       dir: _sources
