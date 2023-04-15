@@ -41,7 +41,7 @@ docker_builder:
   repo2docker_script: |
     pip install -U pip setuptools wheel
     pip install https://github.com/jupyterhub/repo2docker/archive/main.zip
-  login_script: docker login --username $CIRRUS_REPO_OWNER --password $GH_TOKEN
+  login_script: echo $GH_TOKEN | docker login --username $CIRRUS_REPO_OWNER --password-stdin
   pull_image_scipt: docker pull ${IMAGE_NAME} || true
   build_image_script: >
     jupyter-repo2docker
