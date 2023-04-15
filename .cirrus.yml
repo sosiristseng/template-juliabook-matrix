@@ -42,7 +42,9 @@ docker_builder:
     DOCKER_PASSWORD: ${GH_TOKEN}
   repo2docker_script: |
     pip install https://github.com/jupyterhub/repo2docker/archive/main.zip
-  pull_image_scipt: docker pull ${IMAGE_NAME} || true
+  pull_image_scipt: |
+    docker pull ${IMAGE_NAME} || true
+    rm .binder/Dockerfile || true
   build_image_script: >
     jupyter-repo2docker
     --no-run --no-push
