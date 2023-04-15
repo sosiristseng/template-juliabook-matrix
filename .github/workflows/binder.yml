@@ -23,7 +23,7 @@ jobs:
     name: Build Binder Image
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout notebook branch
+    - name: Checkout
       uses: actions/checkout@v3
     - name: Setup Python ${{ env.PYTHON_VER }}
       uses: actions/setup-python@v4
