@@ -41,7 +41,6 @@ docker_builder:
     DOCKER_USERNAME: ${CIRRUS_REPO_OWNER}
     DOCKER_PASSWORD: ${GH_TOKEN}
   repo2docker_script: |
-    pip install -U pip setuptools wheel
     pip install https://github.com/jupyterhub/repo2docker/archive/main.zip
   pull_image_scipt: docker pull ${IMAGE_NAME} || true
   build_image_script: >
