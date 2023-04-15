@@ -46,8 +46,8 @@ docker_builder:
   build_image_script: >
     jupyter-repo2docker
     --no-run --no-push
-    --image-name ${IMAGE_NAME}
-    --cache-from ${IMAGE_NAME}
+    --user-id 1000  --user-name jovyan
+    --image-name ${IMAGE_NAME} --cache-from ${IMAGE_NAME}
     .
   push_image_script:
     if [[ ${NO_PUSH} != 'true' ]]; then
