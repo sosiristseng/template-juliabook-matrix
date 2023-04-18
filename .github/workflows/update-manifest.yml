@@ -4,6 +4,11 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 1' # Every week
+  push:
+    branches:
+      main
+    paths:
+      .github/workflows/update-manifest.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -15,5 +20,8 @@ jobs:
       contents: write
       pull-requests: write
     uses: sosiristseng/jbook-workflows/.github/workflows/update-manifest.yml@main
+    with:
+      julia-version: '1'
     secrets:
-      inherit
+      APP_ID: ${{ secrets.APP_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
