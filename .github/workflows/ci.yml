@@ -157,7 +157,7 @@ jobs:
   binder:
     needs: jupyter-book
     if: ${{ github.ref == 'refs/heads/main' }}
-    uses: sosiristseng/jbook-workflows/.github/workflows/binder.yml@main
+    uses: sosiristseng/juliabook/.github/workflows/binder.yml@main
     with:
        dir: _sources
        ref: gh-pages

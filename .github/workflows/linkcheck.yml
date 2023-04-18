@@ -7,4 +7,4 @@ on:
 
 jobs:
   linkcheck:
-    uses: sosiristseng/jbook-workflows/.github/workflows/linkcheck.yml@main
+    uses: sosiristseng/juliabook/.github/workflows/linkcheck.yml@main

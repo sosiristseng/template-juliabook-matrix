@@ -19,7 +19,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: sosiristseng/jbook-workflows/.github/workflows/update-manifest.yml@main
+    uses: sosiristseng/juliabook/.github/workflows/update-manifest.yml@main
     with:
       julia-version: '1'
     secrets:

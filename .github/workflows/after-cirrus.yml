@@ -5,7 +5,7 @@ on:
 name: After Cirrus CI
 jobs:
   continue:
-    uses: sosiristseng/jbook-workflows/.github/workflows/cirrus-notify.yml@main
+    uses: sosiristseng/juliabook/.github/workflows/cirrus-notify.yml@main
   binder:
     permissions:
       packages: write
@@ -15,7 +15,7 @@ jobs:
       github.event.check_suite.app.name == 'Cirrus CI'
       && github.event.check_suite.conclusion == 'success'
       && false
-    uses: sosiristseng/jbook-workflows/.github/workflows/binder.yml@main
+    uses: sosiristseng/juliabook/.github/workflows/binder.yml@main
     with:
         dir: _sources
         ref: gh-pages
