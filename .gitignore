@@ -130,9 +130,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Local VSCode settings
-.vscode/
-
 # Julia DEPOT
 .julia/
 
