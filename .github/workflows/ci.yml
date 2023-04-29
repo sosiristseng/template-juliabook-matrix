@@ -18,6 +18,7 @@ permissions:
 env:
   JULIA_CACHE: '1'
   TIMEOUT: '-1'
+  EXTRA_ARGS: ''
 
 jobs:
   setup:
@@ -70,8 +71,7 @@ jobs:
       image: ghcr.io/sosiristseng/juliabook:1.8.5
       env:
         JULIA_NUM_THREADS: 'auto'
-        # Let PythonCall use built-in python
-        JULIA_CONDAPKG_BACKEND: 'Null'
+        JULIA_CONDAPKG_BACKEND: 'Null' # Let PythonCall use built-in python
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -90,7 +90,7 @@ jobs:
           julia --color=yes --project=@. -e 'import Pkg;  Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
       - name: Execute Notebook
         run: >
-          jupyter nbconvert --to notebook --execute --inplace
+          jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
           --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
           --ExecutePreprocessor.kernel_name="julia-$(julia -e 'print(VERSION.major, ".", VERSION.minor)')"
           docs/${{ matrix.notebook }}
