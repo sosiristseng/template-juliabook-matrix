@@ -23,7 +23,7 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/sosiristseng/juliabook:1.8.5.7
+      image: ghcr.io/sosiristseng/juliabook:1.8.5
       env:
         JULIA_NUM_THREADS: 'auto'
         # Let PythonCall use built-in python
@@ -67,7 +67,7 @@ jobs:
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/sosiristseng/juliabook:1.8.5.7
+      image: ghcr.io/sosiristseng/juliabook:1.8.5
       env:
         JULIA_NUM_THREADS: 'auto'
         # Let PythonCall use built-in python
@@ -105,7 +105,7 @@ jobs:
     needs: execute
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/sosiristseng/docker-jupyterbook:0.15.1.4
+      image: ghcr.io/sosiristseng/docker-jupyterbook:0.15.1
     # output success flag for CI
     outputs:
       success: ${{ steps.setoutput.outputs.success }}

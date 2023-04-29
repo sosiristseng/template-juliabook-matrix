@@ -1,4 +1,4 @@
-FROM ghcr.io/sosiristseng/juliabook:1.8.5.7
+FROM ghcr.io/sosiristseng/juliabook:1.8.5
 
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
