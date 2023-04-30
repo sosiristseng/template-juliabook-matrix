@@ -117,9 +117,6 @@ jobs:
         with:
           name: notebook
           path: out/
-      - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: out
       - name: Move notebooks
         run: mv -v out/docs/* docs/
       - name: Build website
