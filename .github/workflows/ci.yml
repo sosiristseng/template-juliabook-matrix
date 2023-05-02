@@ -35,7 +35,9 @@ jobs:
         uses: actions/cache/restore@v3
         if: ${{ env.JULIA_CACHE != '0'}}
         with:
-          path: ~/.julia
+          path: |
+            ~/.julia
+            ~/.jupyter
           key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('*.toml') }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
@@ -47,7 +49,9 @@ jobs:
         uses: actions/cache/save@v3
         if: ${{ steps.restore-cache.outputs.cache-hit != 'true' && env.JULIA_CACHE != '0' }}
         with:
-          path: ~/.julia
+          path: |
+            ~/.julia
+            ~/.jupyter
           key: ${{ steps.restore-cache.outputs.cache-primary-key }}
       - name: List notebooks as a JSON array
         id: set-matrix
@@ -73,14 +77,12 @@ jobs:
         uses: actions/cache/restore@v3
         if: ${{ env.JULIA_CACHE != '0'}}
         with:
-          path: ~/.julia
+          path: |
+            ~/.julia
+            ~/.jupyter
           key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('*.toml') }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
-      - name: Install Julia dependencies
-        run: |
-          julia --color=yes --project="" -e 'import Pkg; Pkg.Registry.update(); Pkg.add("IJulia"); Pkg.build("IJulia")'
-          julia --color=yes --project=@. -e 'import Pkg;  Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
       - name: Execute Notebook
         run: >
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
