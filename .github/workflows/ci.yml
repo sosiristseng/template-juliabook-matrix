@@ -16,7 +16,7 @@ permissions:
   contents: write
 
 env:
-  JULIA_CACHE: '1'
+  JULIA_CACHE: '2'
   TIMEOUT: '-1'
   EXTRA_ARGS: ''
 
@@ -35,7 +35,8 @@ jobs:
         uses: actions/cache/restore@v3
         if: ${{ env.JULIA_CACHE != '0'}}
         with:
-          path: ~/.julia
+          path: |
+            ~/.julia
           key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('*.toml') }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
@@ -47,7 +48,8 @@ jobs:
         uses: actions/cache/save@v3
         if: ${{ steps.restore-cache.outputs.cache-hit != 'true' && env.JULIA_CACHE != '0' }}
         with:
-          path: ~/.julia
+          path: |
+            ~/.julia
           key: ${{ steps.restore-cache.outputs.cache-primary-key }}
       - name: List notebooks as a JSON array
         id: set-matrix
@@ -73,14 +75,14 @@ jobs:
         uses: actions/cache/restore@v3
         if: ${{ env.JULIA_CACHE != '0'}}
         with:
-          path: ~/.julia
+          path: |
+            ~/.julia
           key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('*.toml') }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
-      - name: Install Julia dependencies
+      - name: Install Julia kernel
         run: |
-          julia --color=yes --project="" -e 'import Pkg; Pkg.Registry.update(); Pkg.add("IJulia"); Pkg.build("IJulia")'
-          julia --color=yes --project=@. -e 'import Pkg;  Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
+          julia --color=yes --project="" -e 'import Pkg; Pkg.build("IJulia")'
       - name: Execute Notebook
         run: >
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
@@ -208,6 +210,7 @@ jobs:
           else
             echo "Tests failed"
             exit 1
+          fi
 
   deploy:
     name: Deploy to GitHub pages
