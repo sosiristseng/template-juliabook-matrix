@@ -11,10 +11,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  packages: write
-  contents: write
-
 env:
   JULIA_CACHE: '2'
   TIMEOUT: '-1'
