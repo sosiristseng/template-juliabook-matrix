@@ -37,7 +37,6 @@ jobs:
         with:
           path: |
             ~/.julia
-            ~/.jupyter
           key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('*.toml') }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
@@ -51,7 +50,6 @@ jobs:
         with:
           path: |
             ~/.julia
-            ~/.jupyter
           key: ${{ steps.restore-cache.outputs.cache-primary-key }}
       - name: List notebooks as a JSON array
         id: set-matrix
@@ -79,10 +77,12 @@ jobs:
         with:
           path: |
             ~/.julia
-            ~/.jupyter
           key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('*.toml') }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
+      - name: Install Julia kernel
+        run: |
+          julia --color=yes --project="" -e 'import Pkg; Pkg.build("IJulia")'
       - name: Execute Notebook
         run: >
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
