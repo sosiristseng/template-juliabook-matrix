@@ -16,7 +16,7 @@ permissions:
   contents: write
 
 env:
-  JULIA_CACHE: '1'
+  JULIA_CACHE: '2'
   TIMEOUT: '-1'
   EXTRA_ARGS: ''
 
