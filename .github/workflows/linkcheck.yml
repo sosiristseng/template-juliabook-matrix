@@ -4,7 +4,21 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 1 * *' # Every month
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
 
 jobs:
   linkcheck:
-    uses: sosiristseng/juliabook/.github/workflows/linkcheck.yml@main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install Jupyter book and check links
+        run: pipx run jupyter-book build docs/ --builder linkcheck
