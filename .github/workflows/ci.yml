@@ -51,8 +51,7 @@ jobs:
           key: ${{ steps.restore-cache.outputs.cache-primary-key }}
       - name: List notebooks as a JSON array
         id: set-matrix
-        working-directory: docs
-        run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", recursive=True)))')" >> $GITHUB_OUTPUT
+        run: echo "matrix=$(julia list_notebooks.jl)" >> $GITHUB_OUTPUT
 
   execute:
     needs: setup
