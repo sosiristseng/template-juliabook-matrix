@@ -12,15 +12,17 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  JULIA_CACHE: '2'
-  TIMEOUT: '-1'
-  EXTRA_ARGS: ''
+  JULIA_CACHE: '3' # Bump this to discard cache
+  TIMEOUT: '-1'    # Julia kernel timeout
+  EXTRA_ARGS: ''   # Extra arguments for nbconvert
 
 jobs:
   setup:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/sosiristseng/juliabook:1.8.5
+      image: julia:1.8.5
+      env:
+        PYTHON: '' # Use Conda.jl to install matplotlib
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -62,7 +64,9 @@ jobs:
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/sosiristseng/juliabook:1.8.5
+      image: julia:1.8.5
+      env:
+        PYTHON: '' # Use Conda.jl to install matplotlib
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -95,14 +99,19 @@ jobs:
   jupyter-book:
     needs: execute
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/sosiristseng/docker-jupyterbook:0.15.1
-    # output success flag for CI
+    # output success flag for CI job
     outputs:
       success: ${{ steps.setoutput.outputs.success }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install Juopyter Book
+        run: |
+          pip install jupyter-book 'docutils != 0.18.*, !=0.19.*'
       - name: Download notebooks
         uses: actions/download-artifact@v3
         with:
@@ -143,6 +152,10 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
+      - name: Install repo2docker
+        run: |
+          pip install -U pip setuptools wheel
+          pip install https://github.com/jupyterhub/repo2docker/archive/main.zip 'requests < 2.29.0'
       - name: Remove existing binder dockerfile and docs folder
         run: |
           rm -rf .binder || true
@@ -155,10 +168,6 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
         working-directory: docs/
-      - name: Install repo2docker
-        run: |
-          pip install -U pip setuptools wheel
-          pip install https://github.com/jupyterhub/repo2docker/archive/main.zip
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
