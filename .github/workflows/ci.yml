@@ -79,7 +79,7 @@ jobs:
             ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
       - name: Install Julia kernel
         run: |
-          julia --color=yes --project="" -e 'import Pkg; Pkg.build("IJulia")'
+          julia --color=yes --project="" -e 'import Pkg; Pkg.build("IJulia"); Pkg.resolve(); Pkg.precompile()'
       - name: Execute Notebook
         run: >
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
@@ -109,11 +109,6 @@ jobs:
           path: out/
       - name: Copy back built notebooks
         run: cp --verbose -rf out/docs/* docs/
-      - name: Upload built notebooks
-        uses: actions/upload-artifact@v3
-        with:
-          name: notebooks
-          path: docs
       - name: Setup Python ${{ env.PYTHON_VER }}
         uses: actions/setup-python@v4
         id: python
@@ -154,23 +149,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Remove existing binder dockerfile
+        run: |
+          rm -rf .binder || true
+      - name: Download built notebooks
+        uses: actions/download-artifact@v3
+        with:
+          name: notebook
+          path: out/
+      - name: Copy back built notebooks
+        run: cp --verbose -rf out/docs/* docs/
       - name: Setup Python ${{ env.PYTHON_VER }}
         uses: actions/setup-python@v4
         id: python
         with:
           python-version: ${{ env.PYTHON_VER }}
-      - name: Remove existing binder dockerfile and docs folder
-        run: |
-          rm -rf .binder || true
-          rm -rf docs || true
-      - name: Download built notebooks to replace the original
-        uses: actions/download-artifact@v3
-        with:
-          name: notebooks
-          path: docs/
-      - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: docs/
       - name: Install repo2docker
         run: |
           pip install -U pip setuptools wheel
