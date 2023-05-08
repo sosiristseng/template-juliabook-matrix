@@ -5,3 +5,4 @@ format: jb-book
 root: index
 chapters:
   - file: plots
+  - file: sub/plots
