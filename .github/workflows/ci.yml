@@ -102,13 +102,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Download notebooks
+      - name: Download built notebooks
         uses: actions/download-artifact@v3
         with:
           name: notebook
           path: out/
-      - name: Move notebooks
-        run: find out/docs/ -name '*.ipynb' -exec mv -v {} docs/ \;
+      - name: Copy back built notebooks
+        run: cp --verbose -rf out/docs/* docs/
       - name: Upload built notebooks
         uses: actions/upload-artifact@v3
         with:
