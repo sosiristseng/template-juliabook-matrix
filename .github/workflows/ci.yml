@@ -15,6 +15,7 @@ env:
   JULIA_CACHE: '2'
   TIMEOUT: '-1'
   EXTRA_ARGS: ''
+  PYTHON_VER: '3.11'
 
 jobs:
   setup:
@@ -95,8 +96,6 @@ jobs:
   jupyter-book:
     needs: execute
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/sosiristseng/docker-jupyterbook:0.15.1
     # output success flag for CI
     outputs:
       success: ${{ steps.setoutput.outputs.success }}
@@ -115,6 +114,22 @@ jobs:
         with:
           name: notebooks
           path: docs
+      - name: Setup Python ${{ env.PYTHON_VER }}
+        uses: actions/setup-python@v4
+        id: python
+        with:
+          python-version: ${{ env.PYTHON_VER }}
+      - uses: syphar/restore-virtualenv@v1
+        id: cache-virtualenv
+        with:
+          requirement_files: .github/requirements.txt  # this is optional
+      - uses: syphar/restore-pip-download-cache@v1
+        if: steps.cache-virtualenv.outputs.cache-hit != 'true'
+        # the package installation will only be executed when the
+        # requirements-files have changed.
+      - name: Install Python dependencies
+        run: pip install -r .github/requirements.txt
+        if: steps.cache-virtualenv.outputs.cache-hit != 'true'
       - name: Build website
         run: jupyter-book build docs/
       - name: Upload artifact for GH pages
@@ -139,10 +154,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Setup Python
+      - name: Setup Python ${{ env.PYTHON_VER }}
         uses: actions/setup-python@v4
+        id: python
         with:
-          python-version: '3.x'
+          python-version: ${{ env.PYTHON_VER }}
       - name: Remove existing binder dockerfile and docs folder
         run: |
           rm -rf .binder || true
@@ -158,7 +174,7 @@ jobs:
       - name: Install repo2docker
         run: |
           pip install -U pip setuptools wheel
-          pip install https://github.com/jupyterhub/repo2docker/archive/main.zip 'requests < 2.29.0'
+          pip install https://github.com/jupyterhub/repo2docker/archive/main.zip
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
