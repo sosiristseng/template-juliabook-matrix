@@ -108,7 +108,7 @@ jobs:
           name: notebook
           path: out/
       - name: Move notebooks
-        run: mv -v out/docs/* docs/
+        run: find out/docs/ -name '*.ipynb' -exec mv -v {} docs/ \;
       - name: Upload built notebooks
         uses: actions/upload-artifact@v3
         with:
