@@ -12,9 +12,6 @@ on:
       - '.github/workflows/linkcheck.yml'
 
 env:
-  JULIA_CACHE: '2'
-  TIMEOUT: '-1'
-  EXTRA_ARGS: ''
   PYTHON_VER: '3.11'
 
 jobs:
