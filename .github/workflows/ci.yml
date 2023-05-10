@@ -21,7 +21,7 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/sosiristseng/juliabook:1.8.5
+      image: ghcr.io/sosiristseng/juliabook:1.9.0
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -63,7 +63,7 @@ jobs:
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/sosiristseng/juliabook:1.8.5
+      image: ghcr.io/sosiristseng/juliabook:1.9.0
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
