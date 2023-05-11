@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  JULIA_CACHE: '2'
+  JULIA_CACHE: '4'
   TIMEOUT: '-1'
   EXTRA_ARGS: ''
   PYTHON_VER: '3.11'
