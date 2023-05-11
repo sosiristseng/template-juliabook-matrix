@@ -100,7 +100,7 @@ jobs:
       - name: Install Julia kernel
         run: |
           julia --color=yes --project=@. -e 'import Pkg; Pkg.Registry.update(); Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
-          julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); Pkg.resolve(); Pkg.precompile()'
+          julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")'
       - name: Execute Notebook
         run: >
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
