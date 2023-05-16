@@ -46,7 +46,7 @@ jobs:
           path: |
             ~/.julia
             ~/.jupyter
-          key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('*.toml') }}
+          key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('Manifest.toml') }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
       - name: Install Julia dependencies
@@ -101,7 +101,7 @@ jobs:
           path: |
             ~/.julia
             ~/.jupyter
-          key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('*.toml') }}
+          key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('Manifest.toml') }}
       - name: Install Julia kernel
         run: |
           julia --color=yes --project=@. -e 'import Pkg; Pkg.Registry.update(); Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
