@@ -52,7 +52,7 @@ jobs:
       - name: Install Julia dependencies
         run: |
           julia --color=yes --project=@. -e 'import Pkg; Pkg.Registry.update(); Pkg.instantiate(); Pkg.resolve(); Pkg.precompile(); Pkg.gc()'
-          julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); using0 IJulia; installkernel("Julia", "--project=@.", env=Dict("JULIA_NUM_THREADS"=>"auto"))'
+          julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); using IJulia; installkernel("Julia", "--project=@.", env=Dict("JULIA_NUM_THREADS"=>"auto"))'
       - name: Save Julia dependencies
         uses: actions/cache/save@v3
         if: ${{ steps.restore-cache.outputs.cache-hit != 'true' && env.JULIA_CACHE != '0' }}
