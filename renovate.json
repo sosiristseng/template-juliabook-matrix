@@ -6,9 +6,9 @@
     "packageRules": [
         {
           "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
-          "automerge": true,
-          "automergeStrategy": "squash"
+          "automerge": true
         }
     ],
-    "platformAutomerge": true
+    "platformAutomerge": true,
+    "automergeStrategy": "squash"
   }
