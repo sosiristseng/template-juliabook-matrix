@@ -45,21 +45,21 @@ jobs:
         with:
           path: |
             ~/.julia
-            ~/.jupyter
+            ~/.local/share/jupyter
           key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('Manifest.toml') }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
       - name: Install Julia dependencies
         run: |
           julia --color=yes --project=@. -e 'import Pkg; Pkg.Registry.update(); Pkg.instantiate(); Pkg.resolve(); Pkg.precompile(); Pkg.gc()'
-          julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); using0 IJulia; installkernel("Julia", env=Dict("JULIA_NUM_THREADS"=>"auto"))'
+          julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); using0 IJulia; installkernel("Julia", "--project=@.", env=Dict("JULIA_NUM_THREADS"=>"auto"))'
       - name: Save Julia dependencies
         uses: actions/cache/save@v3
         if: ${{ steps.restore-cache.outputs.cache-hit != 'true' && env.JULIA_CACHE != '0' }}
         with:
           path: |
             ~/.julia
-            ~/.jupyter
+            ~/.local/share/jupyter
           key: ${{ steps.restore-cache.outputs.cache-primary-key }}
       - name: List notebooks as a JSON array
         id: set-matrix
@@ -100,7 +100,7 @@ jobs:
         with:
           path: |
             ~/.julia
-            ~/.jupyter
+            ~/.local/share/jupyter
           key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('Manifest.toml') }}
       - name: Install Julia kernel
         if: ${{ steps.restore-cache.outputs.cache-hit != 'true' && env.JULIA_CACHE != '0' }}
