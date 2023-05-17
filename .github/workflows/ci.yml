@@ -32,12 +32,14 @@ jobs:
           python-version: ${{ env.PYTHON_VER }}
       - name: Read Julia version
         id: read_toml
-        run: |
-          echo "JULIA_VER=$(python read_toml.py)" | tee -a "$GITHUB_ENV"
-      - name: Setup Julia ${{ env.JULIA_VER }}
+        uses: SebRollen/toml-action@v1.0.2
+        with:
+          file: 'Manifest.toml'
+          field: 'julia_version'
+      - name: Setup Julia
         uses: julia-actions/setup-julia@v1
         with:
-          version: ${{ env.JULIA_VER }}
+          version: ${{ steps.read_toml.outputs.value }}
       - name: Restore Julia dependencies
         id: restore-cache
         uses: actions/cache/restore@v3
@@ -87,12 +89,14 @@ jobs:
         run: pip install nbconvert -r requirements.txt
       - name: Read Julia version
         id: read_toml
-        run: |
-          echo "JULIA_VER=$(python read_toml.py)" | tee -a "$GITHUB_ENV"
-      - name: Setup Julia ${{ env.JULIA_VER }}
+        uses: SebRollen/toml-action@v1.0.2
+        with:
+          file: 'Manifest.toml'
+          field: 'julia_version'
+      - name: Setup Julia
         uses: julia-actions/setup-julia@v1
         with:
-          version: ${{ env.JULIA_VER }}
+          version: ${{ steps.read_toml.outputs.value }}
       - name: Restore Julia dependencies
         id: restore-cache
         uses: actions/cache/restore@v3
