@@ -15,21 +15,17 @@ env:
   JULIA_CACHE: '1'
   TIMEOUT: '-1'
   EXTRA_ARGS: ''
-  PYTHON_VER: '3.11'
 
 jobs:
   setup:
     runs-on: ubuntu-latest
+    container:
+      image: python:3.11.3-slim
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Setup Python ${{ env.PYTHON_VER }}
-        uses: actions/setup-python@v4
-        id: python
-        with:
-          python-version: ${{ env.PYTHON_VER }}
       - name: Read Julia version
         id: read_toml
         uses: SebRollen/toml-action@v1.0.2
@@ -77,14 +73,11 @@ jobs:
         # Notebooks need to be executed
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
     runs-on: ubuntu-latest
+    container:
+      image: python:3.11.3-slim
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Setup Python ${{ env.PYTHON_VER }}
-        uses: actions/setup-python@v4
-        id: python
-        with:
-          python-version: ${{ env.PYTHON_VER }}
       - name: Install Python dependencies
         run: pip install nbconvert -r requirements.txt
       - name: Read Julia version
@@ -107,6 +100,7 @@ jobs:
             ~/.local/share/jupyter
           key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('Manifest.toml') }}
       - name: Install Julia kernel
+        if: ${{ steps.restore-cache.outputs.cache-hit != 'true' && env.JULIA_CACHE != '0' }}
         run: |
           julia --color=yes --project=@. -e 'import Pkg; Pkg.Registry.update(); Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
           julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")'
@@ -126,6 +120,8 @@ jobs:
   jupyter-book:
     needs: execute
     runs-on: ubuntu-latest
+    container:
+      image: python:3.11.3-slim
     # output success flag for CI
     outputs:
       success: ${{ steps.setoutput.outputs.success }}
@@ -139,22 +135,8 @@ jobs:
           path: out/
       - name: Copy back built notebooks
         run: cp --verbose -rf out/docs/* docs/
-      - name: Setup Python ${{ env.PYTHON_VER }}
-        uses: actions/setup-python@v4
-        id: python
-        with:
-          python-version: ${{ env.PYTHON_VER }}
-      - uses: syphar/restore-virtualenv@v1
-        id: cache-virtualenv
-        with:
-          requirement_files: .github/requirements.txt  # this is optional
-      - uses: syphar/restore-pip-download-cache@v1
-        if: steps.cache-virtualenv.outputs.cache-hit != 'true'
-        # the package installation will only be executed when the
-        # requirements-files have changed.
       - name: Install Python dependencies
         run: pip install -r .github/requirements.txt
-        if: steps.cache-virtualenv.outputs.cache-hit != 'true'
       - name: Build website
         run: jupyter-book build docs/
       - name: Upload artifact for GH pages
