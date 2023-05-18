@@ -99,11 +99,10 @@ jobs:
             ~/.julia
             ~/.local/share/jupyter
           key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('Manifest.toml') }}
-      - name: Install Julia kernel
-        if: ${{ steps.restore-cache.outputs.cache-hit != 'true' && env.JULIA_CACHE != '0' }}
+      - name: Install Julia dependencies
         run: |
-          julia --color=yes --project=@. -e 'import Pkg; Pkg.Registry.update(); Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
-          julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")'
+          julia --color=yes --project=@. -e 'import Pkg; Pkg.Registry.update(); Pkg.instantiate(); Pkg.resolve(); Pkg.precompile(); Pkg.gc()'
+          julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); using IJulia; installkernel("Julia", "--project=@.", env=Dict("JULIA_NUM_THREADS"=>"auto"))'
       - name: Execute Notebook
         run: >
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
