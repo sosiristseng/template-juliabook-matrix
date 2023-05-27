@@ -12,58 +12,35 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  JULIA_CACHE: '1'
   TIMEOUT: '-1'
   EXTRA_ARGS: ''
+  DFILE: '.github/Dockerfile'
+  IMAGE_NAME: 'app:test'
+  PY_VER: '3.11'
 
 jobs:
   setup:
     runs-on: ubuntu-latest
-    container:
-      image: python:3.11.3-slim
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Read Julia version
-        id: read_toml
-        uses: SebRollen/toml-action@v1.0.2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build and cache Docker container
+        uses: docker/build-push-action@v4
         with:
-          file: 'Manifest.toml'
-          field: 'julia_version'
-      - name: Setup Julia
-        uses: julia-actions/setup-julia@v1
-        with:
-          version: ${{ steps.read_toml.outputs.value }}
-      - name: Restore Julia dependencies
-        id: restore-cache
-        uses: actions/cache/restore@v3
-        if: ${{ env.JULIA_CACHE != '0'}}
-        with:
-          path: |
-            ~/.julia
-            ~/.local/share/jupyter
-          key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('Manifest.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
-      - name: Install Julia dependencies
-        run: |
-          julia --color=yes --project=@. -e 'import Pkg; Pkg.Registry.update(); Pkg.instantiate(); Pkg.resolve(); Pkg.precompile(); Pkg.gc()'
-          julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); using IJulia; installkernel("Julia", "--project=@.", env=Dict("JULIA_NUM_THREADS"=>"auto"))'
-      - name: Save Julia dependencies
-        uses: actions/cache/save@v3
-        if: ${{ steps.restore-cache.outputs.cache-hit != 'true' && env.JULIA_CACHE != '0' }}
-        with:
-          path: |
-            ~/.julia
-            ~/.local/share/jupyter
-          key: ${{ steps.restore-cache.outputs.cache-primary-key }}
+          context: .
+          file: ${{ env.DFILE }}
+          tags: ${{ env.IMAGE_NAME }}
+          outputs: type=cacheonly
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       - name: List notebooks as a JSON array
         id: set-matrix
         working-directory: docs
         run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", recursive=True)))')" >> "$GITHUB_OUTPUT"
-
   execute:
     needs: setup
     strategy:
@@ -73,41 +50,29 @@ jobs:
         # Notebooks need to be executed
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
     runs-on: ubuntu-latest
-    container:
-      image: python:3.11.3-slim
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Install Python dependencies
-        run: pip install --no-cache-dir nbconvert -r requirements.txt
-      - name: Read Julia version
-        id: read_toml
-        uses: SebRollen/toml-action@v1.0.2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Restore Docker container
+        uses: docker/build-push-action@v4
         with:
-          file: 'Manifest.toml'
-          field: 'julia_version'
-      - name: Setup Julia
-        uses: julia-actions/setup-julia@v1
-        with:
-          version: ${{ steps.read_toml.outputs.value }}
-      - name: Restore Julia dependencies
-        id: restore-cache
-        uses: actions/cache/restore@v3
-        if: ${{ env.JULIA_CACHE != '0'}}
-        with:
-          path: |
-            ~/.julia
-            ~/.local/share/jupyter
-          key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('Manifest.toml') }}
-      - name: Install Julia dependencies
-        run: |
-          julia --color=yes --project=@. -e 'import Pkg; Pkg.Registry.update(); Pkg.instantiate(); Pkg.resolve(); Pkg.precompile(); Pkg.gc()'
-          julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); using IJulia; installkernel("Julia", "--project=@.", env=Dict("JULIA_NUM_THREADS"=>"auto"))'
+          context: .
+          file: ${{ env.DFILE }}
+          tags: ${{ env.IMAGE_NAME }}
+          load: true
+          cache-from: type=gha
+      - name: Get Jupyter kernel name
+        run: echo "VER_MINOR=$(docker run ${{ env.IMAGE_NAME }} julia -e 'print(VERSION.minor)')" >> "$GITHUB_ENV"
       - name: Execute Notebook
         run: >
+          docker run
+          --workdir=/tmp -v ${{ github.workspace }}:/tmp
+          ${{ env.IMAGE_NAME }}
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
           --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
-          --ExecutePreprocessor.kernel_name="julia-$(julia -e 'print(VERSION.major, ".", VERSION.minor)')"
+          --ExecutePreprocessor.kernel_name=julia-1.${{ env.VER_MINOR }}
           docs/${{ matrix.notebook }}
       - name: Upload Notebook
         uses: actions/upload-artifact@v3
@@ -119,29 +84,38 @@ jobs:
   jupyter-book:
     needs: execute
     runs-on: ubuntu-latest
-    container:
-      image: python:3.11.3-slim
-    # output success flag for CI
+    # store success output flag for the ci job
     outputs:
       success: ${{ steps.setoutput.outputs.success }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Download built notebooks
+      - name: Download notebooks
         uses: actions/download-artifact@v3
         with:
           name: notebooks
           path: out/
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: out
       - name: Copy back built notebooks
         run: cp --verbose -rf out/docs/* docs/
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PY_VER }}
+          cache: 'pip'
+          cache-dependency-path: |
+            .github/requirements.txt
       - name: Install Python dependencies
-        run: pip install --no-cache-dir -r .github/requirements.txt
+        run: pip install -r .github/requirements.txt
       - name: Build website
         run: jupyter-book build docs/
-      - name: Upload artifact for GH pages
+      - name: Upload pages artifact
+        if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/upload-pages-artifact@v1
         with:
-          path: docs/_build/html/
+          path: docs/_build/html
       - name: Set output flag
         id: setoutput
         run: echo "success=true" >> $GITHUB_OUTPUT
@@ -166,10 +140,11 @@ jobs:
             exit 1
           fi
 
+  # Deployment job
   deploy:
     name: Deploy to GitHub pages
     needs: jupyter-book
-    if: ${{ github.ref == 'refs/heads/main'}}
+    if: ${{ github.ref == 'refs/heads/main' }}
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
       pages: write # to deploy to Pages
