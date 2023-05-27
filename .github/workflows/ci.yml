@@ -63,14 +63,16 @@ jobs:
           tags: ${{ env.IMAGE_NAME }}
           load: true
           cache-from: type=gha
+      - name: Get Jupyter kernel name
+        run: echo "VER_MINOR=$(docker run ${{ env.IMAGE_NAME }} julia -e 'print(VERSION.minor)')" >> "$GITHUB_ENV"
       - name: Execute Notebook
         run: >
-          docker run --rm
+          docker run
           --workdir=/tmp -v ${{ github.workspace }}:/tmp
           ${{ env.IMAGE_NAME }}
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
           --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
-          --ExecutePreprocessor.kernel_name=$(julia -e 'print("julia-",VERSION.major,".",VERSION.minor)')
+          --ExecutePreprocessor.kernel_name=julia-1.${{ env.VER_MINOR }}
           docs/${{ matrix.notebook }}
       - name: Upload Notebook
         uses: actions/upload-artifact@v3
