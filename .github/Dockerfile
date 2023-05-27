@@ -21,4 +21,5 @@ RUN pip install --no-cache-dir -U pip wheel setuptools nbconvert && pip install 
 COPY Project.toml Manifest.toml ./
 COPY src/ src
 RUN julia --color=yes --project="" -e 'import Pkg; Pkg.add("IJulia"); import IJulia; IJulia.installkernel("Julia", "--project=@.")' && \
-    julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
+    julia --color=yes --project=@. -e 'import Pkg; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()' && \
+    julia -e 'print("julia-",VERSION.major,".",VERSION.minor)'
