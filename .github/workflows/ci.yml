@@ -38,7 +38,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: List notebooks as a JSON array
-        id: matrix
+        id: set-matrix
         working-directory: docs
         run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", recursive=True)))')" >> "$GITHUB_OUTPUT"
   execute:
