@@ -60,7 +60,7 @@ jobs:
           Pkg.precompile()
           Pkg.gc()
           using IJulia
-          installkernel("Julia", "--project=@.", env=Dict("JULIA_NUM_THREADS"=>"auto"))'
+          installkernel("Julia", "--project=@.", env=Dict("JULIA_NUM_THREADS"=>"auto"))
       - name: List notebooks as a JSON array
         id: set-matrix
         working-directory: docs
