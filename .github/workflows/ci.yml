@@ -26,6 +26,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Setup Python ${{ env.PY_VER }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PY_VER }}
       - name: Read Julia version
         id: read_toml
         uses: SebRollen/toml-action@v1.0.2
