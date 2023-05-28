@@ -24,7 +24,7 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: yq -i '.execute.execute_notebooks = "off"' 'docs/_config.yml'
-      - name: Setup Python
+      - name: Setup Python ${{ env.PY_VER }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PY_VER }}
