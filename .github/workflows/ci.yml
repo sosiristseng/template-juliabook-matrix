@@ -65,6 +65,7 @@ jobs:
         id: set-matrix
         working-directory: docs
         run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", recursive=True)))')" >> "$GITHUB_OUTPUT"
+
   execute:
     needs: setup
     strategy:
