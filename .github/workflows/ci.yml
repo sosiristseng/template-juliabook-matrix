@@ -14,7 +14,7 @@ concurrency:
 env:
   TIMEOUT: '-1'
   EXTRA_ARGS: ''
-  JULIA_CACHE: '2' # Set this env var zero to disable caching
+  JULIA_CACHE: '1' # Set this env var zero to disable caching
   JULIA_CONDAPKG_BACKEND: 'Null'  # Use system python for PythonCall.jl
   PY_VER: '3.11'
 
@@ -49,8 +49,8 @@ jobs:
             ~/.julia
             ~/.local/share/jupyter
           key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('**/Manifest.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
+          # restore-keys: |
+          #   ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
       - name: Install Julia dependencies
         shell: julia --project=@. --color=yes {0}
         run: |
