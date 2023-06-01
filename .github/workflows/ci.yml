@@ -13,7 +13,7 @@ concurrency:
 
 env:
   TIMEOUT: '-1'
-  EXTRA_ARGS: ''
+  EXTRA_ARGS: ''   # Extra arguments for nbconvert
   JULIA_CACHE: '1' # Set this env var zero to disable caching
   JULIA_CONDAPKG_BACKEND: 'Null'  # Use system python for PythonCall.jl
   PY_VER: '3.11'
