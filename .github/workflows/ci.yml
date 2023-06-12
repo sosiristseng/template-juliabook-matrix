@@ -14,8 +14,6 @@ concurrency:
 env:
   TIMEOUT: '-1'
   EXTRA_ARGS: ''   # Extra arguments for nbconvert
-  JULIA_CACHE: '1' # Set this env var zero to disable caching
-  JULIA_CONDAPKG_BACKEND: 'Null'  # Use system python for PythonCall.jl
   DFILE: '.github/Dockerfile'
   IMAGE_NAME: 'app:test'
 
