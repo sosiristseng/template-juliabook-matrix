@@ -104,7 +104,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
       - name: Install Python dependencies
-        run: pip install nbconvert -r requirements.txt
+        run: pip install --no-cache-dir nbconvert -r requirements.txt
       - name: Execute Notebook
         run: >
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
