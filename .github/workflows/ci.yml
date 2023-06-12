@@ -16,20 +16,17 @@ env:
   EXTRA_ARGS: ''   # Extra arguments for nbconvert
   JULIA_CACHE: '1' # Set this env var zero to disable caching
   JULIA_CONDAPKG_BACKEND: 'Null'  # Use system python for PythonCall.jl
-  PY_VER: '3.11'
 
 jobs:
   setup:
     runs-on: ubuntu-latest
+    container:
+      image: python:3.11.4-slim
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Setup Python ${{ env.PY_VER }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PY_VER }}
       - name: Read Julia version
         id: read_toml
         uses: SebRollen/toml-action@v1.0.2
@@ -51,6 +48,14 @@ jobs:
           key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('**/Manifest.toml') }}
           # restore-keys: |
           #   ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
+      - name: Install IJulia
+        shell: julia --project="" --color=yes {0}
+        run: |
+          import Pkg
+          Pkg.Registry.update()
+          Pkg.add("IJulia")
+          using IJulia
+          IJulia.installkernel("Julia", "--project=@.", env=Dict("JULIA_NUM_THREADS"=>"auto"))
       - name: Install Julia dependencies
         shell: julia --project=@. --color=yes {0}
         run: |
@@ -59,8 +64,6 @@ jobs:
           Pkg.resolve()
           Pkg.precompile()
           Pkg.gc()
-          using IJulia
-          installkernel("Julia", "--project=@.", env=Dict("JULIA_NUM_THREADS"=>"auto"))
       - name: List notebooks as a JSON array
         id: set-matrix
         working-directory: docs
@@ -75,6 +78,8 @@ jobs:
         # Notebooks need to be executed
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
     runs-on: ubuntu-latest
+    container:
+      image: python:3.11.4-slim
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -88,9 +93,8 @@ jobs:
         uses: julia-actions/setup-julia@v1
         with:
           version: ${{ steps.read_toml.outputs.value }}
-      - name: Cache Julia dependencies
-        id: cache-julia
-        uses: actions/cache@v3
+      - name: Restore Julia dependencies
+        uses: actions/cache/restore@v3
         if: ${{ env.JULIA_CACHE != '0'}}
         with:
           path: |
@@ -99,18 +103,9 @@ jobs:
           key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('**/Manifest.toml') }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
-      - name: Setup Python ${{ env.PY_VER }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PY_VER }}
-          cache: 'pip'
-          cache-dependency-path: |
-            requirements.txt
       - name: Install Python dependencies
         run: pip install nbconvert -r requirements.txt
       - name: Execute Notebook
-        env:
-          JULIA_PROJECT: "@."
         run: >
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
           --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
@@ -126,6 +121,8 @@ jobs:
   jupyter-book:
     needs: execute
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/sosiristseng/docker-jupyterbook:latest
     # store success output flag for the ci job
     outputs:
       success: ${{ steps.setoutput.outputs.success }}
@@ -142,15 +139,6 @@ jobs:
         working-directory: out
       - name: Copy back built notebooks
         run: cp --verbose -rf out/docs/* docs/
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PY_VER }}
-          cache: 'pip'
-          cache-dependency-path: |
-            .github/requirements.txt
-      - name: Install Python dependencies
-        run: pip install -r .github/requirements.txt
       - name: Build website
         run: jupyter-book build docs/
       - name: Upload pages artifact
