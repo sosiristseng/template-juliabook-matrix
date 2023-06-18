@@ -14,29 +14,45 @@ concurrency:
 env:
   TIMEOUT: '-1'
   EXTRA_ARGS: ''   # Extra arguments for nbconvert
-  DFILE: '.github/Dockerfile'
-  IMAGE_NAME: 'app:test'
+  JULIA_CACHE: '1' # Set this '0' to disable caching
+  JULIA_NUM_THREADS: 'auto'
+  JULIA_CPU_TARGET: 'generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1);broadwell'
 
 jobs:
   setup:
     runs-on: ubuntu-latest
+    container:
+      image: python:3.11.4-slim
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Setup Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Build and cache Docker container
-        uses: docker/build-push-action@v4
+      - name: Read Julia version
+        id: read_toml
+        uses: SebRollen/toml-action@v1.0.2
         with:
-          context: .
-          file: ${{ env.DFILE }}
-          tags: ${{ env.IMAGE_NAME }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          outputs: type=cacheonly
+          file: 'Manifest.toml'
+          field: 'julia_version'
+      - name: Setup Julia
+        uses: julia-actions/setup-julia@v1
+        with:
+          version: ${{ steps.read_toml.outputs.value }}
+          show-versioninfo: 'true'
+      - name: Cache Julia dependencies
+        uses: actions/cache@v3
+        if: ${{ env.JULIA_CACHE != '0'}}
+        with:
+          path: |
+            ~/.julia
+            ~/.local/share/jupyter
+          key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('**/Manifest.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
+      - name: Install Julia dependencies
+        run: |
+          julia --project="" --color=yes -e 'import Pkg; Pkg.Registry.update(); Pkg.add(["IJulia"])'
+          julia --project=@. --color=yes -e 'import Pkg; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
       - name: List notebooks as a JSON array
         id: set-matrix
         working-directory: docs
@@ -51,30 +67,42 @@ jobs:
         # Notebooks need to be executed
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
     runs-on: ubuntu-latest
+    container:
+      image: python:3.11.4-slim
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Setup Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Load Docker container
-        uses: docker/build-push-action@v4
+      - name: Install Python dependencies
+        run: pip install --no-cache-dir nbconvert -r requirements.txt
+      - name: Read Julia version
+        id: read_toml
+        uses: SebRollen/toml-action@v1.0.2
         with:
-          context: .
-          file: ${{ env.DFILE }}
-          tags: ${{ env.IMAGE_NAME }}
-          cache-from: type=gha
-          load: true
-      - name: Read kernel name
-        id: kernel
+          file: 'Manifest.toml'
+          field: 'julia_version'
+      - name: Setup Julia
+        uses: julia-actions/setup-julia@v1
+        with:
+          version: ${{ steps.read_toml.outputs.value }}
+          show-versioninfo: 'true'
+      - name: Cache Julia dependencies
+        uses: actions/cache@v3
+        if: ${{ env.JULIA_CACHE != '0'}}
+        with:
+          path: |
+            ~/.julia
+            ~/.local/share/jupyter
+          key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('**/Manifest.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
+      - name: Install Julia dependencies
         run: |
-          echo "ver=julia-1.$(docker run ${{ env.IMAGE_NAME }} julia -e 'print(VERSION.minor)')" >> "$GITHUB_OUTPUT"
+          julia --project=@. --color=yes -e 'import Pkg; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
       - name: Execute Notebook
         run: >
-          docker run -w /tmp -v ${{ github.workspace }}:/tmp
-          ${{ env.IMAGE_NAME }}
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
           --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
-          --ExecutePreprocessor.kernel_name=${{ steps.kernel.outputs.ver }}
+          --ExecutePreprocessor.kernel_name=1.$(julia -e 'print(VERSION.minor)')
           docs/${{ matrix.notebook }}
       - name: Upload Notebook
         uses: actions/upload-artifact@v3
