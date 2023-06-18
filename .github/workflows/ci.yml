@@ -107,9 +107,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
       - name: Install Julia dependencies
-        shell: julia --project=@. --color=yes {0}
+        shell: julia --project="" --color=yes {0}
         run: |
           import Pkg
+          Pkg.resolve()
+          Pkg.precompile()
+          Pkg.activate(".")
           Pkg.instantiate()
           Pkg.resolve()
           Pkg.precompile()
