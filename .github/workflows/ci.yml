@@ -106,14 +106,6 @@ jobs:
           key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('**/Manifest.toml') }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
-      - name: Install IJulia
-        shell: julia --project="" --color=yes {0}
-        run: |
-          import Pkg
-          Pkg.Registry.update()
-          Pkg.add(["IJulia"])
-          import IJulia
-          IJulia.installkernel("Julia", "--project=@.")
       - name: Install Julia dependencies
         shell: julia --project=@. --color=yes {0}
         run: |
