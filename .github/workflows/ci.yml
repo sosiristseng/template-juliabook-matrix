@@ -49,10 +49,21 @@ jobs:
           key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('**/Manifest.toml') }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
-      - name: Install Julia dependencies
+      - name: Install IJulia
+        shell: julia --project="" --color=yes {0}
         run: |
-          julia --project="" --color=yes -e 'import Pkg; Pkg.Registry.update(); Pkg.add(["IJulia"])'
-          julia --project=@. --color=yes -e 'import Pkg; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
+          import Pkg
+          Pkg.Registry.update()
+          Pkg.add(["IJulia"])
+          import IJulia
+          IJulia.installkernel("Julia", "--project=@.")
+      - name: Install Julia dependencies
+        shell: julia --project=@. --color=yes {0}
+        run: |
+          import Pkg
+          Pkg.instantiate()
+          Pkg.resolve()
+          Pkg.precompile()
       - name: List notebooks as a JSON array
         id: set-matrix
         working-directory: docs
@@ -96,14 +107,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
       - name: Install Julia dependencies
+        shell: julia --project="" --color=yes {0}
         run: |
-          julia --project="" --color=yes -e 'import Pkg; Pkg.Registry.update(); Pkg.add(["IJulia"])'
-          julia --project=@. --color=yes -e 'import Pkg; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
+          import Pkg
+          Pkg.resolve()
+          Pkg.precompile()
+          Pkg.activate(".")
+          Pkg.instantiate()
+          Pkg.resolve()
+          Pkg.precompile()
       - name: Execute Notebook
         run: >
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
           --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
-          --ExecutePreprocessor.kernel_name=1.$(julia -e 'print(VERSION.minor)')
+          --ExecutePreprocessor.kernel_name=julia-1.$(julia -e 'print(VERSION.minor)')
           docs/${{ matrix.notebook }}
       - name: Upload Notebook
         uses: actions/upload-artifact@v3
