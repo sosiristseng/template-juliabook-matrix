@@ -97,6 +97,7 @@ jobs:
             ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
       - name: Install Julia dependencies
         run: |
+          julia --project="" --color=yes -e 'import Pkg; Pkg.Registry.update(); Pkg.add(["IJulia"])'
           julia --project=@. --color=yes -e 'import Pkg; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
       - name: Execute Notebook
         run: >
