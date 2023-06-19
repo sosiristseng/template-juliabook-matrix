@@ -49,7 +49,7 @@ jobs:
           key: ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-${{ hashFiles('**/Manifest.toml') }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ env.JULIA_CACHE }}-
-      - name: Install IJulia
+      - name: Install IJulia and Julia dependencies
         shell: julia --project="" --color=yes {0}
         run: |
           import Pkg
@@ -57,10 +57,7 @@ jobs:
           Pkg.add(["IJulia"])
           import IJulia
           IJulia.installkernel("Julia", "--project=@.")
-      - name: Install Julia dependencies
-        shell: julia --project=@. --color=yes {0}
-        run: |
-          import Pkg
+          Pkg.activate(".")
           Pkg.instantiate()
           Pkg.resolve()
           Pkg.precompile()
@@ -110,11 +107,9 @@ jobs:
         shell: julia --project="" --color=yes {0}
         run: |
           import Pkg
-          Pkg.resolve()
           Pkg.precompile()
           Pkg.activate(".")
           Pkg.instantiate()
-          Pkg.resolve()
           Pkg.precompile()
       - name: Execute Notebook
         run: >
