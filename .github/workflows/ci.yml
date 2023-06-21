@@ -36,7 +36,7 @@ jobs:
       - name: Load docker image
         run: docker load -i /tmp/image.tar || true
       - name: Build docker image
-        run: docker build --cache-from ${{ env.IMAGE_NAME }} -t ${{ env.IMAGE_NAME }} .
+        run: docker build --cache-from ${{ env.IMAGE_NAME }} -t ${{ env.IMAGE_NAME }} -f ${{ env.DFILE }} .
       - name: Save docker image
         run: docker save -o /tmp/image.tar ${{ env.IMAGE_NAME }}
         if: steps.cache.outputs.cache-hit != 'true'
