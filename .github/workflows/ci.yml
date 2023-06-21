@@ -30,7 +30,7 @@ jobs:
         id: cache
         with:
           path: /tmp/image.tar
-          key: ${{ runner.os }}-dockerimage-${{ github.ref_name }}
+          key: ${{ runner.os }}-dockerimage-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-dockerimage-
       - name: Load docker image
