@@ -68,7 +68,7 @@ jobs:
         id: julia
         run: >
           echo "ver=$(docker run ${{ env.IMAGE_NAME }}
-          julia -e 'print(VERSION.minor)')"
+          julia -e 'print(VERSION.minor)')" >> $GITHUB_OUTPUT
       - name: Precompile if needed
         run: >
           docker run
