@@ -1,9 +1,5 @@
 FROM python:3.11.4-slim as base
 
-# Supress warnings from parallel
-ENV LANG C.UTF-8
-ENV LC_ALL C.UTF-8
-
 # Julia config
 ENV JULIA_CI true
 ENV JULIA_NUM_THREADS "auto"
@@ -17,7 +13,7 @@ COPY --from=julia:1.9.1 ${JULIA_PATH} ${JULIA_PATH}
 
 FROM base
 
-WORKDIR /app
+WORKDIR /work
 
 # Python dependencies. e.g. matplotlib
 COPY requirements.txt ./
