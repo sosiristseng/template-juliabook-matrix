@@ -38,8 +38,6 @@ jobs:
       - name: Get docker image hash
         id: hash
         run: echo "id=${{ hashFiles('requirements.txt', 'Project.toml', 'Manifest.toml', 'src/**', '.github/Dockerfile') }}" >> "$GITHUB_OUTPUT"
-      - name: Pull previous docker image if present
-        run: docker pull ghcr.io/${{ github.repository }}:${{ steps.hash.outputs.id }} || true
       - name: Build and cache Docker container
         uses: docker/build-push-action@v4
         with:
