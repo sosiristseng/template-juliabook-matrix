@@ -64,10 +64,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Precompile if needed
+      - name: Install IJulia
         run: |
           julia --project=@. -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
-          julia --project="" -e 'import Pkg; Pkg.resolve(); Pkg.precompile()'
+          julia --project="" --color=yes -e 'import Pkg; Pkg.add("IJulia"); import IJulia; IJulia.installkernel("Julia", "--project=@.")'
       - name: Execute Notebook
         run: >
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
