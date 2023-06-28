@@ -7,6 +7,9 @@ jobs:
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
+      - uses: GitHubSecurityLab/actions-permissions/monitor@v1
+        with:
+          config: '{ "create_artifact": true, "enabled": true, "debug": false }'
       - name: Check out code
         uses: actions/checkout@v3
       - name: Cleanup
