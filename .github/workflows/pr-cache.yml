@@ -6,7 +6,8 @@ on:
 
 jobs:
   cleanup:
-    permissions: write-all
+    permissions:
+      actions: write
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
