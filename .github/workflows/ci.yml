@@ -11,42 +11,30 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  packages: write
-
 env:
   TIMEOUT: '-1'    # nbconvert timeout
   EXTRA_ARGS: ''   # Extra arguments for nbconvert
+  DFILE: '.github/Dockerfile'
+  DIMG: 'app:test'
 
 jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-      hash: ${{ steps.hash.outputs.id }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner	}}
-          password: ${{ github.token	}}
-      - name: Get docker image hash
-        id: hash
-        run: echo "id=${{ hashFiles('requirements.txt', 'Project.toml', 'Manifest.toml', 'src/**', '.github/Dockerfile') }}" >> "$GITHUB_OUTPUT"
       - name: Build and cache Docker container
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: '.github/Dockerfile'
-          tags: ghcr.io/${{ github.repository }}:${{ steps.hash.outputs.id }}
-          push: true
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:${{ steps.hash.outputs.id }}
-          cache-to: type=inline
+          file: ${{ env.DFILE }}
+          tags: ${{ env.DIMG }}
+          cache-from: type=gha
+          cache-to: type=gha
       - name: List notebooks as a JSON array
         id: set-matrix
         working-directory: docs
@@ -61,20 +49,28 @@ jobs:
         # Notebooks need to be executed
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.hash }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Install IJulia kernel
-        run: |
-          julia --project=@. -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
-          julia --project="" --color=yes -e 'import IJulia; IJulia.installkernel("Julia", "--project=@.")'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build and cache Docker container
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ${{ env.DFILE }}
+          tags: ${{ env.DIMG }}
+          load: true
+          cache-from: type=gha
+      - name: Julia kernel name
+        id: jl
+        run: echo "ver=$(docker run ${{ env.DIMG }} julia -e 'print(VERSION.minor)' )" >> "$GITHUB_OUTPUT"
       - name: Execute Notebook
-        run: >
+        run: >-
+          docker run -w /tmp -v ${{ github.workspace }}:/tmp ${{ env.DIMG }}
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
           --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
-          --ExecutePreprocessor.kernel_name=julia-1.$(julia -e 'print(VERSION.minor)')
+          --ExecutePreprocessor.kernel_name=julia-1.${{ steps.jl.outputs.ver }}
           docs/${{ matrix.notebook }}
       - name: Upload Notebook
         uses: actions/upload-artifact@v3
