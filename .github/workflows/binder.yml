@@ -19,7 +19,7 @@ permissions:
 env:
   PY_VER: '3.11'
   DIMG: ghcr.io/${{ github.repository }}:binder
-  UNAME: joyyan
+  UNAME: jovyan
   UID: '1000'
 
 jobs:
