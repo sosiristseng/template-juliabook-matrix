@@ -1,0 +1,52 @@
+name: Binder image
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  packages: write
+
+env:
+  PY_VER: '3.11'
+  DIMG: ghcr.io/${{ github.repository }}:binder
+  UNAME: joyyan
+  UID: '1000'
+
+jobs:
+  binder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PY_VER }}
+      - name: Pull image
+        run: docker pull ${{ env.DIMG }} || true
+      - name: Install repo2docker
+        run: python3 -m pip install https://github.com/jupyterhub/repo2docker/archive/main.zip
+      - name: Build and push docker
+        run: >-
+          jupyter-repo2docker
+          --image-name ${{ env.DIMG }}
+          --no-run
+          --push
+          --cache-from ${{ env.DIMG }}
+          --user-id ${{ env.UID }}
+          --user-name ${{ env.UNAME }}
+          ${{ github.workspace }}
