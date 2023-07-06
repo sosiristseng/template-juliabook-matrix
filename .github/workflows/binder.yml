@@ -26,6 +26,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Remove binder folder
+        run: rm -rf .binder || true
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -50,3 +52,13 @@ jobs:
           --user-id ${{ env.UID }}
           --user-name ${{ env.UNAME }}
           ${{ github.workspace }}
+      - name: Add back Dockerfile
+        run: |
+          mkdir -p .binder
+          echo "FROM ${{ env.DIMG }}" >> .binder/Dockerfile
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v5
+        with:
+          title: Add Dockerfile
+          branch: dockerfile
