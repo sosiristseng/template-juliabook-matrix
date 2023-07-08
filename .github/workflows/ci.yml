@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  TIMEOUT: '-1'    # nbconvert timeout
+  TIMEOUT: '-1'    # Jupyter notebook cell timeout
   EXTRA_ARGS: ''   # Extra arguments for nbconvert
   DFILE: '.github/Dockerfile'
   DIMG: 'app:test'
