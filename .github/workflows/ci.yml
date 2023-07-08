@@ -34,7 +34,7 @@ jobs:
           file: ${{ env.DFILE }}
           tags: ${{ env.DIMG }}
           cache-from: type=gha
-          cache-to: type=gha
+          cache-to: type=gha,made=max
       - name: List notebooks as a JSON array
         id: set-matrix
         working-directory: docs
