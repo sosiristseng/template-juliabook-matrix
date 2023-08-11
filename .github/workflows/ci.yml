@@ -68,7 +68,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Get hash
         id: hash
-        run: echo "id=${{ needs.setup.outputs.hash }}-${{ hashFiles('docs/${{ matrix.notebook }}') }}" >> "$GITHUB_OUTPUT"
+        run: echo "id=${{ needs.setup.outputs.hash }}-${{ hashFiles(docs/matrix.notebook) }}" >> "$GITHUB_OUTPUT"
       - name: Restore notebook if present
         uses: actions/cache/restore@v3
         id: cache
