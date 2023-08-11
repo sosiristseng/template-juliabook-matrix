@@ -66,9 +66,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Get hash
+      - name: Get notebook path
+        id: file
+        run: echo "name=docs/${{ matrix.notebook }}" >> "$GITHUB_OUTPUT"
+      - name: Get notebook hash
         id: hash
-        run: echo "id=${{ needs.setup.outputs.hash }}-${{ hashFiles(docs/matrix.notebook) }}" >> "$GITHUB_OUTPUT"
+        run: echo "id=${{ needs.setup.outputs.hash }}-${{ hashFiles(steps.file.outputs.name) }}" >> "$GITHUB_OUTPUT"
       - name: Restore notebook if present
         uses: actions/cache/restore@v3
         id: cache
