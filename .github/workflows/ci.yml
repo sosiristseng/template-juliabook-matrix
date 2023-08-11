@@ -76,7 +76,7 @@ jobs:
         uses: actions/cache/restore@v3
         id: cache
         with:
-          path: docs/${{ matrix.notebook }}
+          path: ${{ steps.file.outputs.name }}
           key: ${{ runner.os }}-${{ steps.hash.outputs.id }}
       - name: Install IJulia kernel
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -94,7 +94,7 @@ jobs:
         uses: actions/cache/save@v3
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         with:
-          path: docs/${{ matrix.notebook }}
+          path: ${{ steps.file.outputs.name }}
           key: ${{ runner.os }}-${{ steps.hash.outputs.id }}
       - name: Upload Notebook
         uses: actions/upload-artifact@v3
