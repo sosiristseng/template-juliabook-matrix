@@ -66,16 +66,36 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Get notebook path
+        id: file
+        run: echo "name=docs/${{ matrix.notebook }}" >> "$GITHUB_OUTPUT"
+      - name: Get notebook hash
+        id: hash
+        run: echo "id=${{ needs.setup.outputs.hash }}-${{ hashFiles(steps.file.outputs.name) }}" >> "$GITHUB_OUTPUT"
+      - name: Restore notebook if present
+        uses: actions/cache/restore@v3
+        id: cache
+        with:
+          path: ${{ steps.file.outputs.name }}
+          key: ${{ runner.os }}-${{ steps.hash.outputs.id }}
       - name: Install IJulia kernel
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: |
           julia --project=@. -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
           julia --project="" --color=yes -e 'import IJulia; IJulia.installkernel("Julia", "--project=@.")'
       - name: Execute Notebook
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: >
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
           --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
           --ExecutePreprocessor.kernel_name=julia-1.$(julia -e 'print(VERSION.minor)')
           docs/${{ matrix.notebook }}
+      - name: Cache notebook
+        uses: actions/cache/save@v3
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        with:
+          path: ${{ steps.file.outputs.name }}
+          key: ${{ runner.os }}-${{ steps.hash.outputs.id }}
       - name: Upload Notebook
         uses: actions/upload-artifact@v3
         with:
