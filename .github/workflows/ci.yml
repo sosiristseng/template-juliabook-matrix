@@ -40,13 +40,15 @@ jobs:
         run: echo "id=${{ hashFiles('requirements.txt', 'Project.toml', 'Manifest.toml', 'src/**', '.github/Dockerfile') }}" >> "$GITHUB_OUTPUT"
       - name: Build and cache Docker container
         uses: docker/build-push-action@v4
+        env:
+          IMG: ghcr.io/${{ github.repository }}:${{ steps.hash.outputs.id }}
         with:
           context: .
           file: '.github/Dockerfile'
-          tags: ghcr.io/${{ github.repository }}:${{ steps.hash.outputs.id }}
+          tags: ${{ env.IMG }}
           push: true
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:${{ steps.hash.outputs.id }}
-          cache-to: type=inline
+          cache-from: type=registry,ref=${{ env.IMG }}-cache
+          cache-to: type=registry,ref=${{ env.IMG }}-cache,mode=max
       - name: List notebooks as a JSON array
         id: set-matrix
         working-directory: docs
