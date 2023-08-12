@@ -95,7 +95,7 @@ jobs:
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         with:
           path: ${{ steps.file.outputs.name }}
-          key: ${{ runner.os }}-${{ steps.hash.outputs.id }}
+          key: ${{steps.cache.outputs.cache-primary-key }}
       - name: Upload Notebook
         uses: actions/upload-artifact@v3
         with:
