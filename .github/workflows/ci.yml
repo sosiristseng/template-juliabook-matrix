@@ -84,17 +84,20 @@ jobs:
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         id: julia
         run: echo "ver=$(docker run ${{ env.IMAGE }} julia -e 'print(VERSION.minor)')" >> "$GITHUB_OUTPUT"
+      - name: Julia precompile
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: docker run -w /tmp -v ${{ github.workspace }}:/tmp ${{ env.IMAGE }} julia --project=@. -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
+      - name: Install IJulia kernel
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: docker run -w /tmp -v ${{ github.workspace }}:/tmp ${{ env.IMAGE }} julia --project="" --color=yes -e 'import IJulia; IJulia.installkernel("Julia", "--project=@.")'
       - name: Execute Notebook
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        uses: tj-actions/docker-run@v2
-        with:
-          image: ${{ env.IMAGE }}
-          name: julia
-          options: -w /tmp -v ${{ github.workspace }}:/tmp
-          args: |
-            julia --project=@. -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
-            julia --project="" --color=yes -e 'import IJulia; IJulia.installkernel("Julia", "--project=@.")'
-            jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }} --ExecutePreprocessor.timeout=${{ env.TIMEOUT }} --ExecutePreprocessor.kernel_name=julia-1.${{ steps.julia.outputs.ver }} docs/${{ matrix.notebook }}
+        run: >
+          docker run -w /tmp -v ${{ github.workspace }}:/tmp ${{ env.IMAGE }}
+          jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
+          --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
+          --ExecutePreprocessor.kernel_name=julia-1.${{ steps.julia.outputs.ver }}
+          docs/${{ matrix.notebook }}
       - name: Cache notebook
         uses: actions/cache/save@v3
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
