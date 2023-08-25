@@ -2,8 +2,13 @@
 version = 1
 
 [merge]
-  method = "squash"
+method = "squash"
 
   [merge.message]
-    title = "pull_request_title"
-    body  = "pull_request_body"
+  title = "pull_request_title"
+  body  = "pull_request_body"
+
+# PR sync with main
+[update]
+always                  = true  # default: false
+require_automerge_label = false # default: true
