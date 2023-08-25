@@ -12,3 +12,4 @@ method = "squash"
 [update]
 always                  = true  # default: false
 require_automerge_label = false # default: true
+ignored_usernames = ["dependabot"]
