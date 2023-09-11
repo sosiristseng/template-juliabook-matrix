@@ -73,31 +73,21 @@ jobs:
         run: echo "name=docs/${{ matrix.notebook }}" >> "$GITHUB_OUTPUT"
       - name: Get notebook hash
         id: hash
-        run: echo "id=${{ needs.setup.outputs.hash }}-${{ hashFiles(steps.file.outputs.name) }}" >> "$GITHUB_OUTPUT"
+        run: echo "id=${{ hashFiles(steps.file.outputs.name, 'requirements.txt', 'Project.toml', 'Manifest.toml', 'src/**', '.github/Dockerfile') }}" >> "$GITHUB_OUTPUT"
       - name: Restore notebook if present
         uses: actions/cache/restore@v3
         id: cache
         with:
           path: ${{ steps.file.outputs.name }}
-          key: ${{ runner.os }}-${{ steps.hash.outputs.id }}
-      - name: Get Julia version
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        id: julia
-        run: echo "ver=$(docker run ${{ env.IMAGE }} julia -e 'print(VERSION.minor)')" >> "$GITHUB_OUTPUT"
-      - name: Julia precompile
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: docker run -w /tmp -v ${{ github.workspace }}:/tmp ${{ env.IMAGE }} julia --project=@. -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
-      - name: Install IJulia kernel
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: docker run -w /tmp -v ${{ github.workspace }}:/tmp ${{ env.IMAGE }} julia --project="" --color=yes -e 'import IJulia; IJulia.installkernel("Julia", "--project=@.")'
+          key: ${{ runner.os }}-notebook-${{ steps.hash.outputs.id }}
       - name: Execute Notebook
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: >
           docker run -w /tmp -v ${{ github.workspace }}:/tmp ${{ env.IMAGE }}
-          jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
-          --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
-          --ExecutePreprocessor.kernel_name=julia-1.${{ steps.julia.outputs.ver }}
-          docs/${{ matrix.notebook }}
+          -e TIMEOUT=${{ env.TIMEOUT }}
+          -e EXTRA_ARGS=${{ env.EXTRA_ARGS }}
+          -e FILENAME=${{ steps.file.outputs.name }}
+          julia --project=@. --color=yes run.jl
       - name: Cache notebook
         uses: actions/cache/save@v3
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
