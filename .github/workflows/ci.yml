@@ -80,7 +80,6 @@ jobs:
         run: >
           docker run -w /tmp -v ${{ github.workspace }}:/tmp ${{ env.IMAGE }}
           -e TIMEOUT=${{ env.TIMEOUT }}
-          -e EXTRA_ARGS=${{ env.EXTRA_ARGS }}
           -e FILENAME=${{ steps.file.outputs.name }}
           julia --project=@. --color=yes run.jl
       - name: Cache notebook
