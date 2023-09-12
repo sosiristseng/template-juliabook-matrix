@@ -109,8 +109,6 @@ jobs:
   jupyter-book:
     needs: execute
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/sosiristseng/docker-jupyterbook:latest
     # store success output flag for the ci job
     outputs:
       success: ${{ steps.setoutput.outputs.success }}
@@ -127,7 +125,15 @@ jobs:
         working-directory: out
       - name: Copy back built notebooks
         run: cp --verbose -rf out/docs/* docs/
+      - name: Setup micromamba
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-file: jupyterbook.yml
+          init-shell: bash
+          cache-environment: true
+          post-cleanup: 'all'
       - name: Build website
+        shell: micromamba-shell {0}
         run: jupyter-book build docs/
       - name: Upload pages artifact
         if: ${{ github.ref == 'refs/heads/main' }}
