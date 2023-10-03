@@ -17,26 +17,43 @@ permissions:
 env:
   TIMEOUT: '-1'    # nbconvert timeout
   EXTRA_ARGS: ''   # Extra arguments for nbconvert
-  IMAGE: 'app:test'
+  PYTHON_VER: '3.11'
 
 jobs:
   setup:
+    container:
+      image: julia:1.9.3
+      env:
+        JULIA_CPU_TARGET: 'generic;haswell,clone_all'
+        JULIA_NUM_THREADS: 'auto'
+        JULIA_CONDAPKG_BACKEND: 'Null'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Build and cache Docker container
-        uses: docker/build-push-action@v5
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
-          context: .
-          file: '.github/Dockerfile'
-          tags: ${{ env.IMAGE }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          python-version: ${{ env.PYTHON_VER }}
+      - name: Cache Julia deps
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.julia/artifacts
+            ~/.julia/compiled
+            ~/.julia/packages
+          key: ${{ runner.os }}-juliacontainer-${{ hashFiles('Manifest.toml')}}
+          restore-keys: |
+            ${{ runner.os }}-juliacontainer-
+      - name: Install Julia packages
+        env:
+          PYTHON: ${{ env.pythonLocation }}/python
+          JULIA_PYTHONCALL_EXE: ${{ env.pythonLocation }}/python
+        run: |
+          julia --project="" --color=yes -e 'using Pkg; Pkg.add(["IJulia"])'
+          julia --project=@. --color=yes -e 'using Pkg; Pkg.instantiate(); Pkg.precompile(); Pkg.gc()'
       - name: List notebooks as a JSON array
         id: set-matrix
         working-directory: docs
@@ -51,6 +68,12 @@ jobs:
         # Notebooks need to be executed
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
     runs-on: ubuntu-latest
+    container:
+      image: julia:1.9.3
+      env:
+        JULIA_CPU_TARGET: 'generic;haswell,clone_all'
+        JULIA_NUM_THREADS: 'auto'
+        JULIA_CONDAPKG_BACKEND: 'Null'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -63,35 +86,41 @@ jobs:
         with:
           path: ${{ steps.file.outputs.name }}
           key: ${{ runner.os }}-notebook-${{ hashFiles(steps.file.outputs.name, 'requirements.txt', 'Project.toml', 'Manifest.toml', 'src/**', '.github/Dockerfile') }}
-      - name: Set up Docker Buildx
+      - name: Setup Python
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        uses: docker/setup-buildx-action@v3
-      - name: Restore Docker container
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        uses: docker/build-push-action@v5
+        uses: actions/setup-python@v4
         with:
-          context: .
-          file: '.github/Dockerfile'
-          tags: ${{ env.IMAGE }}
-          cache-from: type=gha
-          load: true
-      - name: Get Julia version
+          python-version: ${{ env.PYTHON_VER }}
+      - name: Install Python deps
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        id: julia
-        run: echo "ver=$(docker run ${{ env.IMAGE }} julia -e 'print(VERSION.minor)')" >> "$GITHUB_OUTPUT"
-      - name: Julia precompile
+        run: |
+          python -m pip install --no-cache-dir nbconvert
+          python -m pip install --no-cache-dir -r requirements.txt
+      - name: Cache Julia deps
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: docker run -w /tmp -v ${{ github.workspace }}:/tmp ${{ env.IMAGE }} julia --project=@. --color=yes -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
-      - name: Install IJulia kernel
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.julia/artifacts
+            ~/.julia/compiled
+            ~/.julia/packages
+          key: ${{ runner.os }}-juliacontainer-${{ hashFiles('Manifest.toml')}}
+          restore-keys: |
+            ${{ runner.os }}-juliacontainer-
+      - name: Install Julia packages
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: docker run -w /tmp -v ${{ github.workspace }}:/tmp ${{ env.IMAGE }} julia --project="" --color=yes -e 'import IJulia; IJulia.installkernel("Julia", "--project=@.")'
+        env:
+          PYTHON: ${{ env.pythonLocation }}/python
+          JULIA_PYTHONCALL_EXE: ${{ env.pythonLocation }}/python
+        run: |
+          julia --project="" --color=yes -e 'using Pkg; Pkg.add(["IJulia"]); import IJulia; IJulia.installkernel("Julia", "--project=@.")'
+          julia --project=@. --color=yes -e 'using Pkg; Pkg.instantiate(); Pkg.precompile(); Pkg.gc()'
       - name: Execute Notebook
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: >
-          docker run -w /tmp -v ${{ github.workspace }}:/tmp ${{ env.IMAGE }}
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
           --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
-          --ExecutePreprocessor.kernel_name=julia-1.${{ steps.julia.outputs.ver }}
+          --ExecutePreprocessor.kernel_name=julia-1.$(julia -e 'print(VERSION.minor)')
           docs/${{ matrix.notebook }}
       - name: Cache notebook
         uses: actions/cache/save@v3
@@ -131,7 +160,7 @@ jobs:
           environment-file: jupyterbook.yml
           init-shell: bash
           cache-environment: true
-          post-cleanup: 'all'
+          post-cleanup: all
       - name: Build website
         shell: micromamba-shell {0}
         run: jupyter-book build docs/
