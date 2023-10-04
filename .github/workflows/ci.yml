@@ -82,7 +82,7 @@ jobs:
         id: cache
         with:
           path: ${{ steps.file.outputs.name }}
-          key: ${{ runner.os }}-notebook-${{ hashFiles(steps.file.outputs.name, 'requirements.txt', 'Project.toml', 'Manifest.toml', 'src/**', '.github/Dockerfile') }}
+          key: ${{ runner.os }}-notebook-${{ hashFiles(steps.file.outputs.name, 'requirements.txt', 'Manifest.toml', 'src/**') }}
       - name: Setup Python
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         uses: actions/setup-python@v4
