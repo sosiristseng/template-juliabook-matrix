@@ -31,7 +31,6 @@ jobs:
         JULIA_NUM_THREADS: 'auto'
         JULIA_CONDAPKG_BACKEND: 'Null'
         JULIA_PKG_PRECOMPILE_AUTO: '0'
-        JULIA_PROJECT: '@.'
     steps:
       - name: Install Git
         run: apt update && apt install -y git

@@ -15,15 +15,14 @@ env:
   TIMEOUT: '-1'    # nbconvert timeout
   EXTRA_ARGS: ''   # Extra arguments for nbconvert
   PYTHON_VER: '3.11'
+  JULIA_CPU_TARGET: 'generic;haswell,clone_all'
+  JULIA_NUM_THREADS: 'auto'
+  JULIA_CONDAPKG_BACKEND: 'Null'
 
 jobs:
   setup:
     container:
       image: julia:1.9.3
-      env:
-        JULIA_CPU_TARGET: 'generic;haswell,clone_all'
-        JULIA_NUM_THREADS: 'auto'
-        JULIA_CONDAPKG_BACKEND: 'Null'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
