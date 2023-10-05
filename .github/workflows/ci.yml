@@ -71,7 +71,7 @@ jobs:
         uses: actions/cache/restore@v3
         id: cache
         with:
-          path: ${{ steps.file.outputs.name }}
+          path: docs/${{ matrix.notebook }}
           key: ${{ runner.os }}-notebook-${{ hashFiles(format('docs/{0}', matrix.notebook), 'requirements.txt', 'Manifest.toml', 'src/**') }}
       - name: Setup Python
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -109,7 +109,7 @@ jobs:
         uses: actions/cache/save@v3
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         with:
-          path: ${{ steps.file.outputs.name }}
+          path: docs/${{ matrix.notebook }}
           key: ${{ steps.cache.outputs.cache-primary-key }}
       - name: Upload Notebook
         uses: actions/upload-artifact@v3
