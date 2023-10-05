@@ -23,33 +23,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - name: Setup micromamba
+        uses: mamba-org/setup-micromamba@v1
         with:
-          python-version: '3.x'
-      - name: Install NBConvert
-        run: pip install nbconvert
-      - name: Convert ipynb files to markdown
-        run: |
-          parallel -j2 jupyter nbconvert --to markdown {} ::: ${{ env.DIR }}/*.ipynb
-      - name: Restore lychee cache
-        id: restore-cache
-        uses: actions/cache/restore@v3
-        with:
-          path: .lycheecache
-          key: cache-lychee-${{ github.sha }}
-          restore-keys: cache-lychee-
-      - name: Lychee Checker
-        uses: lycheeverse/lychee-action@v1.8.0
-        id: lychee
-        with:
-          fail: true
-          args: '--accept 200,204,429 --verbose --no-progress --cache --max-cache-age 1d ${{ env.DIR }}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Save lychee cache
-        uses: actions/cache/save@v3
-        if: always()
-        with:
-          path: .lycheecache
-          key: ${{ steps.restore-cache.outputs.cache-primary-key }}
+          environment-file: jupyterbook.yml
+          init-shell: bash
+          cache-environment: true
+          post-cleanup: all
+      - name: Build website
+        shell: micromamba-shell {0}
+        run: jupyter-book build ${DIR} --builder linkcheck
