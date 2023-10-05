@@ -14,7 +14,7 @@ concurrency:
 env:
   TIMEOUT: '-1'    # nbconvert timeout
   EXTRA_ARGS: ''   # Extra arguments for nbconvert
-  PYTHON_VER: '3.11'
+  PYTHON_VER: '3.x'
   JULIA_CPU_TARGET: 'generic;haswell,clone_all'
   JULIA_NUM_THREADS: 'auto'
   JULIA_CONDAPKG_BACKEND: 'Null'
@@ -64,22 +64,15 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: julia:1.9.3
-      env:
-        JULIA_CPU_TARGET: 'generic;haswell,clone_all'
-        JULIA_NUM_THREADS: 'auto'
-        JULIA_CONDAPKG_BACKEND: 'Null'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Get notebook path
-        id: file
-        run: echo "name=docs/${{ matrix.notebook }}" >> "$GITHUB_OUTPUT"
       - name: Restore notebook if present
         uses: actions/cache/restore@v3
         id: cache
         with:
           path: ${{ steps.file.outputs.name }}
-          key: ${{ runner.os }}-notebook-${{ hashFiles(steps.file.outputs.name, 'requirements.txt', 'Manifest.toml', 'src/**') }}
+          key: ${{ runner.os }}-notebook-${{ hashFiles(format('docs/{0}', matrix.notebook), 'requirements.txt', 'Manifest.toml', 'src/**') }}
       - name: Setup Python
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         uses: actions/setup-python@v4
@@ -87,9 +80,7 @@ jobs:
           python-version: ${{ env.PYTHON_VER }}
       - name: Install Python deps
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: |
-          python -m pip install --no-cache-dir nbconvert
-          python -m pip install --no-cache-dir -r requirements.txt
+        run: python -m pip install --no-cache-dir nbconvert -r requirements.txt
       - name: Cache Julia deps
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         uses: actions/cache@v3
