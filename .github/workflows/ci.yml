@@ -21,33 +21,35 @@ env:
 
 jobs:
   setup:
-    container:
-      image: julia:1.9.3
+    permissions:
+      packages: write
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      hash: ${{ steps.hash.outputs.id }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          python-version: ${{ env.PYTHON_VER }}
-      - name: Cache Julia deps
-        uses: actions/cache@v3
+          registry: ghcr.io
+          username: ${{ github.repository_owner	}}
+          password: ${{ github.token	}}
+      - name: Get docker image hash
+        id: hash
+        run: echo "id=${{ hashFiles('requirements.txt', 'Project.toml', 'Manifest.toml', 'src/**', '.github/Dockerfile') }}" >> "$GITHUB_OUTPUT"
+      - name: Build and cache Docker container
+        uses: docker/build-push-action@v5
         with:
-          path: |
-            ~/.julia/artifacts
-            ~/.julia/compiled
-            ~/.julia/packages
-          key: ${{ runner.os }}-juliacontainer-${{ hashFiles('Manifest.toml')}}
-          restore-keys: |
-            ${{ runner.os }}-juliacontainer-
-      - name: Install Julia packages
-        env:
-          PYTHON: ${{ env.pythonLocation }}/python
-          JULIA_PYTHONCALL_EXE: ${{ env.pythonLocation }}/python
-        run: julia --color=yes setup.jl
+          context: .
+          file: '.github/Dockerfile'
+          tags: ghcr.io/${{ github.repository }}:${{ steps.hash.outputs.id }}
+          push: true
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:${{ steps.hash.outputs.id }}
+          cache-to: type=inline
       - name: List notebooks as a JSON array
         id: set-matrix
         working-directory: docs
@@ -63,7 +65,7 @@ jobs:
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
     runs-on: ubuntu-latest
     container:
-      image: julia:1.9.3
+      image: ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.hash }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -72,32 +74,7 @@ jobs:
         id: cache
         with:
           path: docs/${{ matrix.notebook }}
-          key: ${{ runner.os }}-notebook-${{ hashFiles(format('docs/{0}', matrix.notebook), 'requirements.txt', 'Manifest.toml', 'src/**') }}
-      - name: Setup Python
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_VER }}
-      - name: Install Python deps
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: python -m pip install --no-cache-dir nbconvert -r requirements.txt
-      - name: Cache Julia deps
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.julia/artifacts
-            ~/.julia/compiled
-            ~/.julia/packages
-          key: ${{ runner.os }}-juliacontainer-${{ hashFiles('Manifest.toml')}}
-          restore-keys: |
-            ${{ runner.os }}-juliacontainer-
-      - name: Install Julia packages
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        env:
-          PYTHON: ${{ env.pythonLocation }}/python
-          JULIA_PYTHONCALL_EXE: ${{ env.pythonLocation }}/python
-        run: julia --color=yes setup.jl
+          key: ${{ runner.os }}-notebook-${{ hashFiles(format('docs/{0}', matrix.notebook)) }}-${{ needs.setup.outputs.hash }}
       - name: Execute Notebook
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: >
@@ -118,7 +95,7 @@ jobs:
           path: docs*/${{ matrix.notebook }}  # keep folder structure
           retention-days: 1
 
-  jupyter-book:
+  render:
     needs: execute
     runs-on: ubuntu-latest
     # store success output flag for the ci job
@@ -159,7 +136,7 @@ jobs:
   # CI conclusion for GitHub status check
   # https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
   CI:
-    needs: jupyter-book
+    needs: render
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -167,7 +144,7 @@ jobs:
       # in case at least one of the execution fails, jupyter-book is skipped
       # and the output will not be set, which will then cause the ci job to fail
       - run: |
-          passed="${{ needs.jupyter-book.outputs.success }}"
+          passed="${{ needs.render.outputs.success }}"
           if [[ $passed == "true" ]]; then
             echo "Tests passed"
             exit 0
@@ -179,7 +156,7 @@ jobs:
   # Deployment job
   deploy:
     name: Deploy to GitHub pages
-    needs: jupyter-book
+    needs: render
     if: ${{ github.ref == 'refs/heads/main' }}
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
