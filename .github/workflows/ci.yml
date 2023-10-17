@@ -14,10 +14,6 @@ concurrency:
 env:
   TIMEOUT: '-1'    # nbconvert timeout
   EXTRA_ARGS: ''   # Extra arguments for nbconvert
-  PYTHON_VER: '3.x'
-  JULIA_CPU_TARGET: 'generic;haswell,clone_all'
-  JULIA_NUM_THREADS: 'auto'
-  JULIA_CONDAPKG_BACKEND: 'Null'
 
 jobs:
   setup:
