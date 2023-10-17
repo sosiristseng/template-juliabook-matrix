@@ -14,52 +14,27 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  PYTHON_VER: '3.11'
-  APP_ID: '189113' # https://github.com/apps/wen-wei-s-pr-bot
-
 jobs:
   update-manifest:
     permissions:
       contents: write
       pull-requests: write
     runs-on: ubuntu-latest
-    container:
-      image: julia:1.9.3
-      env:
-        JULIA_CPU_TARGET: 'generic;haswell,clone_all'
-        JULIA_NUM_THREADS: 'auto'
-        JULIA_CONDAPKG_BACKEND: 'Null'
-        JULIA_PKG_PRECOMPILE_AUTO: '0'
     steps:
-      - name: Install Git
-        run: apt update && apt install -y git
-      - name: Set safe directory
-        run: git config --global --add safe.directory '*'
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v4
         with:
-          python-version: ${{ env.PYTHON_VER }}
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Setup Julia
+        uses: julia-actions/setup-julia@v1
       - name: Update Julia dependencies
         env:
-          PYTHON: ${{ env.pythonLocation }}/python
-          JULIA_PYTHONCALL_EXE: ${{ env.pythonLocation }}/python
+          JULIA_PKG_PRECOMPILE_AUTO: '0'
         run: julia --color=yes --project=@. -e "import Pkg; Pkg.update()"
-      # Authenticate with a custom GitHub APP
-      # https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#authenticating-with-github-app-generated-tokens
-      - name: Generate token for PR
-        uses: tibdex/github-app-token@v2
-        id: generate-token
-        with:
-          app_id: ${{ env.APP_ID }}
-          private_key: ${{ secrets.APP_PRIVATE_KEY }}
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v5
         with:
-          title: Julia Dependency Update
-          token: ${{ steps.generate-token.outputs.token }}
+          commit-message: Julia update
           labels: |
             automerge
