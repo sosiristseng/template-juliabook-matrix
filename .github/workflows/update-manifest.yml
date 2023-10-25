@@ -38,6 +38,7 @@ jobs:
       - name: Update Julia dependencies
         run: >
           docker run --rm -e JULIA_PKG_PRECOMPILE_AUTO=0
+          -w /tmp -v ${{ github.workspace }}:/tmp
           ${{ env.IMG_NAME }}
           julia --color=yes --project=@. -e 'import Pkg; Pkg.update()'
       # Authenticate with a custom GitHub APP
