@@ -36,12 +36,12 @@ jobs:
           password: ${{ github.token	}}
       - name: Get docker image hash
         id: hash
-        run: echo "id=${{ hashFiles('requirements.txt', 'Project.toml', 'Manifest.toml', 'src/**', '.github/Dockerfile') }}" >> "$GITHUB_OUTPUT"
+        run: echo "id=${{ hashFiles('requirements.txt', 'Project.toml', 'Manifest.toml', 'src/**', 'env.Dockerfile') }}" >> "$GITHUB_OUTPUT"
       - name: Build and cache Docker container
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: '.github/Dockerfile'
+          file: 'env.Dockerfile'
           tags: ghcr.io/${{ github.repository }}:${{ steps.hash.outputs.id }}
           push: true
           cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:${{ steps.hash.outputs.id }}

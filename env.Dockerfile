@@ -3,10 +3,10 @@ FROM python:3.12.0-slim as base
 
 # Julia config
 ENV JULIA_CI true
-ENV JULIA_NUM_THREADS "auto"
+ENV JULIA_NUM_THREADS 'auto'
 # Let PythonCall use built-in python
-ENV JULIA_CONDAPKG_BACKEND "Null"
-ENV JULIA_CPU_TARGET "generic;haswell,clone_all"
+ENV JULIA_CONDAPKG_BACKEND 'Null'
+ENV JULIA_CPU_TARGET 'generic;haswell,clone_all'
 ENV JULIA_PATH /usr/local/julia/
 ENV JULIA_DEPOT_PATH /srv/juliapkg/
 ENV PATH ${JULIA_PATH}/bin:${PATH}
@@ -21,6 +21,6 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir nbconvert -r requirements.txt
 
 # Julia environment
-COPY Project.toml Manifest.toml setup.jl ./
+COPY Project.toml Manifest.toml ./
 COPY src/ src
-RUN julia --color=yes setup.jl
+RUN julia --color=yes -e 'using Pkg; Pkg.add(["IJulia"]); Pkg.activate("."); Pkg.instantiate()'
