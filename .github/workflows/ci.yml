@@ -85,6 +85,12 @@ jobs:
         with:
           path: docs/${{ matrix.notebook }}
           key: ${{ runner.os }}-notebook-${{ hashFiles(format('docs/{0}', matrix.notebook), 'src/**', 'Project.toml', 'Manifest.toml') }}
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VER }}
+      - name: Install Python deps
+        run: pythom -m pip install --no-cache-dir nbconvert -r requirements.txt
       - name: Cache Julia deps
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         uses: actions/cache@v3
@@ -95,7 +101,7 @@ jobs:
             ~/.julia/packages
             ~/.julia/environments
             ~/.local/share/jupyter/
-          key: ${{ runner.os }}-juliacontainer-${{ hashFiles('src/**','Project.toml', 'Manifest.toml')}}
+          key: ${{ runner.os }}-juliacontainer-${{ hashFiles('src/**','Project.toml', 'Manifest.toml', 'requirements.txt')}}
           restore-keys: |
             ${{ runner.os }}-juliacontainer-
       - name: Execute Notebook
