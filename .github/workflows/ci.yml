@@ -90,7 +90,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VER }}
       - name: Install Python deps
-        run: pythom -m pip install --no-cache-dir nbconvert -r requirements.txt
+        run: python -m pip install --no-cache-dir nbconvert -r requirements.txt
       - name: Cache Julia deps
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         uses: actions/cache@v3
