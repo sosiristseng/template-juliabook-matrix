@@ -43,6 +43,7 @@ jobs:
             ~/.julia/compiled
             ~/.julia/packages
             ~/.julia/environments
+            ~/.local/share/jupyter/
           key: ${{ runner.os }}-juliacontainer-${{ hashFiles('src/**','Project.toml', 'Manifest.toml')}}
           restore-keys: |
             ${{ runner.os }}-juliacontainer-
@@ -93,6 +94,7 @@ jobs:
             ~/.julia/compiled
             ~/.julia/packages
             ~/.julia/environments
+            ~/.local/share/jupyter/
           key: ${{ runner.os }}-juliacontainer-${{ hashFiles('src/**','Project.toml', 'Manifest.toml')}}
           restore-keys: |
             ${{ runner.os }}-juliacontainer-
