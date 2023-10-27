@@ -14,7 +14,7 @@ See also:
 
 - Workflow file: [ci.yml](.github/workflows/ci.yml)
 
-The notebooks (under the `docs` folder) are execute in parallel, and then [Jupyter book][jupyter-book] creates a beautiful website from Markdown and Jupyter notebook files.
+The notebooks (under the `docs` folder) are executed in parallel, and then [Jupyter book][jupyter-book] creates a beautiful website from Markdown and Jupyter notebook files.
 
 ## Enable GitHub pages
 
