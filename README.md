@@ -10,7 +10,7 @@ See also:
 [jupyter-book]: https://jupyterbook.org/
 [Cirrus CI]: https://cirrus-ci.org/
 
-## Notebook execution and publish
+## Notebook execution and publish via continuous integration (CI)
 
 - Workflow file: [ci.yml](.github/workflows/ci.yml)
 
@@ -26,7 +26,7 @@ Open your repository settings => Pages => GitHub Pages => Build and deployment =
 
 - See [renovate.json](renovate.json) for Renovate settings.
 
-This repository uses [Renovate Bot](https://github.com/marketplace/renovate) to automatically update Julia packages, Python packages, and GitHub actions., and
+This repository uses [Renovate Bot](https://github.com/marketplace/renovate) to automatically update Julia packages, Python packages, and GitHub actions.
 
 ### Julia dependencies
 
