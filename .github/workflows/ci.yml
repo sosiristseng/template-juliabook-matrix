@@ -122,7 +122,7 @@ jobs:
             ~/.julia/packages
             ~/.julia/environments
             ~/.local/share/jupyter/
-          key: ${{ runner.os }}-juliacontainer-${{ hashFiles('src/**','Project.toml', 'Manifest.toml')}}
+          key: ${{ runner.os }}-jill-${{ hashFiles('src/**','Project.toml', 'Manifest.toml')}}
       - name: Execute Notebook
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: >
