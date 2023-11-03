@@ -53,13 +53,13 @@ jobs:
             ${{ runner.os }}-jill-
       - name: Setup Python
         uses: actions/setup-python@v4
-        id: python3
+        id: python
         with:
           python-version: ${{ env.PYTHON_VER }}
       - name: Install Julia deps
         env:
-          PYTHON: ${{ steps.python3.outputs.python-path }}
-          JULIA_PYTHONCALL_EXE: ${{ steps.python3.outputs.python-path }}
+          PYTHON: ${{ steps.python.outputs.python-path }}
+          JULIA_PYTHONCALL_EXE: ${{ steps.python.outputs.python-path }}
         shell: julia --color=yes {0}
         run: |
           using Pkg
