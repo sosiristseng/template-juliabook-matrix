@@ -14,65 +14,42 @@ concurrency:
 env:
   TIMEOUT: '-1'    # nbconvert timeout
   EXTRA_ARGS: ''   # Extra arguments for nbconvert
-  PYTHON_VER: '3.11'
-  JULIA_CPU_TARGET: 'generic;haswell,clone_all'
-  JULIA_NUM_THREADS: 'auto'
-  JULIA_CONDAPKG_BACKEND: 'Null'
-  JULIA_CI: 'true'
 
 jobs:
   setup:
+    permissions:
+      packages: write
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      hash: ${{ steps.hash.outputs.id }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Read Julia version
-        uses: SebRollen/toml-action@v1.0.2
-        id: read_toml
-        with:
-          file: 'Manifest.toml'
-          field: 'julia_version'
-      - name: Install Julia using jill.sh
-        run: |
-          wget -O /tmp/jill.sh https://raw.githubusercontent.com/abelsiqueira/jill/main/jill.sh
-          bash /tmp/jill.sh --version ${{ steps.read_toml.outputs.value }} -y
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-      - name: Cache Julia deps
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.julia/artifacts
-            ~/.julia/compiled
-            ~/.julia/packages
-            ~/.julia/environments
-            ~/.local/share/jupyter/
-          key: ${{ runner.os }}-jill-${{ hashFiles('src/**','Project.toml', 'Manifest.toml')}}
-          restore-keys: |
-            ${{ runner.os }}-jill-
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        id: python
-        with:
-          python-version: ${{ env.PYTHON_VER }}
-      - name: Install Julia deps
-        env:
-          PYTHON: ${{ steps.python.outputs.python-path }}
-          JULIA_PYTHONCALL_EXE: ${{ steps.python.outputs.python-path }}
-        shell: julia --color=yes {0}
-        run: |
-          using Pkg
-          Pkg.add(["IJulia"])
-          using IJulia
-          IJulia.installkernel("Julia", "--project=@.")
-          Pkg.activate(".")
-          Pkg.instantiate()
-          Pkg.gc()
-      - name: List notebooks as a JSON array
-        id: set-matrix
-        working-directory: docs
-        run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", recursive=True)))')" >> "$GITHUB_OUTPUT"
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner	}}
+        password: ${{ github.token	}}
+    - name: Get docker image hash
+      id: hash
+      run: echo "id=${{ hashFiles('requirements.txt', 'Project.toml', 'Manifest.toml', 'src/**', 'env.Dockerfile') }}" >> "$GITHUB_OUTPUT"
+    - name: Build and cache Docker container
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: 'env.Dockerfile'
+        tags: ghcr.io/${{ github.repository }}:${{ steps.hash.outputs.id }}
+        push: true
+        cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:${{ steps.hash.outputs.id }}
+        cache-to: type=inline
+    - name: List notebooks as a JSON array
+      id: set-matrix
+      working-directory: docs
+      run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", recursive=True)))')" >> "$GITHUB_OUTPUT"
 
   execute:
     needs: setup
@@ -83,6 +60,8 @@ jobs:
         # Notebooks need to be executed
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.hash }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -91,40 +70,10 @@ jobs:
         id: cache
         with:
           path: docs/${{ matrix.notebook }}
-          key: ${{ runner.os }}-notebook-${{ hashFiles(format('docs/{0}', matrix.notebook), 'src/**', 'Project.toml', 'Manifest.toml') }}
-      - name: Setup Python
+          key: ${{ runner.os }}-notebook-${{ hashFiles(format('docs/{0}', matrix.notebook)) }}-${{ needs.setup.outputs.hash }}
+      - name: Install Julia kernel
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_VER }}
-          cache: 'pip'
-      - name: Install Python deps
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: python -m pip install nbconvert -r requirements.txt
-      - name: Read Julia version
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        uses: SebRollen/toml-action@v1.0.2
-        id: read_toml
-        with:
-          file: 'Manifest.toml'
-          field: 'julia_version'
-      - name: Install Julia using jill.sh
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: |
-          wget -O /tmp/jill.sh https://raw.githubusercontent.com/abelsiqueira/jill/main/jill.sh
-          bash /tmp/jill.sh --version ${{ steps.read_toml.outputs.value }} -y
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-      - name: Cache Julia deps
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.julia/artifacts
-            ~/.julia/compiled
-            ~/.julia/packages
-            ~/.julia/environments
-            ~/.local/share/jupyter/
-          key: ${{ runner.os }}-jill-${{ hashFiles('src/**','Project.toml', 'Manifest.toml')}}
+        run: julia -e 'import IJulia; IJulia.installkernel("Julia", "--project=@.")'
       - name: Execute Notebook
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: >
