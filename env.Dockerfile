@@ -24,5 +24,4 @@ RUN pip install --no-cache-dir nbconvert -r requirements.txt
 # Julia environment
 COPY Project.toml Manifest.toml ./
 COPY src/ src
-RUN julia --color=yes -e 'using Pkg; Pkg.add(["IJulia"]); import IJulia; IJulia.installkernel("Julia", "--project=@.")' && \
-    julia --color=yes --project=@. -e 'using Pkg; Pkg.resolve(); Pkg.instantiate(); Pkg.precompile()'
+RUN julia --color=yes -e 'using Pkg; Pkg.add(["IJulia"]); Pkg.activate("."); Pkg.instantiate()'
