@@ -9,7 +9,7 @@ ENV JULIA_CONDAPKG_BACKEND 'Null'
 ENV JULIA_CPU_TARGET 'generic;haswell,clone_all'
 ENV JULIA_PATH '/usr/local/julia/'
 ENV JULIA_DEPOT_PATH '/srv/juliapkg/'
-ENV JUPYTER_DATA_DIR '/usr/local/share/jupyter/'
+ENV JUPYTER_DATA_DIR = '/usr/local/share/jupyter/'
 ENV PATH ${JULIA_PATH}/bin:${PATH}
 COPY --from=julia ${JULIA_PATH} ${JULIA_PATH}
 
