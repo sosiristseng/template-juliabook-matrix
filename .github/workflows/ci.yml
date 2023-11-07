@@ -71,6 +71,9 @@ jobs:
         with:
           path: docs/${{ matrix.notebook }}
           key: ${{ runner.os }}-notebook-${{ hashFiles(format('docs/{0}', matrix.notebook)) }}-${{ needs.setup.outputs.hash }}
+      - name: Install Julia kernel
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: julia -e 'import IJulia; IJulia.installkernel("Julia", "--project=@.")'
       - name: Execute Notebook
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: >
