@@ -113,8 +113,11 @@ jobs:
       - name: Setup micromamba
         uses: mamba-org/setup-micromamba@v1
         with:
-          environment-file: jupyterbook.yml
-          init-shell: bash
+          environment-name: jbook
+          create-args: >-
+            python>=3.11
+            jupyter-book
+            docutils>=0.17.1,<0.18|>=0.20
           cache-environment: true
           post-cleanup: all
       - name: Build website
