@@ -66,7 +66,7 @@ jobs:
     - name: Install Julia deps
       shell: micromamba-shell {0}
       run: |
-        julia --color=yes -e 'using Pkg; Pkg.add(["IJulia"]]); import IJulia; IJulia.installkernel("Julia", "--project=@.")'
+        julia --color=yes -e 'using Pkg; Pkg.add(["IJulia"]); import IJulia; IJulia.installkernel("Julia", "--project=@.")'
         julia --project=@. --color=yes -e 'using Pkg, Dates; Pkg.instantiate(); Pkg.gc(collect_delay=Day(1))'
     - name: List notebooks as a JSON array
       id: set-matrix
