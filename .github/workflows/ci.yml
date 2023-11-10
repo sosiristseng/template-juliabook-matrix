@@ -39,13 +39,9 @@ jobs:
       env:
         IMG: ghcr.io/${{ github.repository }}:${{ steps.img.outputs.hash }}
       run: |
-        if [ docker manifest inspect ${IMG} = "1" ]
-        then
-            docker build -f env.Dockerfile -t ${IMG} .
-            docker push ${IMG}
-        else
-            echo "Image is already present, skipping"
-        fi
+        docker manifest inspect ${IMG} && exit 0
+        docker build -f env.Dockerfile -t ${IMG} .
+        docker push ${IMG}
     - name: List notebooks as a JSON array
       id: set-matrix
       working-directory: docs
