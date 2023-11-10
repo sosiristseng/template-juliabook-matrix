@@ -18,7 +18,6 @@ env:
   JULIA_NUM_THREADS: 'auto'
   JULIA_CONDAPKG_BACKEND: 'Current'
   JULIA_CI: 'true'
-  GKSwstype: '100'
 
 jobs:
   setup:
@@ -162,12 +161,12 @@ jobs:
           post-cleanup: all
       - name: Build website
         shell: micromamba-shell {0}
-        run: jupyter-book build docs/
+        run: jupyter-book build --path-output public/ docs/
       - name: Upload pages artifact
         if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/upload-pages-artifact@v2
         with:
-          path: docs/_build/html
+          path: public
 
   # CI conclusion for GitHub status check
   # Adaped from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
