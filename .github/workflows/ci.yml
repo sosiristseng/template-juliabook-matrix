@@ -14,58 +14,40 @@ concurrency:
 env:
   TIMEOUT: '-1'    # nbconvert timeout
   EXTRA_ARGS: ''   # Extra arguments for nbconvert
-  JULIA_CPU_TARGET: 'generic;haswell,clone_all'
-  JULIA_NUM_THREADS: 'auto'
-  JULIA_CONDAPKG_BACKEND: 'Current'
-  JULIA_CI: 'true'
-  JULIA_CACHE_NUM: '1'
 
 jobs:
   setup:
+    permissions:
+      packages: write
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-      hash: ${{ steps.cache.outputs.hash }}
-      jlver: ${{ steps.read_toml.outputs.value }}
+      hash: ${{ steps.img.outputs.hash }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    - name: Setup micromamba
-      uses: mamba-org/setup-micromamba@v1
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
       with:
-        environment-file: environment.yml
-        cache-environment: true
-    - name: Read Julia version
-      uses: SebRollen/toml-action@v1.0.2
-      id: read_toml
-      with:
-        file: 'Manifest.toml'
-        field: 'julia_version'
-    - name: Install Julia using jill.sh
+        registry: ghcr.io
+        username: ${{ github.repository_owner	}}
+        password: ${{ github.token }}
+    - name: Get docker image hash
+      id: img
+      run: echo "hash=${{ hashFiles('requirements.txt', 'Project.toml', 'Manifest.toml', 'src/**', 'env.Dockerfile') }}" >> "$GITHUB_OUTPUT"
+    - name: Build Docker container
+      env:
+        IMG: ghcr.io/${{ github.repository }}:${{ steps.img.outputs.hash }}
       run: |
-        wget -O /tmp/jill.sh https://raw.githubusercontent.com/abelsiqueira/jill/main/jill.sh
-        bash /tmp/jill.sh --version ${{ steps.read_toml.outputs.value }} -y
-        echo "$HOME/.local/bin" >> $GITHUB_PATH
-    - name: Calculate cache key
-      id: cache
-      run: echo hash=${{ hashFiles('src/**','Project.toml', 'Manifest.toml')}} >> "$GITHUB_OUTPUT"
-    - name: Cache Julia deps
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.julia
-          ~/.local/share/jupyter/kernels
-        key: ${{ runner.os }}-jill-${{ env.JULIA_CACHE_NUM }}-${{ steps.cache.outputs.hash }}
-        restore-keys: |
-          ${{ runner.os }}-jill-${{ env.JULIA_CACHE_NUM }}-
-    - name: Install Julia deps
-      shell: micromamba-shell {0}
-      run: |
-        julia --color=yes -e 'using Pkg; Pkg.Registry.update(); Pkg.add(["IJulia"])'
-        julia --project=@. --color=yes -e 'using Pkg, Dates; Pkg.instantiate(); Pkg.gc(collect_delay=Day(1))'
+        if [ docker manifest inspect ${IMG} = "1" ]
+        then
+            docker build -f env.Dockerfile -t ${IMG} .
+            docker push ${IMG}
+        else
+            echo "Image is already present, skipping"
+        fi
     - name: List notebooks as a JSON array
       id: set-matrix
-      shell: micromamba-shell {0}
       working-directory: docs
       run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", recursive=True)))')" >> "$GITHUB_OUTPUT"
 
@@ -78,6 +60,8 @@ jobs:
         # Notebooks need to be executed
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.hash }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -87,34 +71,10 @@ jobs:
         with:
           path: docs/${{ matrix.notebook }}
           key: ${{ runner.os }}-notebook-${{ hashFiles(format('docs/{0}', matrix.notebook)) }}-${{ needs.setup.outputs.hash }}
-      - name: Setup micromamba
-        uses: mamba-org/setup-micromamba@v1
+      - name: Install Julia kernel
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        with:
-          environment-file: environment.yml
-          cache-environment: true
-      - name: Install Julia using jill.sh
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: |
-          wget -O /tmp/jill.sh https://raw.githubusercontent.com/abelsiqueira/jill/main/jill.sh
-          bash /tmp/jill.sh --version ${{ needs.setup.outputs.jlver }} -y
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-      - name: Cache Julia deps
-        uses: actions/cache/restore@v3
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        with:
-          path: |
-            ~/.julia
-            ~/.local/share/jupyter/kernels
-          key: ${{ runner.os }}-jill-${{ env.JULIA_CACHE_NUM }}-${{ needs.setup.outputs.hash }}
-      - name: Precompile Julia stuff if needed
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        shell: micromamba-shell {0}
-        run: |
-          julia --color=yes -e 'import IJulia; IJulia.installkernel("Julia", "--project=@.")'
-          julia --project=@. --color=yes -e 'using Pkg, Dates; Pkg.instantiate(); Pkg.precompile()'
+        run: julia -e 'import IJulia; IJulia.installkernel("Julia", "--project=@.")'
       - name: Execute Notebook
-        shell: micromamba-shell {0}
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: >
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
@@ -153,8 +113,9 @@ jobs:
       - name: Setup micromamba
         uses: mamba-org/setup-micromamba@v1
         with:
-          environment-file: environment.yml
+          environment-file: conda.yml
           cache-environment: true
+          post-cleanup: all
       - name: Build website
         shell: micromamba-shell {0}
         run: jupyter-book build --path-output public/ docs/
