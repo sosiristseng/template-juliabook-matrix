@@ -114,12 +114,12 @@ jobs:
           post-cleanup: all
       - name: Build website
         shell: micromamba-shell {0}
-        run: jupyter-book build --path-output public/ docs/
+        run: jupyter-book build docs/
       - name: Upload pages artifact
         if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/upload-pages-artifact@v2
         with:
-          path: public
+          path: docs/_build/html/
 
   # CI conclusion for GitHub status check
   # Adaped from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
