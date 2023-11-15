@@ -1,4 +1,4 @@
-FROM julia:1.9.3 as julia
+FROM julia:1.9.4 as julia
 FROM python:3.12.0-slim as base
 
 # Julia config
