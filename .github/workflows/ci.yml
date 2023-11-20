@@ -14,35 +14,62 @@ concurrency:
 env:
   TIMEOUT: '-1'    # nbconvert timeout
   EXTRA_ARGS: ''   # Extra arguments for nbconvert
+  CACHE_NUM: '1'
+  JULIA_NUM_THREADS: 'auto'
+  JULIA_CONDAPKG_BACKEND: 'Null'
+  JULIA_CI: 'true'
 
 jobs:
   setup:
-    permissions:
-      packages: write
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-      hash: ${{ steps.img.outputs.hash }}
+      hash: ${{ steps.cache.outputs.cache-primary-key }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    - name: Login to Docker Hub
-      uses: docker/login-action@v3
+    - name: Setup micromamba
+      uses: mamba-org/setup-micromamba@v1
       with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner	}}
-        password: ${{ github.token }}
-    - name: Get docker image hash
-      id: img
-      run: echo "hash=${{ hashFiles('requirements.txt', 'Project.toml', 'Manifest.toml', 'src/**', 'env.Dockerfile') }}" >> "$GITHUB_OUTPUT"
-    - name: Build Docker container
-      env:
-        IMG: ghcr.io/${{ github.repository }}:${{ steps.img.outputs.hash }}
+        environment-file: environment.yml
+        cache-environment: true
+        post-cleanup: all
+    - name: Read Julia version
+      uses: SebRollen/toml-action@v1.0.2
+      id: read_toml
+      with:
+        file: 'Manifest.toml'
+        field: 'julia_version'
+    - name: Install Julia using jill.sh
       run: |
-        docker manifest inspect ${IMG} && exit 0
-        docker build -f env.Dockerfile -t ${IMG} .
-        docker push ${IMG}
+        wget -O /tmp/jill.sh https://raw.githubusercontent.com/abelsiqueira/jill/main/jill.sh
+        bash /tmp/jill.sh --version ${{ steps.read_toml.outputs.value }} -y
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+    - name: Restore Julia packages
+      uses: actions/cache/restore@v3
+      id: cache
+      with:
+        path: |
+          ~/.julia
+          !~/.julia/registries
+        key: ${{ runner.os }}-julia-${{ env.CACHE_NUM }}-${{ hashFiles('src/**','Project.toml', 'Manifest.toml')}}
+        restore-keys: |
+          ${{ runner.os }}-julia-${{ env.CACHE_NUM }}-
+    - name: Install Julia packages
+      shell: micromamba-shell {0}
+      run: |
+        julia --color=yes -e 'using Pkg; Pkg.add(["IJulia"])'
+        julia --project=@. --color=yes -e 'using Pkg, Dates; Pkg.instantiate(); Pkg.resolve();Pkg.precompile(); Pkg.gc(collect_delay=Day(1))'
+    - name: Save Julia packages
+      uses: actions/cache/save@v3
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      with:
+        path: |
+          ~/.julia
+          !~/.julia/registries
+        key: ${{ steps.cache.outputs.cache-primary-key }}
     - name: List notebooks as a JSON array
+      shell: micromamba-shell {0}
       id: set-matrix
       working-directory: docs
       run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", recursive=True)))')" >> "$GITHUB_OUTPUT"
@@ -56,8 +83,6 @@ jobs:
         # Notebooks need to be executed
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.hash }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -67,9 +92,40 @@ jobs:
         with:
           path: docs/${{ matrix.notebook }}
           key: ${{ runner.os }}-notebook-${{ hashFiles(format('docs/{0}', matrix.notebook)) }}-${{ needs.setup.outputs.hash }}
-      - name: Install Julia kernel
+      - name: Setup micromamba
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: julia -e 'import IJulia; IJulia.installkernel("Julia", "--project=@.")'
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-file: environment.yml
+          cache-environment: true
+          post-cleanup: all
+      - name: Read Julia version
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        uses: SebRollen/toml-action@v1.0.2
+        id: read_toml
+        with:
+          file: 'Manifest.toml'
+          field: 'julia_version'
+      - name: Install Julia using jill.sh
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: |
+          wget -O /tmp/jill.sh https://raw.githubusercontent.com/abelsiqueira/jill/main/jill.sh
+          bash /tmp/jill.sh --version ${{ steps.read_toml.outputs.value }} -y
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Restore Julia packages
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            ~/.julia
+            !~/.julia/registries
+          key: ${{ needs.setup.outputs.hash }}
+      - name: Install Julia packages
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        shell: micromamba-shell {0}
+        run: |
+          julia --color=yes -e 'using IJulia; IJulia.installkernel("Julia", "--project=@.")'
+          julia --project=@. --color=yes -e 'using Pkg; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
       - name: Execute Notebook
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: >
@@ -109,7 +165,7 @@ jobs:
       - name: Setup micromamba
         uses: mamba-org/setup-micromamba@v1
         with:
-          environment-file: conda.yml
+          environment-file: environment.yml
           cache-environment: true
           post-cleanup: all
       - name: Build website
