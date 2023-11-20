@@ -128,6 +128,7 @@ jobs:
           julia --project=@. --color=yes -e 'using Pkg; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
       - name: Execute Notebook
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        shell: micromamba-shell {0}
         run: >
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
           --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
