@@ -34,5 +34,8 @@ jobs:
         with:
           path: ${{ env.pythonLocation }}
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+      - name: Install python packages
+        if: ${{ steps.cache-pip.outputs.cache-hit != 'true' }}
+        run: pip install -r requirements.txt
       - name: Build website
         run: jupyter-book build ${DIR} --builder linkcheck
