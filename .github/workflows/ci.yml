@@ -77,7 +77,6 @@ jobs:
           !~/.julia/registries
         key: ${{ steps.cache-julia.outputs.cache-primary-key }}
     - name: List notebooks as a JSON array
-      shell: micromamba-shell {0}
       id: set-matrix
       working-directory: docs
       run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", recursive=True)))')" >> "$GITHUB_OUTPUT"
