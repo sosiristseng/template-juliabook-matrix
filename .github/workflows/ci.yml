@@ -30,7 +30,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PY_VER }}
     - name: Cache pip
@@ -102,7 +102,7 @@ jobs:
           key: ${{ runner.os }}-notebook-${{ hashFiles(format('docs/{0}', matrix.notebook)) }}-${{ needs.setup.outputs.hash }}
       - name: Setup Python
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PY_VER }}
       - name: Cache pip
@@ -174,7 +174,7 @@ jobs:
       - name: Copy back built notebooks
         run: cp --verbose -rf out/docs/* docs/
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PY_VER }}
       - name: Cache pip
