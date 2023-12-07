@@ -18,22 +18,30 @@ env:
   JULIA_NUM_THREADS: 'auto'
   JULIA_CONDAPKG_BACKEND: 'Null'
   JULIA_CI: 'true'
+  PY_VER: '3.12'
 
 jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-      hash: ${{ steps.cache.outputs.cache-primary-key }}
+      hash: ${{ steps.cache-julia.outputs.cache-primary-key }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    - name: Setup micromamba
-      uses: mamba-org/setup-micromamba@v1
+    - name: Setup Python
+      uses: actions/setup-python@v4
       with:
-        environment-file: environment.yml
-        cache-environment: true
-        post-cleanup: all
+        python-version: ${{ env.PY_VER }}
+    - name: Cache pip
+      uses: actions/cache@v3
+      id: cache-pip
+      with:
+        path: ${{ env.pythonLocation }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+    - name: Install python packages
+      if: ${{ steps.cache-pip.outputs.cache-hit != 'true' }}
+      run: pip install -r requirements.txt
     - name: Read Julia version
       uses: SebRollen/toml-action@v1.0.2
       id: read_toml
@@ -45,9 +53,9 @@ jobs:
         wget -O /tmp/jill.sh https://raw.githubusercontent.com/abelsiqueira/jill/main/jill.sh
         bash /tmp/jill.sh --version ${{ steps.read_toml.outputs.value }} -y
         echo "$HOME/.local/bin" >> $GITHUB_PATH
-    - name: Restore Julia packages
+    - name: Cache Julia packages
       uses: actions/cache/restore@v3
-      id: cache
+      id: cache-julia
       with:
         path: |
           ~/.julia
@@ -56,18 +64,18 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-julia-${{ env.CACHE_NUM }}-
     - name: Install Julia packages
-      shell: micromamba-shell {0}
+      if: ${{ steps.cache-julia.outputs.cache-hit != 'true' }}
       run: |
         julia --color=yes -e 'using Pkg; Pkg.add(["IJulia"])'
-        julia --project=@. --color=yes -e 'using Pkg, Dates; Pkg.instantiate(); Pkg.resolve();Pkg.precompile(); Pkg.gc(collect_delay=Day(1))'
+        julia --project=@. --color=yes -e 'using Pkg, Dates; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile(); Pkg.gc(collect_delay=Day(0))'
     - name: Save Julia packages
       uses: actions/cache/save@v3
-      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      if: ${{ steps.cache-julia.outputs.cache-hit != 'true' }}
       with:
         path: |
           ~/.julia
           !~/.julia/registries
-        key: ${{ steps.cache.outputs.cache-primary-key }}
+        key: ${{ steps.cache-julia.outputs.cache-primary-key }}
     - name: List notebooks as a JSON array
       shell: micromamba-shell {0}
       id: set-matrix
@@ -92,13 +100,18 @@ jobs:
         with:
           path: docs/${{ matrix.notebook }}
           key: ${{ runner.os }}-notebook-${{ hashFiles(format('docs/{0}', matrix.notebook)) }}-${{ needs.setup.outputs.hash }}
-      - name: Setup micromamba
+      - name: Setup Python
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        uses: mamba-org/setup-micromamba@v1
+        uses: actions/setup-python@v4
         with:
-          environment-file: environment.yml
-          cache-environment: true
-          post-cleanup: all
+          python-version: ${{ env.PY_VER }}
+      - name: Cache pip
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache@v3
+        id: cache-pip
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
       - name: Read Julia version
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         uses: SebRollen/toml-action@v1.0.2
@@ -120,15 +133,12 @@ jobs:
             ~/.julia
             !~/.julia/registries
           key: ${{ needs.setup.outputs.hash }}
-      - name: Install Julia packages
+      - name: Install Julia kernel
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        shell: micromamba-shell {0}
         run: |
           julia --color=yes -e 'using IJulia; IJulia.installkernel("Julia", "--project=@.")'
-          julia --project=@. --color=yes -e 'using Pkg; Pkg.instantiate(); Pkg.resolve(); Pkg.precompile()'
       - name: Execute Notebook
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        shell: micromamba-shell {0}
         run: >
           jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
           --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
@@ -163,14 +173,17 @@ jobs:
         working-directory: out
       - name: Copy back built notebooks
         run: cp --verbose -rf out/docs/* docs/
-      - name: Setup micromamba
-        uses: mamba-org/setup-micromamba@v1
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
-          environment-file: environment.yml
-          cache-environment: true
-          post-cleanup: all
+          python-version: ${{ env.PY_VER }}
+      - name: Cache pip
+        uses: actions/cache@v3
+        id: cache-pip
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
       - name: Build website
-        shell: micromamba-shell {0}
         run: jupyter-book build docs/
       - name: Upload pages artifact
         if: ${{ github.ref == 'refs/heads/main' }}
