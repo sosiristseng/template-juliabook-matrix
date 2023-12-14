@@ -9,23 +9,22 @@ on:
       - main
     paths:
       - 'docs/**'
+      - '.lycheeignore'
       - '.github/workflows/linkcheck.yml'
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+env:
+  DIR: 'docs'
+  PY_VER: '3.12'
 
 jobs:
   linkcheck:
-    env:
-      DIR: 'docs'
-      PY_VER: '3.12'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Python
         uses: actions/setup-python@v5
+        id: cp
         with:
           python-version: ${{ env.PY_VER }}
       - name: Cache pip
@@ -33,9 +32,26 @@ jobs:
         id: cache-pip
         with:
           path: ${{ env.pythonLocation }}
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ steps.cp.outputs.python-version }}-${{ hashFiles('requirements.txt') }}
       - name: Install python packages
         if: ${{ steps.cache-pip.outputs.cache-hit != 'true' }}
         run: pip install -r requirements.txt
-      - name: Build website
+      - name: Setup Julia
+        uses: julia-actions/setup-julia@v1
+      - name: Convert literate notebooks to markdown files
+        shell: julia --color=yes {0}
+        working-directory: ${{ env.DIR }}
+        run: |
+          import Pkg
+          Pkg.add("Literate")
+          using Literate
+          for (root, dirs, files) in walkdir(pwd())
+            for file in files
+              if endswith(file, ".jl")
+                nb = joinpath(root, file)
+                Literate.notebook(nb, dirname(nb); mdstrings=true, execute=false)
+              end
+            end
+          end
+      - name: Check links
         run: jupyter-book build ${DIR} --builder linkcheck
