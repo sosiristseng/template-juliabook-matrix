@@ -57,33 +57,32 @@ jobs:
         # Notebooks need to be executed
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.hash }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Restore notebook if present
         uses: actions/cache/restore@v3
-        id: cache
+        id: nb-cache
         with:
           path: docs/${{ matrix.notebook }}
           key: ${{ runner.os }}-notebook-${{ hashFiles(format('docs/{0}', matrix.notebook)) }}-${{ needs.setup.outputs.hash }}
-      - name: Install Julia kernel
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: julia -e 'import IJulia; IJulia.installkernel("Julia", "--project=@.")'
+      - name: Pull docker image
+        run: docker pull ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.hash }}
       - name: Execute Notebook
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: >
-          jupyter nbconvert --to notebook --execute --inplace ${{ env.EXTRA_ARGS }}
-          --ExecutePreprocessor.timeout=${{ env.TIMEOUT }}
-          --ExecutePreprocessor.kernel_name=julia-1.$(julia -e 'print(VERSION.minor)')
-          docs/${{ matrix.notebook }}
+          docker run --rm -w /tmp -v ${{ github.workspace }}:/tmp
+          -e EXTRA_ARGS=${{ env.EXTRA_ARGS }}
+          -e TIMEOUT=${{ env.TIMEOUT }}
+          -e NOTEBOOK=${{ matrix.notebook }}
+          ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.hash }}
+          bash ./execute.sh
       - name: Cache notebook
         uses: actions/cache/save@v3
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         with:
           path: docs/${{ matrix.notebook }}
-          key: ${{ steps.cache.outputs.cache-primary-key }}
+          key: ${{ steps.nb-cache.outputs.cache-primary-key }}
       - name: Upload Notebook
         uses: actions/upload-artifact@v3
         with:
