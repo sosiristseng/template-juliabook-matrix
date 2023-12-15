@@ -14,7 +14,7 @@ concurrency:
 env:
   TIMEOUT: '-1'    # nbconvert timeout
   EXTRA_ARGS: ''   # Extra arguments for nbconvert
-  PY_VER: '3.12'
+  PY_VER: '3.12'   # Python version
 
 jobs:
   setup:
@@ -67,6 +67,7 @@ jobs:
           path: docs/${{ matrix.notebook }}
           key: ${{ runner.os }}-notebook-${{ hashFiles(format('docs/{0}', matrix.notebook)) }}-${{ needs.setup.outputs.hash }}
       - name: Pull docker image
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: docker pull ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.hash }}
       - name: Execute Notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
@@ -83,10 +84,13 @@ jobs:
         with:
           path: docs/${{ matrix.notebook }}
           key: ${{ steps.nb-cache.outputs.cache-primary-key }}
+      - name: Convert artifact Name
+        id: art
+        run: echo "name=$(echo ${{ matrix.notebook }} | sed 's/\//-/g')" >> "$GITHUB_OUTPUT"
       - name: Upload Notebook
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: notebooks
+          name: notebook-${{ steps.art.outputs.name }}
           path: docs*/${{ matrix.notebook }}  # keep folder structure
           retention-days: 1
 
@@ -97,18 +101,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Download notebooks
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: notebooks
           path: out/
       - name: Display structure of downloaded files
         run: ls -R
         working-directory: out
       - name: Copy back built notebooks
-        run: cp --verbose -rf out/docs/* docs/
+        run: for d in out/notebook-*; do cp --verbose -rf "$d"/docs/* docs/; done
       - name: Setup Python
         uses: actions/setup-python@v5
-        id: cp
+        id: cpy
         with:
           python-version: ${{ env.PY_VER }}
       - name: Cache pip
@@ -116,7 +119,7 @@ jobs:
         id: cache-pip
         with:
           path: ${{ env.pythonLocation }}
-          key: ${{ runner.os }}-pip-${{ steps.cp.outputs.python-version }}-${{ hashFiles('requirements-jb.txt') }}
+          key: ${{ runner.os }}-pip-${{ steps.cpy.outputs.python-version }}-${{ hashFiles('requirements-jb.txt') }}
       - name: Install python packages
         if: ${{ steps.cache-pip.outputs.cache-hit != 'true' }}
         run: pip install -r requirements-jb.txt
