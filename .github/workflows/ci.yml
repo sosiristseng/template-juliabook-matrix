@@ -108,7 +108,7 @@ jobs:
         run: ls -R
         working-directory: out
       - name: Copy back built notebooks
-        run: cp --verbose -rf out/notebook-*/docs/* docs/
+        run: for d in out/notebook-*; do cp --verbose -rf "$d"/docs/* docs/; done
       - name: Setup Python
         uses: actions/setup-python@v5
         id: cpy
