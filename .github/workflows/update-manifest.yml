@@ -9,6 +9,7 @@ on:
       - main
     paths:
       - .github/workflows/update-manifest.yml
+      - env.Dockerfile
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
