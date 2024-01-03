@@ -41,7 +41,7 @@ jobs:
         IMG: ghcr.io/${{ github.repository }}:${{ steps.img.outputs.hash }}
       run: |
         docker manifest inspect ${IMG} && exit 0
-        docker build -f env.Dockerfile -t ${IMG} .
+        docker build -f .github/Dockerfile -t ${IMG} .
         docker push ${IMG}
     - name: List notebooks as a JSON array
       id: set-matrix
@@ -77,7 +77,7 @@ jobs:
           -e TIMEOUT=${{ env.TIMEOUT }}
           -e NOTEBOOK=${{ matrix.notebook }}
           ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.hash }}
-          bash ./execute.sh
+          bash .github/execute.sh
       - name: Cache notebook
         uses: actions/cache/save@v3
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
@@ -104,9 +104,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: out/
-      - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: out
       - name: Copy back built notebooks
         run: for d in out/notebook-*; do cp --verbose -rf "$d"/docs/* docs/; done
       - name: Setup Python
