@@ -1,6 +1,6 @@
 #!/bin/sh
 
-julia -e 'import IJulia; IJulia.installkernel("Julia", "--project=@.")'
+# julia -e 'import IJulia; IJulia.installkernel("Julia", "--project=@.")'
 
 jupyter nbconvert --to notebook --execute --inplace ${EXTRA_ARGS} \
     --ExecutePreprocessor.timeout=${TIMEOUT} \
