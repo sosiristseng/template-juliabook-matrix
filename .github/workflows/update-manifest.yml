@@ -9,7 +9,6 @@ on:
       - main
     paths:
       - .github/workflows/update-manifest.yml
-      - env.Dockerfile
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,26 +16,24 @@ concurrency:
 
 env:
   APP_ID: '189113' # https://github.com/apps/wen-wei-s-pr-bot
-  IMG: 'app:test'
 
 jobs:
   update-manifest:
     permissions:
       contents: write
       pull-requests: write
-      actions: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Build docker image
-        run: docker build --target base -f .github/Dockerfile -t ${IMG} .
+      - name: Setup Julia
+        uses: julia-actions/setup-julia@v1
+        with:
+          version: '1'
       - name: Update Julia dependencies
-        run: >
-          docker run --rm -w /tmp -v ${{ github.workspace }}:/tmp
-          -e JULIA_PKG_PRECOMPILE_AUTO=0
-          ${IMG}
-          julia --color=yes --project=/tmp -e 'import Pkg; Pkg.update()'
+        env:
+          JULIA_PKG_PRECOMPILE_AUTO: '0'
+        run: julia --color=yes --project=@. -e 'import Pkg; Pkg.update()'
       # Authenticate with a custom GitHub APP
       # https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#authenticating-with-github-app-generated-tokens
       - name: Generate token for PR
