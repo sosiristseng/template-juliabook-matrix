@@ -27,7 +27,15 @@ jobs:
         id: cp
         with:
           python-version: ${{ env.PY_VER }}
-      - name: Install python packages
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        id: cache-py
+        with:
+          save-always: 'true'
+          path: ${{ env.pythonLocation }}
+          key:  ${{ runner.os }}-pip-${{ steps.cp.outputs.python-version }}-${{ hashFiles('requirements-jb.txt') }}
+      - name: Install pip dependencies if cache miss
+        if: steps.cache-py.outputs.cache-hit != 'true'
         run: pip install -r requirements-jb.txt
       - name: Check links
         run: jupyter-book build ${DIR} --builder linkcheck
