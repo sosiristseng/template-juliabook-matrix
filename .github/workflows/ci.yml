@@ -69,10 +69,12 @@ jobs:
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: >
           docker run --rm -w /tmp -v ${{ github.workspace }}:/tmp
-          -e EXTRA_ARGS=${{ env.EXTRA_ARGS }}
-          -e NOTEBOOK=${{ matrix.notebook }}
           ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.hash }}
-          bash ./execute.sh
+          jupyter nbconvert --to notebook --execute --inplace
+          ${{ env.EXTRA_ARGS }}
+          --ExecutePreprocessor.timeout=-1
+          --ExecutePreprocessor.kernel_name=$(julia -e 'print("julia-1.",VERSION.minor)')
+          docs/${{ matrix.notebook }}
       - name: Cache notebook
         uses: actions/cache/save@v4
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
@@ -114,7 +116,7 @@ jobs:
           path: ${{ env.pythonLocation }}
           key:  ${{ runner.os }}-pip-${{ steps.cp.outputs.python-version }}-${{ hashFiles('requirements-jb.txt') }}
       - name: Install pip dependencies if cache miss
-        if: steps.cache-py.outputs.cache-hit != 'true'
+        if: ${{ steps.cache-py.outputs.cache-hit != 'true' }}
         run: pip install -r requirements-jb.txt
       - name: Build website
         run: jupyter-book build docs/
