@@ -1,8 +1,8 @@
-# Template for publishing Julia Jupyter notebooks with Jupyter Book
+# Template for publishing Julia Jupyter notebooks
 
 Click `Use this template` button to copy this repository.
 
-Related templates:
+Related repositories:
 
 - [template-juliabook-parallel](https://github.com/ww-jl/template-juliabook-parallel) : GNU parallel runs notebooks concurrently and [jupyter-book][] builds the website.
 - [template-juliabook-matrix](https://github.com/ww-jl/template-juliabook-matrix) : Dynamic parallel matrix runs notebooks concurrently and [jupyter-book][] builds the website.
@@ -16,9 +16,9 @@ Related templates:
 [Literate.jl]: https://github.com/fredrikekre/Literate.jl
 [mkdocs-material]: https://squidfunk.github.io/mkdocs-material
 
-## Notebook execution and publish via continuous integration (CI)
+## Notebook execution and publish
 
-In [ci.yml](.github/workflows/ci.yml), notebooks under the `docs` folder are executed in parallel, and then [Jupyter book][jupyter-book] creates a beautiful website from Markdown and Jupyter notebook files.
+In [ci.yml](.github/workflows/ci.yml), notebooks under the `docs` folder are executed in parallel by GitHub actions; then [Jupyter book][jupyter-book] creates a beautiful website from Markdown and Jupyter notebook files.
 
 ## Enable GitHub pages
 
@@ -26,7 +26,7 @@ Open your repository settings => Pages => GitHub Pages => Build and deployment =
 
 ## Automatic dependency updates
 
-###  Dependabot and Kodiak Bot
+### Dependabot and Kodiak Bot
 
 See [dependabot.yml](.github/dependabot.yml) configuration.
 
