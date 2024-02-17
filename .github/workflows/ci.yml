@@ -56,6 +56,8 @@ jobs:
         # Notebooks need to be executed
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
     runs-on: ubuntu-latest
+    env:
+      NB: docs/${{ matrix.notebook }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -63,8 +65,8 @@ jobs:
         uses: actions/cache/restore@v4
         id: nb-cache
         with:
-          path: docs/${{ matrix.notebook }}
-          key: ${{ runner.os }}-notebook-${{ hashFiles(format('docs/{0}', matrix.notebook)) }}-${{ needs.setup.outputs.hash }}
+          path: ${{ env.NB }}
+          key: ${{ runner.os }}-notebook-${{ hashFiles(env.NB) }}-${{ needs.setup.outputs.hash }}
       - name: Execute Notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: >
@@ -74,16 +76,16 @@ jobs:
           ${{ env.EXTRA_ARGS }}
           --ExecutePreprocessor.timeout=-1
           --ExecutePreprocessor.kernel_name=$(julia -e 'print("julia-1.",VERSION.minor)')
-          docs/${{ matrix.notebook }}
+          ${{ env.NB }}
       - name: Cache notebook
         uses: actions/cache/save@v4
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         with:
-          path: docs/${{ matrix.notebook }}
+          path: ${{ env.NB }}
           key: ${{ steps.nb-cache.outputs.cache-primary-key }}
       - name: Convert artifact Name
         id: art
-        run: echo "name=$(echo ${{ matrix.notebook }} | sed 's/\//-/g')" >> "$GITHUB_OUTPUT"
+        run: echo "name=$(echo ${{ env.NB }} | sed 's/\//-/g')" >> "$GITHUB_OUTPUT"
       - name: Upload Notebook
         uses: actions/upload-artifact@v4
         with:
