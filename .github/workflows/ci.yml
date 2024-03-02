@@ -13,6 +13,10 @@ concurrency:
 
 env:
   EXTRA_ARGS: ''   # Extra arguments for nbconvert
+  CACHE_NUM: '1'
+  JULIA_CONDAPKG_BACKEND: 'Null'
+  JULIA_CI: 'true'
+  JULIA_NUM_THREADS: 'auto'
 
 jobs:
   setup:
