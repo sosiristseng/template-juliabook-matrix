@@ -140,6 +140,7 @@ jobs:
             !~/.julia/registries
           key: ${{ runner.os }}-julia-${{ env.CACHE_NUM }}-${{ needs.setup.outputs.hash }}
       - name: Install IJulia kernel
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: julia --color=yes -e 'import IJulia; IJulia.installkernel("julia", "--project=@.")'
       - name: Execute Notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
