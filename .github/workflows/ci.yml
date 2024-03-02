@@ -114,7 +114,7 @@ jobs:
           python-version: '3.x'
       - name: Cache pip dependencies
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         id: cache-py
         with:
           path: ${{ env.pythonLocation }}
@@ -133,13 +133,13 @@ jobs:
           version: ${{ steps.read_toml.outputs.value }}
       - name: Cache Julia packages
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         id: cache-julia
         with:
           path: |
             ~/.julia
             !~/.julia/registries
-          key: ${{ runner.os }}-julia-${{ env.CACHE_NUM }}-$${{ needs.setup.outputs.hash }}
+          key: ${{ runner.os }}-julia-${{ env.CACHE_NUM }}-${{ needs.setup.outputs.hash }}
       - name: Execute Notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: >
@@ -182,7 +182,7 @@ jobs:
         with:
           python-version: '3.x'
       - name: Cache pip dependencies
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         id: cache-py
         with:
           path: ${{ env.pythonLocation }}
