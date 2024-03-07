@@ -34,7 +34,7 @@ jobs:
           path: ${{ env.pythonLocation }}
           key:  ${{ runner.os }}-pip-${{ steps.cp.outputs.python-version }}-${{ hashFiles('requirements-jb.txt') }}
       - name: Install pip dependencies if cache miss
-        if: steps.cache-py.outputs.cache-hit != 'true'
+        if: ${{ steps.cache-py.outputs.cache-hit != 'true' }}
         run: pip install -r requirements-jb.txt
       - name: Check links
-        run: jupyter-book build ${DIR} --builder linkcheck
+        run: jb build ${DIR} --builder linkcheck
