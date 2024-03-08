@@ -4,6 +4,7 @@ FROM python:3.12.2-slim
 # Julia config
 ENV JULIA_CI 'true'
 ENV JULIA_NUM_THREADS 'auto'
+ENV JULIA_CPU_TARGET 'generic;znver3'
 # Let PythonCall use built-in python
 ENV JULIA_CONDAPKG_BACKEND 'Null'
 ENV JULIA_PATH '/usr/local/julia/'
