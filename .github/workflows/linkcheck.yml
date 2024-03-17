@@ -30,7 +30,6 @@ jobs:
         uses: actions/cache@v4
         id: cache-py
         with:
-          save-always: 'true'
           path: ${{ env.pythonLocation }}
           key:  ${{ runner.os }}-pip-${{ steps.cp.outputs.python-version }}-${{ hashFiles('requirements-jb.txt') }}
       - name: Install pip dependencies if cache miss

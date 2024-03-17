@@ -57,6 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NB: docs/${{ matrix.notebook }}
+      IMG: ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.hash }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -70,7 +71,7 @@ jobs:
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: >
           docker run --rm -w /tmp -v ${{ github.workspace }}:/tmp
-          ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.hash }}
+          ${{ env.IMG }}
           jupyter nbconvert --to notebook --execute --inplace
           ${{ env.EXTRA_ARGS }}
           --ExecutePreprocessor.timeout=-1
@@ -113,7 +114,6 @@ jobs:
         uses: actions/cache@v4
         id: cache-py
         with:
-          save-always: 'true'
           path: ${{ env.pythonLocation }}
           key:  ${{ runner.os }}-pip-${{ steps.cp.outputs.python-version }}-${{ hashFiles('requirements-jb.txt') }}
       - name: Install pip dependencies if cache miss
