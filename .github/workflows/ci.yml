@@ -13,10 +13,6 @@ concurrency:
 
 env:
   EXTRA_ARGS: ''   # Extra arguments for nbconvert
-  CACHE_NUM: '1'
-  JULIA_CONDAPKG_BACKEND: 'Null'
-  JULIA_CI: 'true'
-  JULIA_NUM_THREADS: 'auto'
 
 jobs:
   setup:
@@ -25,61 +21,26 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-      hash: ${{ steps.jl.outputs.hash }}
+      hash: ${{ steps.img.outputs.hash }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      id: cp
+    - name: Login to ghcr.io
+      uses: docker/login-action@v3
       with:
-        python-version: '3.x'
-    - name: Cache pip dependencies
-      uses: actions/cache@v4
-      id: cache-py
-      with:
-        save-always: 'true'
-        path: ${{ env.pythonLocation }}
-        key:  ${{ runner.os }}-pip-${{ steps.cp.outputs.python-version }}-${{ hashFiles('requirements.txt') }}
-    - name: Install pip dependencies if cache miss
-      if: ${{ steps.cache-py.outputs.cache-hit != 'true' }}
-      run: pip install -r requirements.txt
-    - name: Read Julia version
-      uses: SebRollen/toml-action@v1.2.0
-      id: read_toml
-      with:
-        file: 'Manifest.toml'
-        field: 'julia_version'
-    - name: Setup Julia
-      uses: julia-actions/setup-julia@v1
-      with:
-        version: ${{ steps.read_toml.outputs.value }}
-    - name: Julia env hash
-      id: jl
-      run: echo "hash=${{ hashFiles('src/**', 'Project.toml', 'Manifest.toml' )}}" >> $GITHUB_OUTPUT
-    - name: Cache Julia packages
-      uses: actions/cache@v4
-      id: cache-julia
-      with:
-        save-always: 'true'
-        path: |
-          ~/.julia
-          !~/.julia/registries
-        key: ${{ runner.os }}-julia-${{ env.CACHE_NUM }}-${{ steps.jl.outputs.hash }}
-        restore-keys: |
-          ${{ runner.os }}-julia-${{ env.CACHE_NUM }}-
-    - name: Install Julia packages
-      if: ${{ steps.cache-julia.outputs.cache-hit != 'true' }}
+        registry: ghcr.io
+        username: ${{ github.repository_owner	}}
+        password: ${{ github.token }}
+    - name: Get docker image hash
+      id: img
+      run: echo "hash=${{ hashFiles('requirements.txt', 'Project.toml', 'Manifest.toml', 'src/**', 'env.Dockerfile') }}" >> "$GITHUB_OUTPUT"
+    - name: Build Docker container
       env:
-        PYTHON: ${{ env.pythonLocation }}/python
-      shell: julia --color=yes {0}
+        IMG: ghcr.io/${{ github.repository }}:${{ steps.img.outputs.hash }}
       run: |
-        using Pkg, Dates
-        Pkg.add(["IJulia"])
-        Pkg.activate(".")
-        Pkg.instantiate()
-        Pkg.precompile()
-        Pkg.gc(collect_delay=Day(0))
+        docker manifest inspect ${IMG} && exit 0
+        docker build -f env.Dockerfile -t ${IMG} .
+        docker push ${IMG}
     - name: List notebooks as a JSON array
       id: set-matrix
       working-directory: docs
@@ -105,46 +66,11 @@ jobs:
         with:
           path: ${{ env.NB }}
           key: ${{ runner.os }}-notebook-${{ hashFiles(env.NB) }}-${{ needs.setup.outputs.hash }}
-      - name: Setup Python
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        uses: actions/setup-python@v5
-        id: cp
-        with:
-          python-version: '3.x'
-      - name: Cache pip dependencies
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache/restore@v4
-        id: cache-py
-        with:
-          path: ${{ env.pythonLocation }}
-          key:  ${{ runner.os }}-pip-${{ steps.cp.outputs.python-version }}-${{ hashFiles('requirements.txt') }}
-      - name: Read Julia version
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        uses: SebRollen/toml-action@v1.2.0
-        id: read_toml
-        with:
-          file: 'Manifest.toml'
-          field: 'julia_version'
-      - name: Setup Julia
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        uses: julia-actions/setup-julia@v1.9.6
-        with:
-          version: ${{ steps.read_toml.outputs.value }}
-      - name: Cache Julia packages
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache/restore@v4
-        id: cache-julia
-        with:
-          path: |
-            ~/.julia
-            !~/.julia/registries
-          key: ${{ runner.os }}-julia-${{ env.CACHE_NUM }}-${{ needs.setup.outputs.hash }}
-      - name: Install IJulia kernel
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: julia --color=yes -e 'import IJulia; IJulia.installkernel("julia", "--project=@.")'
       - name: Execute Notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: >
+          docker run --rm -w /tmp -v ${{ github.workspace }}:/tmp
+          ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.hash }}
           jupyter nbconvert --to notebook --execute --inplace
           ${{ env.EXTRA_ARGS }}
           --ExecutePreprocessor.timeout=-1
@@ -184,11 +110,15 @@ jobs:
         with:
           python-version: '3.x'
       - name: Cache pip dependencies
-        uses: actions/cache/restore@v4
+        uses: actions/cache@v4
         id: cache-py
         with:
+          save-always: 'true'
           path: ${{ env.pythonLocation }}
-          key:  ${{ runner.os }}-pip-${{ steps.cp.outputs.python-version }}-${{ hashFiles('requirements.txt') }}
+          key:  ${{ runner.os }}-pip-${{ steps.cp.outputs.python-version }}-${{ hashFiles('requirements-jb.txt') }}
+      - name: Install pip dependencies if cache miss
+        if: ${{ steps.cache-py.outputs.cache-hit != 'true' }}
+        run: pip install -r requirements-jb.txt
       - name: Build website
         run: jupyter-book build docs/
       - name: Upload pages artifact
