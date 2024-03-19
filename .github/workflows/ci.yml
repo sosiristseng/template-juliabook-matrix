@@ -71,7 +71,7 @@ jobs:
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: |
           docker pull ${{ env.IMG }}
-          docker images ls ${{ env.IMG }}
+          docker images ${{ env.IMG }}
       - name: Execute notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: >
