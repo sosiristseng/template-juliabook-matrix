@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  EXTRA_ARGS: ''   # Extra arguments for nbconvert
+  ALLOWERRORS: 'false'
   NBCACHE: '.cache'
 
 jobs:
@@ -79,7 +79,7 @@ jobs:
           -e NB=${{ env.NB }}
           -e NBCACHE=${{ env.NBCACHE }}
           -e WORKSPACE=${{ github.workspace }}
-          -e EXTRA_ARGS=${{ env.EXTRA_ARGS }}
+          -e ALLOWERRORS=${{ env.ALLOWERRORS }}
           ${{ env.IMG }}
           julia execute.jl
       - name: Cache notebook
