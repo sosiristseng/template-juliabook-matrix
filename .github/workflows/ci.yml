@@ -115,7 +115,7 @@ jobs:
           pattern: notebook-*
           merge-multiple: true
       - name: Display structure of downloaded files
-        run: ls -R out
+        run: ls -R ${{ env.NBCACHE }}
       - name: Copy back built notebooks
         run: cp --verbose -rf ${{ env.NBCACHE }}/docs/* docs/
       - name: Setup Python
