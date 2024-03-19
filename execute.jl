@@ -16,8 +16,8 @@ outpath = joinpath(get(ENV, "WORKSPACE", pwd()), cachedir, nb)
 mkpath(dirname(outpath))
 
 kernelname = "--ExecutePreprocessor.kernel_name=julia-1.$(VERSION.minor)"
-allowerr = ifelse(get(ENV, "ALLOWERRORS", " ") == "true", "--allow-errors", " ")
+execute = ifelse(get(ENV, "ALLOWERRORS", " ") == "true", "--execute --allow-errors", "--execute")
 timeout = "--ExecutePreprocessor.timeout=" * get(ENV, "TIMEOUT", "-1")
-cmd = `jupyter nbconvert --to notebook --execute $(allowerr) $(timeout) $(kernelname) --output $(outpath) $(nb)`
+cmd = `jupyter nbconvert --to notebook $(execute) $(timeout) $(kernelname) --output $(outpath) $(nb)`
 
 run(cmd)
