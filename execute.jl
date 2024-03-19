@@ -12,7 +12,7 @@ else
     error("$(file) is not a valid notebook file!")
 end
 
-outpath = joinpath(get(ENV, "GITHUB_WORKSPACE", pwd()), cachedir, nb)
+outpath = joinpath(get(ENV, "WORKSPACE", pwd()), cachedir, nb)
 mkpath(dirname(outpath))
 
 kernelname = "--ExecutePreprocessor.kernel_name=julia-1.$(VERSION.minor)"

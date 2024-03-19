@@ -76,6 +76,10 @@ jobs:
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: >
           docker run --rm -w /tmp -v ${{ github.workspace }}:/tmp
+          -e NB=${{ env.NB }}
+          -e NBCACHE=${{ env.NBCACHE }}
+          -e WORKSPACE=${{ github.workspace }}
+          -e EXTRA_ARGS=${{ env.EXTRA_ARGS }}
           ${{ env.IMG }}
           julia execute.jl
       - name: Cache notebook
