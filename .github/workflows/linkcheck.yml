@@ -21,6 +21,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup Julia
+        uses: julia-actions/setup-julia@v1
+      - name: Convert literate notebooks to ipynb files
+        shell: julia --color=yes {0}
+        run: |
+          import Pkg
+          Pkg.add("Literate")
+          using Literate
+          for (root, dirs, files) in walkdir("docs")
+            for file in files
+              if endswith(file, ".jl")
+                nb = joinpath(root, file)
+                Literate.notebook(nb, dirname(nb); mdstrings=true, execute=false)
+              end
+            end
+          end
       - name: Setup Python
         uses: actions/setup-python@v5
         id: cp
