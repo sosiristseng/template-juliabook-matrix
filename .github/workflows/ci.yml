@@ -111,7 +111,7 @@ jobs:
       - name: Download notebooks
         uses: actions/download-artifact@v4
         with:
-          path: out/
+          path: ${{ env.NBCACHE }}/
           pattern: notebook-*
           merge-multiple: true
       - name: Display structure of downloaded files
