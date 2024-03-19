@@ -82,6 +82,8 @@ jobs:
           -e ALLOWERRORS=${{ env.ALLOWERRORS }}
           ${{ env.IMG }}
           julia execute.jl
+      - name: List output cache
+        run: ls -R ${{ env.NBCACHE }}
       - name: Cache notebook
         uses: actions/cache/save@v4
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
