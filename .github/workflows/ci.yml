@@ -84,13 +84,13 @@ jobs:
           julia execute.jl
       - name: Claim output cache folder
         run: |
-          sudo chown -R $USER ${{ env.NBCACHE }}
-          ls -R ${{ env.NBCACHE }}
+          sudo chown -R $USER ${{ github.workspace }}/${{ env.NBCACHE }}
+          ls -R ${{ github.workspace }}/${{ env.NBCACHE }}
       - name: Cache notebook
         uses: actions/cache/save@v4
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         with:
-          path: ${{ env.NBCACHE }}
+          path: ${{ github.workspace }}/${{ env.NBCACHE }}
           key: ${{ steps.nb-cache.outputs.cache-primary-key }}
       - name: Convert artifact Name
         id: art
@@ -99,7 +99,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: notebook-${{ steps.art.outputs.name }}
-          path: ${{ env.NBCACHE }}
+          path: ${{ github.workspace }}/${{ env.NBCACHE }}
           retention-days: 1
 
   render:
