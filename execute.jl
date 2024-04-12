@@ -40,6 +40,7 @@ function run_literate(file; rmsvg=true)
 end
 
 function run_ipynb(file)
+    nb = file
     outpath = joinpath(abspath(pwd()), cachedir, nb)
     mkpath(dirname(outpath))
     kernelname = "--ExecutePreprocessor.kernel_name=julia-1.$(VERSION.minor)"
