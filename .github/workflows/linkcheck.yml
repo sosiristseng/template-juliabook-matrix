@@ -46,8 +46,10 @@ jobs:
         uses: actions/cache@v4
         id: cache-py
         with:
-          path: ${{ env.pythonLocation }}
           key:  ${{ runner.os }}-pip-${{ steps.cp.outputs.python-version }}-${{ hashFiles('requirements-jb.txt') }}
+          path: |
+            ${{ env.pythonLocation }}/lib
+            ${{ env.pythonLocation }}/bin
       - name: Install pip dependencies if cache miss
         if: ${{ steps.cache-py.outputs.cache-hit != 'true' }}
         run: pip install -r requirements-jb.txt
