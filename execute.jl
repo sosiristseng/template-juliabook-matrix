@@ -3,6 +3,7 @@ using JSON
 using Pkg
 Pkg.activate(Base.current_project())
 
+ENV["GKSwstype"] = "100"
 file = get(ENV, "NB", "test.ipynb")
 cachedir = get(ENV, "NBCACHE", ".cache")
 
