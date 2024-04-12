@@ -15,15 +15,6 @@ function main(; rmsvg=true)
     end
 end
 
-if endswith(file, ".jl")
-    Literate.notebook(file, dirname(file); mdstrings=true, execute=false)
-    nb = splitext(file)[1] * ".ipynb"
-elseif endswith(file, ".ipynb")
-    nb = file
-else
-    error("$(file) is not a valid notebook file!")
-end
-
 # Remove SVG output from a Jupyter notebook
 function remove_svg(nb)
     for cell in nb["cells"]
