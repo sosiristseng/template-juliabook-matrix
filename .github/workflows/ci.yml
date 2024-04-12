@@ -127,7 +127,7 @@ jobs:
         uses: actions/cache@v4
         id: cache-py
         with:
-          key:  ${{ runner.os }}-py-${{ steps.cp.outputs.python-version }}-${{ hashFiles('requirements-jb.txt') }}
+          key:  ${{ runner.os }}-pip-${{ steps.cp.outputs.python-version }}-${{ hashFiles('requirements-jb.txt') }}
           path: |
             ${{ env.pythonLocation }}/lib
             ${{ env.pythonLocation }}/bin
