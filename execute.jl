@@ -1,4 +1,5 @@
 using Literate
+using JSON
 using Pkg
 Pkg.activate(Base.current_project())
 
@@ -15,9 +16,10 @@ function main(; rmsvg=true)
     end
 end
 
-# Remove SVG output from a Jupyter notebook
-function remove_svg(nb)
-    @info "Stripping SVG for $(file)"
+# Strip SVG output from a Jupyter notebook
+function strip_svg(ipynb)
+    @info "Stripping SVG in $(ipynb)"
+    nb = open(JSON.parse, ipynb, "r")
     for cell in nb["cells"]
         !haskey(cell, "outputs") && continue
         for output in cell["outputs"]
@@ -29,14 +31,18 @@ function remove_svg(nb)
             end
         end
     end
-    return nb
+    open(ipynb, "w") do io
+        JSON.print(io, nb, 1)
+    end
+    return ipynb
 end
 
 function run_literate(file; rmsvg=true)
     outpath = joinpath(abspath(pwd()), cachedir, dirname(file))
     mkpath(outpath)
-    postprocess = rmsvg ? remove_svg : identity
-    Literate.notebook(file, outpath; mdstrings=true, execute=true, postprocess)
+    ipynb = Literate.notebook(file, outpath; mdstrings=true, execute=true)
+    rmsvg && strip_svg(ipynb)
+    return
 end
 
 function run_ipynb(file)
@@ -47,6 +53,7 @@ function run_ipynb(file)
     timeout = "--ExecutePreprocessor.timeout=" * get(ENV, "TIMEOUT", "-1")
     cmd = `jupyter nbconvert --to notebook $(execute) $(timeout) $(kernelname) --output $(outpath) $(file)`
     run(cmd)
+    return
 end
 
 main()
