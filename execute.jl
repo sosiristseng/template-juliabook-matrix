@@ -47,7 +47,7 @@ function run_ipynb(file)
     outpath = joinpath(abspath(pwd()), cachedir, nb)
     mkpath(dirname(outpath))
     kernelname = "--ExecutePreprocessor.kernel_name=julia-1.$(VERSION.minor)"
-    execute = iget(ENV, "ALLOWERRORS", " ") == "true" ? "--execute --allow-errors" : "--execute"
+    execute = get(ENV, "ALLOWERRORS", " ") == "true" ? "--execute --allow-errors" : "--execute"
     timeout = "--ExecutePreprocessor.timeout=" * get(ENV, "TIMEOUT", "-1")
     cmd = `jupyter nbconvert --to notebook $(execute) $(timeout) $(kernelname) --output $(outpath) $(nb)`
     run(cmd)
