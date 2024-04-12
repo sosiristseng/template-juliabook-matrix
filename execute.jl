@@ -40,13 +40,12 @@ function run_literate(file; rmsvg=true)
 end
 
 function run_ipynb(file)
-    nb = file
-    outpath = joinpath(abspath(pwd()), cachedir, nb)
+    outpath = joinpath(abspath(pwd()), cachedir, file)
     mkpath(dirname(outpath))
     kernelname = "--ExecutePreprocessor.kernel_name=julia-1.$(VERSION.minor)"
     execute = get(ENV, "ALLOWERRORS", " ") == "true" ? "--execute --allow-errors" : "--execute"
     timeout = "--ExecutePreprocessor.timeout=" * get(ENV, "TIMEOUT", "-1")
-    cmd = `jupyter nbconvert --to notebook $(execute) $(timeout) $(kernelname) --output $(outpath) $(nb)`
+    cmd = `jupyter nbconvert --to notebook $(execute) $(timeout) $(kernelname) --output $(outpath) $(file)`
     run(cmd)
 end
 
