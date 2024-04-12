@@ -17,6 +17,7 @@ end
 
 # Remove SVG output from a Jupyter notebook
 function remove_svg(nb)
+    @info "Stripping SVG for $(file)"
     for cell in nb["cells"]
         !haskey(cell, "outputs") && continue
         for output in cell["outputs"]
