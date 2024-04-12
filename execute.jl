@@ -22,8 +22,10 @@ function remove_svg(nb)
         for output in cell["outputs"]
             !haskey(output, "data") && continue
             datadict = output["data"]
-            delete!(datadict, "text/html")
-            delete!(datadict, "image/svg+xml")
+            if haskey(datadict, "image/png") || haskey(datadict, "image/jpeg")
+                delete!(datadict, "text/html")
+                delete!(datadict, "image/svg+xml")
+            end
         end
     end
     return nb
