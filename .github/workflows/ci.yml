@@ -120,20 +120,23 @@ jobs:
         run: cp --verbose -rf ${{ env.NBCACHE }}/docs/* docs/
       - name: Setup Python
         uses: actions/setup-python@v5
-        id: cp
+        id: setup-python
         with:
           python-version: '3.x'
-      - name: Cache pip dependencies
+      - name: Cache python venv
         uses: actions/cache@v4
-        id: cache-py
+        if: ${{ contains(runner.name, 'GitHub Actions') }}
+        id: cache-venv
         with:
-          key:  ${{ runner.os }}-pip-${{ steps.cp.outputs.python-version }}-${{ hashFiles('requirements-jb.txt') }}
-          path: |
-            ${{ env.pythonLocation }}/lib
-            ${{ env.pythonLocation }}/bin
-      - name: Install pip dependencies if cache miss
-        if: ${{ steps.cache-py.outputs.cache-hit != 'true' }}
-        run: pip install -r requirements-jb.txt
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('requirements-jb.txt') }}
+          path: .venv
+      - name: Install Python dependencies
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install -r requirements-jb.txt
+          echo "${VIRTUAL_ENV}/bin" >> $GITHUB_PATH
+          echo "VIRTUAL_ENV=${VIRTUAL_ENV}" >> $GITHUB_ENV
       - name: Build website
         run: jupyter-book build docs/
       - name: Upload pages artifact
