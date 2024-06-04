@@ -16,7 +16,6 @@ concurrency:
 
 env:
   APP_ID: '189113' # https://github.com/apps/wen-wei-s-pr-bot
-  IMG: 'app:test'
 
 jobs:
   update-manifest:
