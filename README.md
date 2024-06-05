@@ -4,12 +4,9 @@ Click `Use this template` button to copy this repository.
 
 See also:
 
-- [template-juliabook](https://github.com/ww-jl/template-juliabook) : runs notebooks concurrently and [jupyter-book][] builds the website.
+- [template-juliabook](https://github.com/ww-jl/template-juliabook): runs notebooks concurrently and use [jupyter-book][] to build the website.
 
-[quarto]: https://quarto.org
 [jupyter-book]: https://jupyterbook.org
-[Literate.jl]: https://github.com/fredrikekre/Literate.jl
-[mkdocs-material]: https://squidfunk.github.io/mkdocs-material
 
 ## Notebook execution and publish
 
@@ -25,9 +22,9 @@ Open your repository settings => Pages => GitHub Pages => Build and deployment =
 
 ## Automatic dependency updates
 
-### Dependabot and Kodiak Bot
+### Renovate Bot and Kodiak Bot
 
-See [dependabot.yml](.github/dependabot.yml) configuration.
+See [renovate.json](.github/renovate.json) configuration.
 
 This repository also uses [Kodiak Bot](https://kodiakhq.com/docs/quickstart) to automatically merge updates. You might need to enable the Kodiak Bot APP.
 
