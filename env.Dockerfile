@@ -1,5 +1,5 @@
 FROM julia:1.10.4@sha256:797606769b77fa69e23dbb9cba67b0850f5a5b6a901d58b96be5f400d3313b19 as julia
-FROM python:3.12.4-slim@sha256:ee6864930c0ec126965614ca3da44ddbd2805b692605fdbfcf28d5f6b463fb3b
+FROM python:3.12.4-slim@sha256:e3ae8cf03c4f0abbfef13a8147478a7cd92798a94fa729a36a185d9106cbae32
 
 # Julia config
 ENV JULIA_CI 'true'
