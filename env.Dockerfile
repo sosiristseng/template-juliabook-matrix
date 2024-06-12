@@ -1,4 +1,4 @@
-FROM julia:1.10.4@sha256:797606769b77fa69e23dbb9cba67b0850f5a5b6a901d58b96be5f400d3313b19 as julia
+FROM julia:1.10.4@sha256:ded6f9de5a0e02d2742f716096256338bd93e67bef8ec9206f9ac88f64811390 as julia
 FROM python:3.12.4-slim@sha256:e3ae8cf03c4f0abbfef13a8147478a7cd92798a94fa729a36a185d9106cbae32
 
 # Julia config
