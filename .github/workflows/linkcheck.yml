@@ -22,7 +22,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
       - name: Setup Julia
-        uses: julia-actions/setup-julia@f2258781c657ad9b4b88072c5eeaf9ec8c370874 # v2
+        uses: julia-actions/setup-julia@81d42b556a18b0d67455a742fcbffdeb49b3ffb0 # v2
       - name: Convert literate notebooks to ipynb files
         shell: julia --color=yes {0}
         run: |
