@@ -1,2 +1,2 @@
-matplotlib==3.9.1
+matplotlib==3.9.1.post1
 nbconvert==7.16.4
