@@ -1,4 +1,4 @@
-FROM julia:1.10.4 as julia
+FROM julia:1.10.5 as julia
 FROM ghcr.io/astral-sh/uv:latest as uv
 FROM python:3.12.5-slim
 
@@ -6,7 +6,6 @@ FROM python:3.12.5-slim
 ENV UV_SYSTEM_PYTHON '1'
 ENV JULIA_CI 'true'
 ENV JULIA_NUM_THREADS 'auto'
-ENV JULIA_CPU_TARGET 'generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1);znver3,clone_all'
 # Let PythonCall use built-in python
 ENV JULIA_CONDAPKG_BACKEND 'Null'
 ENV JULIA_PATH '/usr/local/julia/'
