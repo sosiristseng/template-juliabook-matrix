@@ -1,16 +1,17 @@
 using Literate
 using JSON
 using Pkg
+using IJulia
 Pkg.activate(Base.current_project())
 
 ENV["GKSwstype"] = "100"
-file = get(ENV, "NB", "test.ipynb")
-cachedir = get(ENV, "NBCACHE", ".cache")
 
 function main(; rmsvg=true)
+    file = get(ENV, "NB", "test.ipynb")
     if endswith(file, ".jl")
         run_literate(file; rmsvg)
     elseif endswith(file, ".ipynb")
+        IJulia.installkernel("Julia", "--project=@.")
         run_ipynb(file)
     else
         error("$(file) is not a valid notebook file!")
@@ -40,6 +41,7 @@ function strip_svg(ipynb)
 end
 
 function run_literate(file; rmsvg=true)
+    cachedir = get(ENV, "NBCACHE", ".cache")
     outpath = joinpath(abspath(pwd()), cachedir, dirname(file))
     mkpath(outpath)
     ipynb = Literate.notebook(file, outpath; mdstrings=true, execute=true)
@@ -48,6 +50,7 @@ function run_literate(file; rmsvg=true)
 end
 
 function run_ipynb(file)
+    cachedir = get(ENV, "NBCACHE", ".cache")
     outpath = joinpath(abspath(pwd()), cachedir, file)
     mkpath(dirname(outpath))
     kernelname = "--ExecutePreprocessor.kernel_name=julia-1.$(VERSION.minor)"
