@@ -16,6 +16,7 @@ env:
   NBCACHE: '.cache'
   CACHE_NUM: '1'
   JULIA_CONDAPKG_BACKEND: 'Null'
+  JULIA_NUM_THREADS: 'auto'
   JULIA_CI: 'true'
   UV_SYSTEM_PYTHON: 1
 
