@@ -11,7 +11,7 @@ function main(; rmsvg=true)
     if endswith(file, ".jl")
         run_literate(file; rmsvg)
     elseif endswith(file, ".ipynb")
-        IJulia.installkernel("Julia", "project=@.")
+        IJulia.installkernel("Julia", "--project=@.")
         run_ipynb(file)
     else
         error("$(file) is not a valid notebook file!")
