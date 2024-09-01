@@ -26,7 +26,7 @@ Open your repository settings => Pages => GitHub Pages => Build and deployment =
 
 See [dependabot.yml](.github/dependabot.yml) and [.kodiak.toml](.github/.kodiak.toml) configuration files.
 
-You need to enable the [Kodiak Bot](https://kodiakhq.com/docs/quickstart) APP to automatically merge updates. You need to enable the Kodiak Bot APP.
+You need to enable the [Kodiak Bot](https://kodiakhq.com/docs/quickstart) APP to automatically merge updates.
 
 ### Julia dependencies
 
