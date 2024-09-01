@@ -52,14 +52,12 @@ jobs:
       uses: actions/cache@v4
       id: cache-julia
       with:
-        path: |
-          ~/.julia
-          !~/.julia/registries
+        path: ~/.julia
         key: ${{ runner.os }}-julia-${{ env.CACHE_NUM }}-${{ steps.read_toml.outputs.value }}-${{ steps.hash.outputs.value }}
         restore-keys: |
           ${{ runner.os }}-julia-${{ env.CACHE_NUM }}-${{ steps.read_toml.outputs.value }}-
     - name: Install Julia packages
-      if: ${{ !contains(runner.name, 'GitHub Actions') || steps.cache-julia.outputs.cache-hit != 'true' }}
+      if: ${{ runner.environment == 'self-hosted' || steps.cache-julia.outputs.cache-hit != 'true' }}
       shell: julia --color=yes {0}
       run: |
         using Pkg, Dates
@@ -90,7 +88,7 @@ jobs:
         id: nb-cache
         with:
           path: ${{ env.NBCACHE }}
-          key: ${{ runner.os }}-notebook-${{ hashFiles(env.NB) }}-${{ needs.setup.outputs.hash }}
+          key: ${{ runner.os }}-notebook-${{ env.CACHE_NUM }}-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
       - name: Setup Python
         uses: actions/setup-python@v5
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
@@ -115,12 +113,10 @@ jobs:
         with:
           version: ${{ steps.read_toml.outputs.value }}
       - name: Restore Julia packages
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' && contains(runner.name, 'GitHub Actions')}}
+        if: ${{ runner.environment == 'github-hosted' && steps.nb-cache.outputs.cache-hit != 'true'}}
         uses: actions/cache/restore@v4
         with:
-          path: |
-            ~/.julia
-            !~/.julia/registries
+          path: ~/.julia
           key: ${{ runner.os }}-julia-${{ env.CACHE_NUM }}-${{ steps.read_toml.outputs.value }}-${{ needs.setup.outputs.hash }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ env.CACHE_NUM }}-${{ steps.read_toml.outputs.value }}-
@@ -133,21 +129,16 @@ jobs:
         with:
           path: ${{ env.NBCACHE }}
           key: ${{ steps.nb-cache.outputs.cache-primary-key }}
-      - name: Convert artifact Name
-        id: art
-        run: echo "name=$(echo ${{ env.NB }} | sed 's/\//-/g')" >> "$GITHUB_OUTPUT"
       - name: Upload Notebook
         uses: actions/upload-artifact@v4
         with:
-          name: notebook-${{ steps.art.outputs.name }}
+          name: ${{ steps.nb-cache.outputs.cache-primary-key }}
           path: ${{ env.NBCACHE }}
           retention-days: 1
 
   render:
     needs: execute
     runs-on: ubuntu-latest
-    env:
-      UV_SYSTEM_PYTHON: 1
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -155,10 +146,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ${{ env.NBCACHE }}/
-          pattern: notebook-*
+          pattern: ${{ runner.os }}-notebook-*
           merge-multiple: true
-      - name: Display structure of downloaded files
-        run: ls -R ${{ env.NBCACHE }}
       - name: Copy back built notebooks
         run: cp --verbose -rf ${{ env.NBCACHE }}/docs/* docs/
       - name: Setup Python
