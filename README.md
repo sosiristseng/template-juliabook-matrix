@@ -22,17 +22,17 @@ Open your repository settings => Pages => GitHub Pages => Build and deployment =
 
 ## Automatic dependency updates
 
-### Renovate Bot and Kodiak Bot
+### Dependabot and Kodiak Bot
 
-See [renovate.json](.github/renovate.json) configuration.
+See [dependabot.yml](.github/dependabot.yml) and [.kodiak.toml](.github/.kodiak.toml) configuration files.
 
-This repository also uses [Kodiak Bot](https://kodiakhq.com/docs/quickstart) to automatically merge updates. You might need to enable the Kodiak Bot APP.
+You need to enable the [Kodiak Bot](https://kodiakhq.com/docs/quickstart) APP to automatically merge updates. You need to enable the Kodiak Bot APP.
 
 ### Julia dependencies
 
-[update-manifest.yml](.github/workflows/update-manifest.yml) regularly updates Julia dependencies, make a PR with the updated dependencies, and automatically merge the updates if the notebooks are executed smoothly.
+The GitHub workflow [update-manifest.yml](.github/workflows/update-manifest.yml) regularly updates Julia dependencies, make a PR with the updated dependencies, and automatically merge the updates if the notebooks are executed smoothly.
 
-See [the instructions](https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#triggering-further-workflow-runs) for how to trigger CI workflows in a PR. This repo uses a custom [GitHub APP](https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#authenticating-with-github-app-generated-tokens) to generate a token on the fly.
+See [creating tokens](https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#triggering-further-workflow-runs) to trigger CI workflows in a PR. This repo uses a custom [GitHub APP](https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#authenticating-with-github-app-generated-tokens) to generate a token on the fly.
 
 ## Checking HTTP links
 
