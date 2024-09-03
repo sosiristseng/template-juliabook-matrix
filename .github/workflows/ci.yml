@@ -126,7 +126,7 @@ jobs:
       - name: Upload Notebook
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
+          name: notebook-${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
           path: ${{ env.NBCACHE }}
           include-hidden-files: true
           retention-days: 1
@@ -141,7 +141,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ${{ env.NBCACHE }}/
-          pattern: ${{ runner.os }}-notebook-*
+          pattern: notebook-*
           merge-multiple: true
       - name: Copy back built notebooks
         run: cp --verbose -rf ${{ env.NBCACHE }}/docs/* docs/
