@@ -26,6 +26,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       hash: ${{ steps.hash.outputs.value }}
+      ver: ${{ steps.hash.outputs.ver }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -46,22 +47,24 @@ jobs:
         version: ${{ steps.read_toml.outputs.value }}
     - name: Get environment hash
       id: hash
-      run: echo "value=${{ hashFiles('Project.toml', 'Manifest.toml', 'src/**') }}" >> "$GITHUB_OUTPUT"
+      run: |
+        echo "value=${{ hashFiles('Project.toml', 'Manifest.toml', 'src/**') }}" >> "$GITHUB_OUTPUT"
+        echo "ver=${{ runner.os }}-julia-${{ env.CACHE_NUM }}-${{ steps.read_toml.outputs.value }}" >> "$GITHUB_OUTPUT"
     - name: Cache Julia packages
       if: ${{ contains(runner.name, 'GitHub Actions') }}
       uses: actions/cache@v4
       id: cache-julia
       with:
         path: ~/.julia
-        key: ${{ runner.os }}-julia-${{ env.CACHE_NUM }}-${{ steps.read_toml.outputs.value }}-${{ steps.hash.outputs.value }}
+        key: ${{ steps.hash.outputs.ver }}-${{ steps.hash.outputs.value }}
         restore-keys: |
-          ${{ runner.os }}-julia-${{ env.CACHE_NUM }}-${{ steps.read_toml.outputs.value }}-
+          ${{ steps.hash.outputs.ver }}-
     - name: Install Julia packages
       if: ${{ runner.environment == 'self-hosted' || steps.cache-julia.outputs.cache-hit != 'true' }}
       shell: julia --color=yes {0}
       run: |
         using Pkg, Dates
-        Pkg.add(["IJulia", "Literate", "PrettyTables", "JSON"])
+        Pkg.add(["IJulia", "Literate", "JSON"])
         Pkg.activate(".")
         Pkg.instantiate()
         Pkg.precompile()
@@ -75,7 +78,6 @@ jobs:
       max-parallel: 20
       fail-fast: false
       matrix:
-        # Notebooks need to be executed
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
     runs-on: ubuntu-latest
     env:
@@ -83,12 +85,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Restore notebook if present
-        uses: actions/cache/restore@v4
+      - name: Cache notebook
+        uses: actions/cache@v4
         id: nb-cache
         with:
           path: ${{ env.NBCACHE }}
-          key: ${{ runner.os }}-notebook-${{ env.CACHE_NUM }}-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
+          key: ${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
       - name: Setup Python
         uses: actions/setup-python@v5
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
@@ -114,25 +116,17 @@ jobs:
           version: ${{ steps.read_toml.outputs.value }}
       - name: Restore Julia packages
         if: ${{ runner.environment == 'github-hosted' && steps.nb-cache.outputs.cache-hit != 'true'}}
-        uses: actions/cache/restore@v4
+        uses: actions/cache@v4
         with:
           path: ~/.julia
-          key: ${{ runner.os }}-julia-${{ env.CACHE_NUM }}-${{ steps.read_toml.outputs.value }}-${{ needs.setup.outputs.hash }}
-          restore-keys: |
-            ${{ runner.os }}-julia-${{ env.CACHE_NUM }}-${{ steps.read_toml.outputs.value }}-
+          key: ${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}
       - name: Execute notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: julia execute.jl
-      - name: Cache notebook
-        uses: actions/cache/save@v4
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        with:
-          path: ${{ env.NBCACHE }}
-          key: ${{ steps.nb-cache.outputs.cache-primary-key }}
       - name: Upload Notebook
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.nb-cache.outputs.cache-primary-key }}
+          name: ${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
           path: ${{ env.NBCACHE }}
           retention-days: 1
 
