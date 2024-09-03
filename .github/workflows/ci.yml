@@ -128,6 +128,7 @@ jobs:
         with:
           name: ${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
           path: ${{ env.NBCACHE }}
+          include-hidden-files: true
           retention-days: 1
 
   render:
