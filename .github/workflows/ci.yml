@@ -14,7 +14,6 @@ concurrency:
 env:
   ALLOWERRORS: 'false'
   NBCACHE: '.cache'
-  CACHE_NUM: '1'
   JULIA_CONDAPKG_BACKEND: 'Null'
   JULIA_NUM_THREADS: 'auto'
   JULIA_CI: 'true'
@@ -49,7 +48,7 @@ jobs:
       id: hash
       run: |
         echo "value=${{ hashFiles('Project.toml', 'Manifest.toml', 'src/**') }}" >> "$GITHUB_OUTPUT"
-        echo "ver=${{ runner.os }}-julia-${{ env.CACHE_NUM }}-${{ steps.read_toml.outputs.value }}" >> "$GITHUB_OUTPUT"
+        echo "ver=${{ runner.os }}-julia-${{ steps.read_toml.outputs.value }}" >> "$GITHUB_OUTPUT"
     - name: Cache Julia packages
       if: ${{ contains(runner.name, 'GitHub Actions') }}
       uses: actions/cache@v4
@@ -63,7 +62,7 @@ jobs:
       if: ${{ runner.environment == 'self-hosted' || steps.cache-julia.outputs.cache-hit != 'true' }}
       shell: julia --color=yes {0}
       run: |
-        using Pkg, Dates
+        using Pkg
         Pkg.add(["IJulia", "Literate", "JSON"])
         Pkg.activate(".")
         Pkg.instantiate()
@@ -122,7 +121,7 @@ jobs:
           key: ${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}
       - name: Execute notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: julia execute.jl
+        run: julia --project=@. execute.jl
       - name: Upload Notebook
         uses: actions/upload-artifact@v4
         with:

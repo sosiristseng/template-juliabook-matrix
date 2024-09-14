@@ -2,7 +2,6 @@ using Literate
 using JSON
 using Pkg
 using IJulia
-Pkg.activate(Base.current_project())
 
 ENV["GKSwstype"] = "100"
 
@@ -46,7 +45,7 @@ function run_literate(file; rmsvg=true)
     mkpath(outpath)
     ipynb = Literate.notebook(file, outpath; mdstrings=true, execute=true)
     rmsvg && strip_svg(ipynb)
-    return
+    return ipynb
 end
 
 function run_ipynb(file)
@@ -58,7 +57,7 @@ function run_ipynb(file)
     timeout = "--ExecutePreprocessor.timeout=" * get(ENV, "TIMEOUT", "-1")
     cmd = `jupyter nbconvert --to notebook $(execute) $(timeout) $(kernelname) --output $(outpath) $(file)`
     run(cmd)
-    return
+    return outpath
 end
 
 main()
