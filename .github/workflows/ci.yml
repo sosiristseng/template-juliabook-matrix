@@ -91,10 +91,13 @@ jobs:
         with:
           path: ${{ env.NBCACHE }}
           key: ${{ steps.nb-cache.outputs.cache-primary-key }}
+      - name: Convert artifact Name
+        id: art
+        run: echo "name=$(echo ${{ env.NB }} | sed 's/\//-/g')" >> "$GITHUB_OUTPUT"
       - name: Upload Notebook
         uses: actions/upload-artifact@v4
         with:
-          name: notebook-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
+          name: notebook-${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
           path: ${{ env.NBCACHE }}
           include-hidden-files: true
           retention-days: 1
@@ -119,9 +122,9 @@ jobs:
         with:
           python-version: '3.x'
       - name: Install uv
-        run: pip install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - name: Install Python dependencies
-        run: uv pip install jupyter-book
+        run: uv pip install -r requirements-jb.txt
       - name: Build website
         run: jupyter-book build docs/
       - name: Upload pages artifact

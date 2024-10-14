@@ -1,4 +1,4 @@
-FROM julia:1.11.0 as julia
+FROM julia:1.10.5 as julia
 FROM ghcr.io/astral-sh/uv:latest as uv
 FROM python:3.12.5-slim
 

@@ -47,8 +47,8 @@ jobs:
         with:
           python-version: '3.x'
       - name: Install uv
-        run: pip install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - name: Install Python dependencies
-        run: uv pip install jupyter-book
+        run: uv pip install -r requirements-jb.txt
       - name: Build website
         run: jupyter-book build ${DIR} --builder linkcheck
