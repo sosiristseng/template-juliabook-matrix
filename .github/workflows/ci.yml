@@ -121,7 +121,7 @@ jobs:
       - name: Install uv
         run: pip install uv
       - name: Install Python dependencies
-        run: uv pip install jupyter-book
+        run: uv pip install --system jupyter-book
       - name: Build website
         run: jupyter-book build docs/
       - name: Upload pages artifact
