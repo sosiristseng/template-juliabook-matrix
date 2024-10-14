@@ -1,6 +1,6 @@
 FROM julia:1.11.0 as julia
 FROM ghcr.io/astral-sh/uv:latest as uv
-FROM python:3.13.0-slim
+FROM python:3.12.5-slim
 
 # System config
 ENV UV_SYSTEM_PYTHON '1'
