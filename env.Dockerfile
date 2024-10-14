@@ -1,4 +1,5 @@
 FROM julia:1.11.0 as julia
+FROM ghcr.io/astral-sh/uv:latest as uv
 FROM python:3.13.0-slim
 
 # System config
@@ -11,7 +12,7 @@ ENV JULIA_PATH '/usr/local/julia/'
 ENV JULIA_DEPOT_PATH '/srv/juliapkg/'
 ENV PATH ${JULIA_PATH}/bin:${PATH}
 COPY --from=julia ${JULIA_PATH} ${JULIA_PATH}
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
+COPY --from=uv /uv /bin/uv
 
 WORKDIR /app
 
