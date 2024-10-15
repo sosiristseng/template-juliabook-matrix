@@ -31,6 +31,6 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip install uv
-          uv pip install jupyter-book
+          uv pip install --system jupyter-book
       - name: Build website
         run: jupyter-book build ${DIR} --builder linkcheck
