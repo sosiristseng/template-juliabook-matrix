@@ -15,7 +15,7 @@ COPY requirements.txt .
 RUN uv pip install --system --no-cache jill nbconvert -r requirements.txt
 
 # Julia dependencies
-RUN jill install 1 --confirm --upstream Official && julia --version
+RUN jill install '1.11' --confirm --upstream Official && julia --version
 COPY Project.toml Manifest.toml ./
 COPY src/ src
 RUN julia --color=yes -e 'using Pkg; Pkg.add("IJulia"); import IJulia; IJulia.installkernel("Julia", "--project=@.")' && \
