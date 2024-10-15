@@ -24,31 +24,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Julia
-        uses: julia-actions/setup-julia@v2
-      - name: Convert literate notebooks to ipynb files
-        shell: julia --color=yes {0}
-        working-directory: ${{ env.DIR }}
-        run: |
-          import Pkg
-          Pkg.add("Literate")
-          using Literate
-          for (root, dirs, files) in walkdir(pwd())
-            for file in files
-              if endswith(file, ".jl")
-                nb = joinpath(root, file)
-                Literate.notebook(nb, dirname(nb); mdstrings=true, execute=false)
-              end
-            end
-          end
       - name: Setup Python
         uses: actions/setup-python@v5
-        id: setup-python
         with:
           python-version: '3.x'
-      - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - name: Install Python dependencies
-        run: uv pip install -r requirements-jb.txt
+        run: |
+          pip install uv
+          uv pip install --system jupyter-book
       - name: Build website
         run: jupyter-book build ${DIR} --builder linkcheck

@@ -5,6 +5,4 @@ format: jb-book
 root: index
 chapters:
   - file: pyplot
-  - file: pythonplot
   - file: sub/plots
-  - file: sub/plots-lit
