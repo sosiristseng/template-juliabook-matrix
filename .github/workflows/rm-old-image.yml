@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: snok/container-retention-policy@v3.0.0
       with:
-        account: user
+        account: user # Or organization name
         token: ${{ secrets.GITHUB_TOKEN }}
         image-names: ${{ github.event.repository.name }}
         cut-off: 2w
