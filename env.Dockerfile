@@ -15,7 +15,7 @@ WORKDIR /app
 
 # Python dependencies
 COPY requirements.txt .
-RUN uv pip install --system --no-cache -r requirements.txt
+RUN uv pip install --system --no-cache nbconvert -r requirements.txt
 
 # Julia dependencies
 COPY Project.toml Manifest.toml ./
