@@ -1,3 +1,4 @@
+FROM julia:1.11.0 AS julia
 FROM python:3.13.0-slim
 
 # System config
@@ -7,7 +8,7 @@ ENV JULIA_NUM_THREADS='auto'
 ENV JULIA_CONDAPKG_BACKEND='Null'
 ENV JULIA_PATH='/usr/local/julia/'
 ENV PATH=${JULIA_PATH}/bin:${PATH}
-COPY --from=julia:1.11.0 ${JULIA_PATH} ${JULIA_PATH}
+COPY --from=julia ${JULIA_PATH} ${JULIA_PATH}
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
