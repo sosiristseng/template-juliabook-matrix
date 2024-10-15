@@ -11,7 +11,7 @@ See also:
 
 ## Notebook execution and publish
 
-In [ci.yml](.github/workflows/ci.yml), each Jupyter (`*.ipynb`) notebooks under the `docs` folder is executed with one GitHub actions runner; then [Jupyter book][jupyter-book] collects the result notebooks and creates a beautiful website.
+In [ci.yml](.github/workflows/ci.yml), each Jupyter (`*.ipynb`) notebook under the `docs` folder is executed with one GitHub actions runner; then [Jupyter book][jupyter-book] collects the result notebooks and creates a beautiful website.
 
 ### Parallel execution
 
