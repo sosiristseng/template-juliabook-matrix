@@ -11,10 +11,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  ALLOWERRORS: 'false'
-  NBCACHE: '.cache'
-
 jobs:
   setup:
     permissions:
@@ -71,16 +67,15 @@ jobs:
         run: |
           docker pull ${{ env.IMG }}
           docker images ${{ env.IMG }}
+      - name: Get Julia kernel name
+        id: jl-kernel
+        run: docker run ${{ env.IMG }} julia -e 'print("name=--ExecutePreprocessor.kernel_name=julia-1.", VERSION.minor)' >> "$GITHUB_OUTPUT"
       - name: Execute notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: >
-          docker run -w /tmp -v ${{ github.workspace }}:/tmp
-          -e NB=${{ env.NB }}
-          -e NBCACHE=${{ env.NBCACHE }}
-          -e WORKSPACE=${{ github.workspace }}
-          -e ALLOWERRORS=${{ env.ALLOWERRORS }}
+          docker run -w /app -v ${{ github.workspace }}:/app
           ${{ env.IMG }}
-          julia execute.jl
+          jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=-1 ${{ steps.jl-kernel.outputs.name }} ${{ env.NB }}
       - name: Claim output notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: sudo chown $USER ${{ env.NB }}
@@ -88,7 +83,7 @@ jobs:
         uses: actions/cache/save@v4
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         with:
-          path: ${{ env.NBCACHE }}
+          path: ${{ env.NB }}
           key: ${{ steps.nb-cache.outputs.cache-primary-key }}
       - name: Convert artifact Name
         id: art
@@ -96,8 +91,8 @@ jobs:
       - name: Upload Notebook
         uses: actions/upload-artifact@v4
         with:
-          name: notebook-${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
-          path: ${{ env.NBCACHE }}
+          name: notebook-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
+          path: docs/*${{ matrix.notebook }}
           include-hidden-files: true
           retention-days: 1
 
@@ -110,11 +105,11 @@ jobs:
       - name: Download notebooks
         uses: actions/download-artifact@v4
         with:
-          path: ${{ env.NBCACHE }}/
+          path: out/
           pattern: notebook-*
           merge-multiple: true
       - name: Copy back built notebooks
-        run: cp --verbose -rf ${{ env.NBCACHE }}/docs/* docs/
+        run: cp --verbose -rf out/docs/* docs/
       - name: Setup Python
         uses: actions/setup-python@v5
         id: setup-python
