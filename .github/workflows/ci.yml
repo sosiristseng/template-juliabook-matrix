@@ -69,6 +69,7 @@ jobs:
           docker images ${{ env.IMG }}
       - name: Get Julia kernel name
         id: jl-kernel
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: docker run ${{ env.IMG }} julia -e 'print("name=--ExecutePreprocessor.kernel_name=julia-1.", VERSION.minor)' >> "$GITHUB_OUTPUT"
       - name: Execute notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
