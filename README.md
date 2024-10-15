@@ -4,13 +4,14 @@ Click `Use this template` button to copy this repository.
 
 See also:
 
-- [template-juliabook](https://github.com/ww-jl/template-juliabook): runs notebooks concurrently and use [jupyter-book][] to build the website.
+- [template-juliabook](https://github.com/ww-jl/template-juliabook): runs notebooks concurrently *in one runner* and use [jupyter-book][] to build the website.
+- [template-quarto-julia-matrix](https://github.com/sosiristseng/template-quarto-julia-matrix): mostly the same as this repository, but it uses quarto to render the website.
 
 [jupyter-book]: https://jupyterbook.org
 
 ## Notebook execution and publish
 
-In [ci.yml](.github/workflows/ci.yml), Jupyter (`*.ipynb`) and Literate (`*.jl`) notebooks under the `docs` folder are executed by GitHub actions; then [Jupyter book][jupyter-book] creates a beautiful website.
+In [ci.yml](.github/workflows/ci.yml), each Jupyter (`*.ipynb`) notebooks under the `docs` folder is executed with one GitHub actions runner; then [Jupyter book][jupyter-book] collects the result notebooks and creates a beautiful website.
 
 ### Parallel execution
 
