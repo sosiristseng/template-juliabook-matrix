@@ -1,4 +1,4 @@
-FROM julia:1.11.0 AS julia
+FROM julia:1.11.1 AS julia
 FROM python:3.13.0-slim
 
 # System config
