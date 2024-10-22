@@ -20,5 +20,5 @@ RUN uv pip install --system --no-cache nbconvert -r requirements.txt
 # Julia dependencies
 COPY Project.toml Manifest.toml ./
 COPY src/ src
-RUN julia --color=yes -e 'using Pkg; Pkg.add("IJulia"); import IJulia; IJulia.installkernel("Julia", "--project=@.")' && \
+RUN julia --color=yes -e 'using Pkg; Pkg.add(["IJulia", "Literate", "JSON"]); import IJulia; IJulia.installkernel("Julia", "--project=@.")' && \
     julia --color=yes --project=@. -e 'using Pkg; Pkg.instantiate(); Pkg.precompile()'
