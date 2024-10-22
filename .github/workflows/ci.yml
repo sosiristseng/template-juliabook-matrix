@@ -44,7 +44,7 @@ jobs:
         docker push ${IMG}
     - name: List notebooks as a JSON array
       id: set-matrix
-      run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", root_dir="docs", recursive=True)))')" >> "$GITHUB_OUTPUT"
+      run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", root_dir="docs", recursive=True) + glob.glob("**/*.jl", root_dir="docs", recursive=True)))')" >> "$GITHUB_OUTPUT"
 
   execute:
     needs: setup
