@@ -80,7 +80,7 @@ jobs:
           -e WORKSPACE=${{ github.workspace }}
           -e ALLOWERRORS=${{ env.ALLOWERRORS }}
           ${{ env.IMG }}
-          julia ci.jl
+          julia --project=@. ci.jl
       - name: Claim output cache folder
         run: |
           sudo chown -R $USER ${{ env.NBCACHE }}
