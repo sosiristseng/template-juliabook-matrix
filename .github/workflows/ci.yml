@@ -61,11 +61,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Cache notebook
-        uses: actions/cache/restore@v4
+        uses: actions/cache@v4
         id: nb-cache
         with:
-          path: ${{ env.NB }}
-          key: notebook-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
+          path: ${{ env.NBCACHE }}
+          key: ${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
       - name: Pull docker image
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: |
@@ -87,13 +87,7 @@ jobs:
           ls -R ${{ env.NBCACHE }}
       - name: Claim output notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: sudo chown $USER ${{ env.NB }}
-      - name: Cache notebook
-        uses: actions/cache/save@v4
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        with:
-          path: ${{ env.NB }}
-          key: ${{ steps.nb-cache.outputs.cache-primary-key }}
+        run: sudo chown -R $USER ${{ env.NBCACHE }}
       - name: Convert artifact Name
         id: art
         run: echo "name=$(echo ${{ env.NB }} | sed 's/\//-/g')" >> "$GITHUB_OUTPUT"
@@ -101,7 +95,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: notebook-${{ steps.art.outputs.name }}-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
-          path: docs/*${{ matrix.notebook }}
+          path: ${{ env.NBCACHE }}
           include-hidden-files: true
           retention-days: 1
 
@@ -114,11 +108,11 @@ jobs:
       - name: Download notebooks
         uses: actions/download-artifact@v4
         with:
-          path: out/
+          path: ${{ env.NBCACHE }}/
           pattern: notebook-*
           merge-multiple: true
       - name: Copy back built notebooks
-        run: cp --verbose -rf out/* docs/
+        run: cp --verbose -rf ${{ env.NBCACHE }}/docs/* docs/
       - name: Setup Python
         uses: actions/setup-python@v5
         id: setup-python
