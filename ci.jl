@@ -36,7 +36,9 @@ function strip_svg(ipynb)
         end
     end
     rm(ipynb)
-    write(ipynb, JSON.print(io, nb, 1))
+    open(ipynb,"w") do io
+        write(io, JSON.print(io, nb, 1))
+    end
     return ipynb
 end
 
