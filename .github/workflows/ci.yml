@@ -11,6 +11,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  ALLOWERRORS: false
+  NBCACHE: ".cache"
+
 jobs:
   setup:
     permissions:
@@ -67,16 +71,20 @@ jobs:
         run: |
           docker pull ${{ env.IMG }}
           docker images ${{ env.IMG }}
-      - name: Get Julia kernel name
-        id: jl-kernel
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: docker run ${{ env.IMG }} julia -e 'print("name=--ExecutePreprocessor.kernel_name=julia-1.", VERSION.minor)' >> "$GITHUB_OUTPUT"
       - name: Execute notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: >
-          docker run -w /app -v ${{ github.workspace }}:/app
+          docker run -w /tmp -v ${{ github.workspace }}:/tmp
+          -e NB=${{ env.NB }}
+          -e NBCACHE=${{ env.NBCACHE }}
+          -e WORKSPACE=${{ github.workspace }}
+          -e ALLOWERRORS=${{ env.ALLOWERRORS }}
           ${{ env.IMG }}
-          jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=-1 ${{ steps.jl-kernel.outputs.name }} ${{ env.NB }}
+          julia execute.jl
+      - name: Claim output cache folder
+        run: |
+          sudo chown -R $USER ${{ env.NBCACHE }}
+          ls -R ${{ env.NBCACHE }}
       - name: Claim output notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: sudo chown $USER ${{ env.NB }}
@@ -92,7 +100,7 @@ jobs:
       - name: Upload Notebook
         uses: actions/upload-artifact@v4
         with:
-          name: notebook-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
+          name: notebook-${{ steps.art.outputs.name }}-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
           path: docs/*${{ matrix.notebook }}
           include-hidden-files: true
           retention-days: 1
