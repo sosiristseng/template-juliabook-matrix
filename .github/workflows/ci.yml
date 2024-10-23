@@ -49,7 +49,7 @@ jobs:
   execute:
     needs: setup
     strategy:
-      max-parallel: 20
+      max-parallel: 10
       fail-fast: false
       matrix:
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
@@ -65,7 +65,7 @@ jobs:
         id: nb-cache
         with:
           path: ${{ env.NBCACHE }}
-          key: ${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
+          key: notebook-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
       - name: Pull docker image
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: |
