@@ -1,11 +1,10 @@
 using Pkg
-Pkg.add(["Literate", "JSON", "CondaPkg"])
+Pkg.add("CondaPkg")
 
 using CondaPkg
-CondaPkg.add("jupyter")
-CondaPkg.add("nbconvert")
+CondaPkg.add(["jupyter", "nbconvert", "matplotlib"])
 ENV["JUPYTER"] = CondaPkg.which("jupyter")
-Pkg.add("IJulia")
+Pkg.add(["IJulia", "Literate", "JSON"])
 
 Pkg.activate(".")
 Pkg.instantiate()
