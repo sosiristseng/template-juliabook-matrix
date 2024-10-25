@@ -4,6 +4,9 @@ using JSON
 using Literate
 using Pkg
 
+ENV["JULIA_CONDAPKG_OFFLINE"] = true
+ENV["GKSwstype"] = "100"
+
 function main(; rmsvg=true)
     file = get(ENV, "NB", "test.ipynb")
     cachedir = get(ENV, "NBCACHE", ".cache")
