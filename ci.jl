@@ -1,9 +1,8 @@
-using Literate
-using JSON
-using Pkg
+using CondaPkg
 using IJulia
-
-ENV["GKSwstype"] = "100"
+using JSON
+using Literate
+using Pkg
 
 function main(; rmsvg=true)
     file = get(ENV, "NB", "test.ipynb")
@@ -11,7 +10,6 @@ function main(; rmsvg=true)
     nb = if endswith(file, ".jl")
         run_literate(file; cachedir)
     elseif endswith(file, ".ipynb")
-        IJulia.installkernel("Julia", "--project=@.")
         run_ipynb(file; cachedir)
     else
         error("$(file) is not a valid notebook file!")
@@ -35,10 +33,7 @@ function strip_svg(ipynb)
             end
         end
     end
-    rm(ipynb)
-    open(ipynb, "w") do io
-        JSON.print(io, nb, 1)
-    end
+    write(ipynb, JSON.json(nb, 1))
     return ipynb
 end
 
@@ -55,8 +50,11 @@ function run_ipynb(file; cachedir = ".cache")
     kernelname = "--ExecutePreprocessor.kernel_name=julia-1.$(VERSION.minor)"
     execute = get(ENV, "ALLOWERRORS", " ") == "true" ? "--execute --allow-errors" : "--execute"
     timeout = "--ExecutePreprocessor.timeout=" * get(ENV, "TIMEOUT", "-1")
-    cmd = `jupyter nbconvert --to notebook $(execute) $(timeout) $(kernelname) --output $(outpath) $(file)`
-    run(cmd)
+    CondaPkg.withenv() do
+        nbc = CondaPkg.which("jupyter-nbconvert")
+        cmd = `$(nbc) --to notebook $(execute) $(timeout) $(kernelname) --output $(outpath) $(file)`
+        run(cmd)
+    end
     return outpath
 end
 
