@@ -1,5 +1,5 @@
 FROM julia:1.11.1 AS julia
-FROM python:3.13.0-slim
+FROM python:3.13.1-slim
 
 # System config
 ENV JULIA_CI='true'
