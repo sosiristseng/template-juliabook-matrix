@@ -9,13 +9,12 @@ ENV JULIA_CONDAPKG_BACKEND='Null'
 ENV JULIA_PATH='/usr/local/julia/'
 ENV PATH=${JULIA_PATH}/bin:${PATH}
 COPY --from=julia ${JULIA_PATH} ${JULIA_PATH}
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
 
 # Python dependencies
 COPY requirements.txt .
-RUN uv pip install --system --no-cache nbconvert -r requirements.txt
+RUN pip install --system --no-cache nbconvert -r requirements.txt
 
 # Julia dependencies
 COPY Project.toml Manifest.toml ./
