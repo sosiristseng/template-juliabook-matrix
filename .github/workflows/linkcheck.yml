@@ -19,11 +19,27 @@ jobs:
   linkcheck:
     env:
       DIR: 'docs'
-      UV_SYSTEM_PYTHON: 1
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup Julia
+        uses: julia-actions/setup-julia@v2
+      - name: Convert literate notebooks to markdown files
+        shell: julia --color=yes {0}
+        working-directory: ${{ env.DIR }}
+        run: |
+          import Pkg
+          Pkg.add("Literate")
+          using Literate
+          for (root, dirs, files) in walkdir(pwd())
+            for file in files
+              if endswith(file, ".jl")
+                nb = joinpath(root, file)
+                Literate.markdown(nb, dirname(nb); mdstrings=true, flavor=Literate.CommonMarkFlavor())
+              end
+            end
+          end
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
