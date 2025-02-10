@@ -40,7 +40,7 @@ jobs:
         IMG: ghcr.io/${{ github.repository }}:${{ steps.img.outputs.hash }}
       run: |
         docker manifest inspect ${IMG} && exit 0
-        docker build -f env.Dockerfile -t ${IMG} .
+        docker build -f .github/env.Dockerfile -t ${IMG} .
         docker push ${IMG}
     - name: List notebooks as a JSON array
       id: set-matrix
@@ -80,7 +80,7 @@ jobs:
           -e WORKSPACE=${{ github.workspace }}
           -e ALLOWERRORS=${{ env.ALLOWERRORS }}
           ${{ env.IMG }}
-          julia --project=@. ci.jl
+          julia --project=@. .github/ci.jl
       - name: Claim output cache folder
         run: |
           sudo chown -R $USER ${{ env.NBCACHE }}
