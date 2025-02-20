@@ -12,36 +12,59 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  ALLOWERRORS: false
+  ALLOWERRORS: 'false'
   NBCACHE: ".cache"
+  JULIA_NUM_THREADS: 'auto'
+  JULIA_CI: 'true'
+  JULIA_CONDAPKG_BACKEND: 'Null'
 
 jobs:
   setup:
-    permissions:
-      packages: write
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-      hash: ${{ steps.img.outputs.hash }}
+      hash: ${{ steps.hash.outputs.value }}
+      ver: ${{ steps.hash.outputs.ver }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    - name: Login to ghcr.io
-      uses: docker/login-action@v3
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      id: setup-python
       with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner	}}
-        password: ${{ github.token }}
-    - name: Get docker image hash
-      id: img
-      run: echo "hash=${{ hashFiles('requirements.txt', 'Project.toml', 'Manifest.toml', 'src/**', '**/env.Dockerfile') }}" >> "$GITHUB_OUTPUT"
-    - name: Build Docker container
-      env:
-        IMG: ghcr.io/${{ github.repository }}:${{ steps.img.outputs.hash }}
+        python-version: '3.x'
+    - name: Read Julia version
+      uses: SebRollen/toml-action@v1.2.0
+      id: read_toml
+      with:
+        file: 'Manifest.toml'
+        field: 'julia_version'
+    - name: Get environment hash
+      id: hash
       run: |
-        docker manifest inspect ${IMG} && exit 0
-        docker build -f .github/env.Dockerfile -t ${IMG} .
-        docker push ${IMG}
+        echo "value=${{ hashFiles('Project.toml', 'Manifest.toml', 'src/**') }}" >> "$GITHUB_OUTPUT"
+        echo "ver=${{ runner.os }}-julia-${{ steps.read_toml.outputs.value }}" >> "$GITHUB_OUTPUT"
+    - name: Setup Julia
+      uses: julia-actions/setup-julia@v2
+      with:
+        version: ${{ steps.read_toml.outputs.value }}
+    - name: Cache Julia packages
+      uses: actions/cache@v4
+      id: cache-julia
+      with:
+        path: ~/.julia
+        key: ${{ steps.hash.outputs.ver }}-${{ steps.hash.outputs.value }}
+        restore-keys: |
+          ${{ steps.hash.outputs.ver }}-
+    - name: Install Julia packages
+      if: ${{ steps.cache-julia.outputs.cache-hit != 'true' }}
+      shell: julia --color=yes {0}
+      run: |
+        using Pkg
+        Pkg.add(["IJulia", "Literate", "Tables", "MarkdownTables", "JSON"])
+        Pkg.activate(".")
+        Pkg.instantiate()
+        Pkg.precompile()
     - name: List notebooks as a JSON array
       id: set-matrix
       run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", root_dir="docs", recursive=True) + glob.glob("**/*.jl", root_dir="docs", recursive=True)))')" >> "$GITHUB_OUTPUT"
@@ -56,7 +79,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NB: docs/${{ matrix.notebook }}
-      IMG: ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.hash }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -66,28 +88,39 @@ jobs:
         with:
           path: ${{ env.NBCACHE }}
           key: notebook-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
-      - name: Pull docker image
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        id: setup-python
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: |
-          docker pull ${{ env.IMG }}
-          docker images ${{ env.IMG }}
+        with:
+          python-version: '3.x'
+      - name: Setup uv
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Install Python dependencies
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        run: uv pip install --system -r requirements.txt
+      - name: Read Julia version
+        uses: SebRollen/toml-action@v1.2.0
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        id: read_toml
+        with:
+          file: 'Manifest.toml'
+          field: 'julia_version'
+      - name: Setup Julia
+        uses: julia-actions/setup-julia@v2
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        with:
+          version: ${{ steps.read_toml.outputs.value }}
+      - name: Restore Julia packages
+        uses: actions/cache/restore@v4
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        with:
+          path: ~/.julia
+          key: ${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}
       - name: Execute notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: >
-          docker run -w /tmp -v ${{ github.workspace }}:/tmp
-          -e NB=${{ env.NB }}
-          -e NBCACHE=${{ env.NBCACHE }}
-          -e WORKSPACE=${{ github.workspace }}
-          -e ALLOWERRORS=${{ env.ALLOWERRORS }}
-          ${{ env.IMG }}
-          julia --project=@. .github/ci.jl
-      - name: Claim output cache folder
-        run: |
-          sudo chown -R $USER ${{ env.NBCACHE }}
-          ls -R ${{ env.NBCACHE }}
-      - name: Claim output notebook
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: sudo chown -R $USER ${{ env.NBCACHE }}
+        run: julia --project=@. .github/ci.jl
       - name: Convert artifact Name
         id: art
         run: echo "name=$(echo ${{ env.NB }} | sed 's/\//-/g')" >> "$GITHUB_OUTPUT"
@@ -118,10 +151,10 @@ jobs:
         id: setup-python
         with:
           python-version: '3.x'
+      - name: Setup uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - name: Install Python dependencies
-        run: |
-          pip install uv
-          uv pip install --system jupyter-book
+        run: uv pip install --system -r requirements.txt
       - name: Build website
         run: jupyter-book build docs/
       - name: Upload pages artifact
