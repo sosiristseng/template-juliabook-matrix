@@ -17,6 +17,7 @@ env:
   JULIA_NUM_THREADS: 'auto'
   JULIA_CI: 'true'
   JULIA_CONDAPKG_BACKEND: 'Null'
+  UV_SYSTEM_PYTHON: 1
 
 jobs:
   setup:
@@ -33,6 +34,7 @@ jobs:
       id: setup-python
       with:
         python-version: '3.x'
+        check-latest: true
     - name: Read Julia version
       uses: SebRollen/toml-action@v1.2.0
       id: read_toml
@@ -95,12 +97,15 @@ jobs:
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         with:
           python-version: '3.x'
-      - name: Setup uv
+          check-latest: true
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        with:
+          version: "latest"
       - name: Install Python dependencies
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: uv pip install --system -r requirements.txt
+        run: uv pip install -r requirements.txt
       - name: Read Julia version
         uses: SebRollen/toml-action@v1.2.0
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
@@ -147,15 +152,17 @@ jobs:
           merge-multiple: true
       - name: Copy back built notebooks
         run: cp --verbose -rf ${{ env.NBCACHE }}/docs/* docs/
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
-        id: setup-python
         with:
           python-version: '3.x'
-      - name: Setup uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+          check-latest: true
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
       - name: Install Python dependencies
-        run: uv pip install --system -r requirements.txt
+        run: uv pip install -r requirements.txt
       - name: Build website
         run: jupyter-book build docs/
       - name: Upload pages artifact

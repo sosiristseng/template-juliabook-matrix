@@ -19,6 +19,7 @@ jobs:
   linkcheck:
     env:
       DIR: 'docs'
+      UV_SYSTEM_PYTHON: 1
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -40,13 +41,16 @@ jobs:
               end
             end
           end
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-      - name: Install Python dependencies
-        run: |
-          pip install uv
-          uv pip install --system jupyter-book
+          check-latest: true
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+      - name: Install requirements
+        run: uv pip install jupyter-book
       - name: Build website
         run: jupyter-book build ${DIR} --builder linkcheck
