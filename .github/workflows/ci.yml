@@ -187,7 +187,43 @@ jobs:
             exit 1
           fi
 
-  # Deployment job
+  # Notebook branch
+  notebook:
+    name: Deploy notebook branch
+    needs: render
+    if: ${{ github.ref == 'refs/heads/main' }}
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Setup Julia
+      uses: julia-actions/setup-julia@v2
+    - name: Convert literate files to Jupyter notebooks
+      shell: julia --color=yes {0}
+      working-directory: docs
+      run: |
+        import Pkg
+        Pkg.add("Literate")
+        using Literate
+        for (root, dirs, files) in walkdir(pwd())
+          for file in files
+            if endswith(file, ".jl")
+              nb = joinpath(root, file)
+              Literate.notebook(nb, dirname(nb); mdstrings=true, execute=false)
+            end
+          end
+        end
+    - name: Deploy pages
+      uses: JamesIves/github-pages-deploy-action@v4
+      if: ${{ github.ref == 'refs/heads/main' }}
+      with:
+        folder: .
+        branch: ipynb
+        commit-message: ${{ github.event.head_commit.message }}
+
+  # GitHub pages
   deploy:
     name: Deploy to GitHub pages
     needs: render
