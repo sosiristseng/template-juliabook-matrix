@@ -36,11 +36,8 @@ jobs:
         python-version: '3.x'
         check-latest: true
     - name: Read Julia version
-      uses: SebRollen/toml-action@v1.2.0
       id: read_toml
-      with:
-        file: 'Manifest.toml'
-        field: 'julia_version'
+      run: echo value=$(python -c 'import tomllib; from pathlib import Path; print(tomllib.loads(Path("Manifest.toml").read_text())["julia_version"])') >> "$GITHUB_OUTPUT"
     - name: Get environment hash
       id: hash
       run: |
