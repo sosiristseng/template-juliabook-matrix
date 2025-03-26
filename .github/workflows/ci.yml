@@ -104,12 +104,9 @@ jobs:
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: uv pip install -r requirements.txt
       - name: Read Julia version
-        uses: SebRollen/toml-action@v1.2.0
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         id: read_toml
-        with:
-          file: 'Manifest.toml'
-          field: 'julia_version'
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        run: echo value=$(python -c 'import tomllib; from pathlib import Path; print(tomllib.loads(Path("Manifest.toml").read_text())["julia_version"])') >> "$GITHUB_OUTPUT"
       - name: Setup Julia
         uses: julia-actions/setup-julia@v2
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
