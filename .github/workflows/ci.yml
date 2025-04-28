@@ -96,7 +96,7 @@ jobs:
           python-version: '3.x'
           check-latest: true
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         with:
           version: "latest"
@@ -152,7 +152,7 @@ jobs:
           python-version: '3.x'
           check-latest: true
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
         with:
           version: "latest"
       - name: Install Python dependencies
