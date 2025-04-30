@@ -36,17 +36,19 @@ jobs:
         python-version: '3.x'
         check-latest: true
     - name: Read Julia version
-      id: read_toml
-      run: echo value=$(python -c 'import tomllib; from pathlib import Path; print(tomllib.loads(Path("Manifest.toml").read_text())["julia_version"])') >> "$GITHUB_OUTPUT"
+      uses: julia-actions/julia-version@main
+      id: julia-version
+      with:
+        versions: 'manifest'
     - name: Get environment hash
       id: hash
       run: |
         echo "value=${{ hashFiles('Project.toml', 'Manifest.toml', 'src/**') }}" >> "$GITHUB_OUTPUT"
-        echo "ver=${{ runner.os }}-julia-${{ steps.read_toml.outputs.value }}" >> "$GITHUB_OUTPUT"
+        echo "ver=${{ runner.os }}-julia-${{ steps.julia-version.outputs.resolved }}" >> "$GITHUB_OUTPUT"
     - name: Setup Julia
       uses: julia-actions/setup-julia@v2
       with:
-        version: ${{ steps.read_toml.outputs.value }}
+        version: ${{ steps.julia-version.outputs.resolved }}
     - name: Cache Julia packages
       uses: actions/cache@v4
       id: cache-julia
@@ -60,7 +62,7 @@ jobs:
       shell: julia --color=yes {0}
       run: |
         using Pkg, Dates
-        Pkg.add(["IJulia", "Literate", "Tables", "MarkdownTables", "JSON"])
+        Pkg.add(["IJulia", "Literate", "JSON"])
         Pkg.activate(".")
         Pkg.instantiate()
         Pkg.precompile()
@@ -100,18 +102,22 @@ jobs:
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         with:
           version: "latest"
+          enable-cache: true
+          cache-suffix: "pydeps"
       - name: Install Python dependencies
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: uv pip install -r requirements.txt
       - name: Read Julia version
-        id: read_toml
+        uses: julia-actions/julia-version@main
+        id: julia-version
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: echo value=$(python -c 'import tomllib; from pathlib import Path; print(tomllib.loads(Path("Manifest.toml").read_text())["julia_version"])') >> "$GITHUB_OUTPUT"
+        with:
+          versions: 'manifest'
       - name: Setup Julia
         uses: julia-actions/setup-julia@v2
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         with:
-          version: ${{ steps.read_toml.outputs.value }}
+          version: ${{ steps.julia-version.outputs.resolved }}
       - name: Restore Julia packages
         uses: actions/cache/restore@v4
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
@@ -156,7 +162,7 @@ jobs:
         with:
           version: "latest"
       - name: Install Python dependencies
-        run: uv pip install -r requirements.txt
+        run: uv pip install jupyter-book
       - name: Build website
         run: jupyter-book build docs/
       - name: Upload pages artifact
@@ -183,7 +189,7 @@ jobs:
 
   # Notebook branch
   notebook:
-    name: Deploy notebook branch
+    name: Deploy (empty) notebook branch
     needs: render
     if: ${{ github.ref == 'refs/heads/main' }}
     permissions:
