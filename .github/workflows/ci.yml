@@ -88,10 +88,6 @@ jobs:
           -e ALLOWERRORS=${{ env.ALLOWERRORS }}
           ${{ env.IMG }}
           julia --project=@. .github/ci.jl
-      - name: Claim output cache folder
-        run: |
-          sudo chown -R $USER ${{ env.NBCACHE }}
-          ls -R ${{ env.NBCACHE }}
       - name: Claim output notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: sudo chown -R $USER ${{ env.NBCACHE }}
