@@ -14,9 +14,6 @@ concurrency:
 env:
   ALLOWERRORS: 'false'
   NBCACHE: ".cache"
-  JULIA_NUM_THREADS: 'auto'
-  JULIA_CI: 'true'
-  JULIA_CONDAPKG_BACKEND: 'Null'
   UV_SYSTEM_PYTHON: 1
 
 jobs:
