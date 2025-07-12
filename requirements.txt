@@ -1,2 +1,1 @@
 matplotlib==3.10.1
-nbconvert==7.16.6
