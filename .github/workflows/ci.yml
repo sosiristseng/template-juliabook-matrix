@@ -46,8 +46,7 @@ jobs:
       env:
         IMG: ghcr.io/${{ github.repository }}:${{ steps.img.outputs.hash }}
       run: |
-        docker manifest inspect ${IMG} && exit 0
-        docker build -f .github/env.Dockerfile -t ${IMG} .
+        docker build -f .github/env.Dockerfile -t ${IMG} --cache-from=type=registry,ref=${IMG} --cache-to=type=inline .
         docker push ${IMG}
     - name: List notebooks as a JSON array
       id: set-matrix
