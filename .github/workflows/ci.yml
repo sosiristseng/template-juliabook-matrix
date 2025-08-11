@@ -184,7 +184,7 @@ jobs:
   # Notebook branch
   notebook:
     name: Deploy (empty) notebook branch
-    needs: render
+    needs: execute
     if: ${{ github.ref == 'refs/heads/main' }}
     permissions:
       contents: write
