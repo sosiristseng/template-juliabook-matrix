@@ -213,9 +213,10 @@ jobs:
       uses: JamesIves/github-pages-deploy-action@v4
       if: ${{ github.ref == 'refs/heads/main' }}
       with:
-        folder: .
+        folder: docs
         branch: ipynb
         commit-message: ${{ github.event.head_commit.message }}
+        single-commit: true
 
   # GitHub pages
   deploy:
