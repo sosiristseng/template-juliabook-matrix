@@ -209,6 +209,8 @@ jobs:
             end
           end
         end
+    - name: Copy package deps
+      run: cp --verbose Manifest.toml Project.toml requirements.txt docs/
     - name: Deploy pages
       uses: JamesIves/github-pages-deploy-action@v4
       if: ${{ github.ref == 'refs/heads/main' }}
