@@ -184,7 +184,7 @@ jobs:
   # Notebook branch
   notebook:
     name: Deploy (empty) notebook branch
-    needs: render
+    needs: execute
     if: ${{ github.ref == 'refs/heads/main' }}
     permissions:
       contents: write
@@ -209,13 +209,16 @@ jobs:
             end
           end
         end
+    - name: Copy package deps
+      run: cp --verbose Manifest.toml Project.toml requirements.txt docs/
     - name: Deploy pages
       uses: JamesIves/github-pages-deploy-action@v4
       if: ${{ github.ref == 'refs/heads/main' }}
       with:
-        folder: .
+        folder: docs
         branch: ipynb
         commit-message: ${{ github.event.head_commit.message }}
+        single-commit: true
 
   # GitHub pages
   deploy:
