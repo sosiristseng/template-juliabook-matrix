@@ -86,9 +86,8 @@ jobs:
           docker run -w /tmp -v ${{ github.workspace }}:/tmp
           -e NB=${{ env.NB }}
           -e NBCACHE=${{ env.NBCACHE }}
-          -e WORKSPACE=${{ github.workspace }}
           ${{ env.IMG }}
-          cp -a /app/. /tmp && julia --project=@. .github/ci.jl
+          julia --project=@. .github/ci.jl
       - name: Claim output notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: sudo chown -R $USER ${{ env.NBCACHE }}
