@@ -12,18 +12,16 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  ALLOWERRORS: 'false'
   NBCACHE: ".cache"
-  JULIA_NUM_THREADS: 'auto'
-  UV_SYSTEM_PYTHON: 1
 
 jobs:
   setup:
+    permissions:
+      packages: write
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-      hash: ${{ steps.hash.outputs.value }}
-      ver: ${{ steps.hash.outputs.ver }}
+      hash: ${{ steps.img.outputs.hash }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v5
@@ -32,37 +30,21 @@ jobs:
       id: setup-python
       with:
         python-version: '3.x'
-        check-latest: true
-    - name: Read Julia version
-      id: julia-version
-      run: python -c 'import tomllib; from pathlib import Path; print("resolved=", tomllib.loads(Path("Manifest.toml").read_text())["julia_version"])' >> "$GITHUB_OUTPUT"
-    - name: Get environment hash
-      id: hash
-      run: |
-        echo "value=${{ hashFiles('Project.toml', 'Manifest.toml', 'src/**') }}" >> "$GITHUB_OUTPUT"
-        echo "ver=${{ runner.os }}-julia-${{ steps.julia-version.outputs.resolved }}" >> "$GITHUB_OUTPUT"
-    - name: Setup Julia
-      uses: julia-actions/setup-julia@v2
+    - name: Login to ghcr.io
+      uses: docker/login-action@v3
       with:
-        version: ${{ steps.julia-version.outputs.resolved }}
-    - name: Cache Julia packages
-      uses: actions/cache@v4
-      id: cache-julia
-      with:
-        path: ~/.julia
-        key: ${{ steps.hash.outputs.ver }}-${{ steps.hash.outputs.value }}
-        restore-keys: |
-          ${{ steps.hash.outputs.ver }}-
-    - name: Install Julia packages
-      if: ${{ steps.cache-julia.outputs.cache-hit != 'true' }}
-      shell: julia --color=yes {0}
+        registry: ghcr.io
+        username: ${{ github.repository_owner	}}
+        password: ${{ github.token }}
+    - name: Get docker image hash
+      id: img
+      run: echo "hash=${{ hashFiles('requirements.txt', 'Project.toml', 'Manifest.toml', 'src/**', '**/env.Dockerfile') }}" >> "$GITHUB_OUTPUT"
+    - name: Build Docker container
+      env:
+        IMG: ghcr.io/${{ github.repository }}:${{ steps.img.outputs.hash }}
       run: |
-        using Pkg, Dates
-        Pkg.add(["IJulia", "Literate", "JSON"])
-        Pkg.activate(".")
-        Pkg.instantiate()
-        Pkg.precompile()
-        Pkg.gc(collect_delay=Day(0))
+        docker build -f .github/env.Dockerfile -t ${IMG} --cache-from=type=registry,ref=${IMG} --cache-to=type=inline .
+        docker push ${IMG}
     - name: List notebooks as a JSON array
       id: set-matrix
       run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", root_dir="docs", recursive=True) + glob.glob("**/*.jl", root_dir="docs", recursive=True)))')" >> "$GITHUB_OUTPUT"
@@ -77,6 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NB: docs/${{ matrix.notebook }}
+      IMG: ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.hash }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -86,41 +69,23 @@ jobs:
         with:
           path: ${{ env.NBCACHE }}
           key: notebook-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        id: setup-python
+      - name: Pull docker image
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        with:
-          python-version: '3.x'
-          check-latest: true
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v6
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        with:
-          version: "latest"
-          enable-cache: true
-          cache-suffix: "pydeps"
-      - name: Install Python dependencies
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: uv pip install -r requirements.txt
-      - name: Read Julia version
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        id: julia-version
-        run: python -c 'import tomllib; from pathlib import Path; print("resolved=", tomllib.loads(Path("Manifest.toml").read_text())["julia_version"])' >> "$GITHUB_OUTPUT"
-      - name: Setup Julia
-        uses: julia-actions/setup-julia@v2
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        with:
-          version: ${{ steps.julia-version.outputs.resolved }}
-      - name: Restore Julia packages
-        uses: actions/cache/restore@v4
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        with:
-          path: ~/.julia
-          key: ${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}
+        run: |
+          docker pull ${{ env.IMG }}
+          docker images ${{ env.IMG }}
       - name: Execute notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: julia --project=@. .github/ci.jl
+        run: >
+          docker run -w /tmp -v ${{ github.workspace }}:/tmp
+          -e NB=${{ env.NB }}
+          -e NBCACHE=${{ env.NBCACHE }}
+          -e WORKSPACE=${{ github.workspace }}
+          ${{ env.IMG }}
+          julia --project=@. .github/ci.jl
+      - name: Claim output notebook
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        run: sudo chown -R $USER ${{ env.NBCACHE }}
       - name: Convert artifact Name
         id: art
         run: echo "name=$(echo ${{ env.NB }} | sed 's/\//-/g')" >> "$GITHUB_OUTPUT"
@@ -150,13 +115,12 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.x'
-          check-latest: true
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v6
         with:
-          version: "latest"
+          enable-cache: true
       - name: Install Python dependencies
-        run: uv pip install jupyter-book
+        run: uv pip install --system jupyter-book
       - name: Build website
         run: jupyter-book build docs/
       - name: Upload pages artifact
@@ -183,11 +147,12 @@ jobs:
 
   # Notebook branch
   notebook:
-    name: Deploy (empty) notebook branch
-    needs: execute
+    name: Deploy notebook branch
+    needs: CI
     if: ${{ github.ref == 'refs/heads/main' }}
     permissions:
       contents: write
+      packages: write
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
@@ -209,16 +174,28 @@ jobs:
             end
           end
         end
-    - name: Copy package deps
-      run: cp --verbose Manifest.toml Project.toml requirements.txt docs/
+    - name: repo2docker
+      uses: jupyterhub/repo2docker-action@master
+      with:
+        DOCKER_USERNAME: ${{ github.repository_owner }}
+        DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        DOCKER_REGISTRY: "ghcr.io"
+        IMAGE_NAME: ${{ github.repository }}
+        LATEST_TAG_OFF: true
+        ADDITIONAL_TAG: binder
+        PUBLIC_REGISTRY_CHECK: true
+        NO_PUSH: false
+    - name: Add docker image path
+      run: |
+        mkdir binder
+        echo "FROM ghcr.io/${{ github.repository }}:binder" > binder/Dockerfile
     - name: Deploy pages
       uses: JamesIves/github-pages-deploy-action@v4
       if: ${{ github.ref == 'refs/heads/main' }}
       with:
-        folder: docs
+        folder: .
         branch: ipynb
         commit-message: ${{ github.event.head_commit.message }}
-        single-commit: true
 
   # GitHub pages
   deploy:
