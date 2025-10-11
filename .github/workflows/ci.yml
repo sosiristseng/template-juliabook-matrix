@@ -43,8 +43,14 @@ jobs:
       env:
         IMG: ghcr.io/${{ github.repository }}:${{ steps.img.outputs.hash }}
       run: |
-        docker build -f .github/env.Dockerfile -t ${IMG} --cache-from=type=registry,ref=${IMG} --cache-to=type=inline .
-        docker push ${IMG}
+        if ! docker manifest inspect "$IMG" >/dev/null 2>&1; then
+            echo "Image not found in registry. Building and pushing..."
+            docker build -f .github/env.Dockerfile -t "$IMG" .
+            docker push "$IMG"
+            echo "Image built and pushed successfully."
+        else
+            echo "Image already exists in the registry."
+        fi
     - name: List notebooks as a JSON array
       id: set-matrix
       run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", root_dir="docs", recursive=True) + glob.glob("**/*.jl", root_dir="docs", recursive=True)))')" >> "$GITHUB_OUTPUT"
