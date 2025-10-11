@@ -86,6 +86,7 @@ jobs:
           docker run -w /tmp -v ${{ github.workspace }}:/tmp
           -e NB=${{ env.NB }}
           -e NBCACHE=${{ env.NBCACHE }}
+          -e JULIA_CONDAPKG_ENV=/app/.CondaPkg/.pixi/envs/default
           ${{ env.IMG }}
           julia --project=@. .github/ci.jl
       - name: Claim output notebook
