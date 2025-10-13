@@ -177,21 +177,21 @@ jobs:
             end
           end
         end
-    - name: repo2docker
-      uses: jupyterhub/repo2docker-action@master
-      with:
-        DOCKER_USERNAME: ${{ github.repository_owner }}
-        DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        DOCKER_REGISTRY: "ghcr.io"
-        IMAGE_NAME: ${{ github.repository }}
-        LATEST_TAG_OFF: true
-        ADDITIONAL_TAG: binder
-        PUBLIC_REGISTRY_CHECK: true
-        NO_PUSH: false
-    - name: Add docker image path
-      run: |
-        mkdir binder
-        echo "FROM ghcr.io/${{ github.repository }}:binder" > binder/Dockerfile
+    # - name: repo2docker
+    #   uses: jupyterhub/repo2docker-action@master
+    #   with:
+    #     DOCKER_USERNAME: ${{ github.repository_owner }}
+    #     DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+    #     DOCKER_REGISTRY: "ghcr.io"
+    #     IMAGE_NAME: ${{ github.repository }}
+    #     LATEST_TAG_OFF: true
+    #     ADDITIONAL_TAG: binder
+    #     PUBLIC_REGISTRY_CHECK: true
+    #     NO_PUSH: false
+    # - name: Add docker image path
+    #   run: |
+    #     mkdir binder
+    #     echo "FROM ghcr.io/${{ github.repository }}:binder" > binder/Dockerfile
     - name: Deploy pages
       uses: JamesIves/github-pages-deploy-action@v4
       if: ${{ github.ref == 'refs/heads/main' }}
