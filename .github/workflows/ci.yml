@@ -12,8 +12,12 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NBCACHE: '.cache'
+  BASE_URL: /${{ github.event.repository.name }}
+  JULIA_CI: 'true'
+  JULIA_CONDAPKG_BACKEND: 'Null'
+  JULIA_CONDAPKG_OFFLINE: 'true'
   JULIA_NUM_THREADS: 'auto'
+  NBCACHE: '.cache'
   UV_SYSTEM_PYTHON: 1
 
 jobs:
@@ -24,7 +28,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       hash: ${{ steps.hash.outputs.value }}
-      ver: ${{ steps.hash.outputs.ver }}
+      ver: ${{ steps.julia-version.outputs.resolved }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v5
@@ -54,9 +58,9 @@ jobs:
       id: cache-julia
       with:
         path: ~/.julia
-        key: ${{ steps.hash.outputs.ver }}-${{ steps.hash.outputs.value }}
+        key: ${{ runner.os }}-julia-${{ steps.julia-version.outputs.resolved }}-${{ steps.hash.outputs.value }}
         restore-keys: |
-          ${{ steps.hash.outputs.ver }}-
+          ${{ runner.os }}-julia-${{ steps.julia-version.outputs.resolved }}-
     - name: Install Julia packages
       if: ${{ steps.cache-julia.outputs.cache-hit != 'true' }}
       shell: julia --color=yes {0}
@@ -112,7 +116,7 @@ jobs:
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         with:
           path: ~/.julia
-          key: ${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}
+          key: ${{ runner.os }}-julia-${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}
       - name: Execute notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: julia --project=@. .github/ci.jl
