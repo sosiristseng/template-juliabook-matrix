@@ -35,7 +35,7 @@ jobs:
         python-version: '3.x'
     - name: Read Julia version
       id: julia-version
-      run: python -c 'import tomllib; from pathlib import Path; print(f"resolved={tomllib.loads(Path(\"Manifest.toml\").read_text())[\"julia_version\"]}")' >> "$GITHUB_OUTPUT"
+      run: python -c 'import tomllib; from pathlib import Path; print("resolved=", tomllib.loads(Path("Manifest.toml").read_text())["julia_version"])' >> "$GITHUB_OUTPUT"
     - name: Get environment hash
       id: hash
       run: |
