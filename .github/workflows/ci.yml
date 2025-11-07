@@ -33,6 +33,8 @@ jobs:
       id: setup-python
       with:
         python-version: '3.x'
+    - name: Install the latest version of uv
+      uses: astral-sh/setup-uv@v6
     - name: Install Python dependencies
       run: uv pip install -r requirements.txt
     - name: Read Julia version
@@ -90,6 +92,7 @@ jobs:
           key: notebook-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
       - name: Setup Python
         uses: actions/setup-python@v6
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         id: setup-python
         with:
           python-version: '3.x'
