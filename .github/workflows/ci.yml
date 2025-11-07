@@ -33,6 +33,8 @@ jobs:
       id: setup-python
       with:
         python-version: '3.x'
+    - name: Install Python dependencies
+      run: uv pip install -r requirements.txt
     - name: Read Julia version
       id: julia-version
       run: python -c 'import tomllib; from pathlib import Path; print("resolved=", tomllib.loads(Path("Manifest.toml").read_text())["julia_version"], sep="")' >> "$GITHUB_OUTPUT"
