@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   linkcheck:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     permissions:
       issues: write # required for peter-evans/create-issue-from-file
     steps:

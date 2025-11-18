@@ -18,7 +18,6 @@ env:
   JULIA_CONDAPKG_OFFLINE: 'true'
   JULIA_NUM_THREADS: 'auto'
   NBCACHE: '.cache'
-  UV_SYSTEM_PYTHON: 1
 
 jobs:
   setup:
@@ -37,10 +36,8 @@ jobs:
       id: setup-python
       with:
         python-version: '3.13'
-    - name: Install the latest version of uv
-      uses: astral-sh/setup-uv@v7
     - name: Install Python dependencies
-      run: uv pip install -r requirements.txt
+      run: pip install -r requirements.txt
     - name: Read Julia version
       id: julia-version
       run: python -c 'import tomllib; from pathlib import Path; print("resolved=", tomllib.loads(Path("Manifest.toml").read_text())["julia_version"], sep="")' >> "$GITHUB_OUTPUT"
@@ -70,7 +67,9 @@ jobs:
         Pkg.activate(".")
         Pkg.instantiate()
         Pkg.precompile()
-        Pkg.gc(collect_delay=Day(0))
+        if ENV["RUNNER_ENVIRONMENT"] == "github-hosted"
+            Pkg.gc(;collect_delay=Day(0))
+        end
     - name: List notebooks as a JSON array
       id: set-matrix
       run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", root_dir="docs", recursive=True) + glob.glob("**/*.jl", root_dir="docs", recursive=True)))')" >> "$GITHUB_OUTPUT"
@@ -100,12 +99,9 @@ jobs:
         id: setup-python
         with:
           python-version: '3.13'
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v7
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
       - name: Install Python dependencies
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: uv pip install -r requirements.txt
+        run: pip install -r requirements.txt
       - name: Setup Julia
         uses: julia-actions/setup-julia@v2
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
@@ -165,7 +161,7 @@ jobs:
   CI:
     needs: render
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - run: |
           if [[ ${{ needs.render.result }} == "success" ]]; then
@@ -176,21 +172,49 @@ jobs:
             exit 1
           fi
 
-  # GitHub pages
+  # Deployment job
   deploy:
-    name: Deploy to GitHub pages
+    name: Deploy to GitHub pages and Notebook branch
     needs: render
     if: ${{ github.ref == 'refs/heads/main' }}
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
       pages: write    # to deploy to Pages
       id-token: write # to verify the deployment originates from an appropriate source
-      actions: read   # to download an artifact uploaded by `actions/upload-pages-artifact@v3`
+      actions: read   # to download an artifact uploaded by `actions/upload-pages-artifact`
+      contents: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Download notebooks
+        uses: actions/download-artifact@v6
+        with:
+          name: notebooks
+          path: ${{ env.NBCACHE }}
+      - name: Copy back built notebooks
+        run: |
+          cp --verbose -rf ${{ env.NBCACHE }}/docs/* docs/
+          rm -rf ${{ env.NBCACHE }}
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        id: setup-python
+        with:
+          python-version: '3.13'
+      - name: Install nbconvert
+        run: pip install nbconvert
+      - name: Find notebooks
+        run: find docs/ -type f -name '*.ipynb' | parallel jupyter nbconvert --clear-output --inplace {}
+      - name: Deploy notebooks
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          publish_dir: .
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: ipynb
+          commit_message: ${{ github.event.head_commit.message }}
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
