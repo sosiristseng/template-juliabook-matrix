@@ -193,8 +193,9 @@ jobs:
       - name: Download notebooks
         uses: actions/download-artifact@v6
         with:
-          name: notebooks
-          path: ${{ env.NBCACHE }}
+          path: ${{ env.NBCACHE }}/
+          pattern: notebook-*
+          merge-multiple: true
       - name: Copy back built notebooks
         run: |
           cp --verbose -rf ${{ env.NBCACHE }}/docs/* docs/
