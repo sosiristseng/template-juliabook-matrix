@@ -61,6 +61,8 @@ jobs:
     - name: Install Julia packages
       if: ${{ steps.cache-julia.outputs.cache-hit != 'true' }}
       shell: julia --color=yes {0}
+      env:
+        JULIA_DEBUG: loading
       run: |
         using Pkg, Dates
         Pkg.add(["Literate", "JSON", "Tables", "MarkdownTables", "SHA"])
@@ -145,7 +147,7 @@ jobs:
         run: cp --verbose -rf ${{ env.NBCACHE }}/docs/* docs/
       - uses: actions/setup-node@v6
         with:
-          node-version: 18.x
+          node-version: lts/*
       - name: Install Jupyter Book (via myst)
         run: npm install -g jupyter-book
       - name: Build website
