@@ -21,8 +21,6 @@ env:
 
 jobs:
   setup:
-    permissions:
-      packages: write
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
