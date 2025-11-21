@@ -9,8 +9,6 @@ project:
   jupyter:
     binder:
       ref: ipynb
-      repo: sosiristseng/template-juliabook-matrix
-      url: mybinder.org
   license: CC-BY-4.0
   open_access: true
   bibliography:
