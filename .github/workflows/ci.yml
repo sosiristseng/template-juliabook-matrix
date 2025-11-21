@@ -104,6 +104,12 @@ jobs:
       - name: Install Python dependencies
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: pip install -r requirements.txt
+      - name: Install the latest version of uv
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        uses: astral-sh/setup-uv@v7
+      - name: Install Python dependencies
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        run: uv pip install --system -r requirements.txt
       - name: Setup Julia
         uses: julia-actions/setup-julia@v2
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
