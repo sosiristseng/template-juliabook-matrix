@@ -58,13 +58,11 @@ jobs:
           ${{ runner.os }}-julia-${{ steps.julia-version.outputs.resolved }}-
     - name: Install Julia packages
       if: ${{ steps.cache-julia.outputs.cache-hit != 'true' }}
-      shell: julia --color=yes {0}
+      shell: julia --color=yes --project=@. {0}
       env:
         JULIA_DEBUG: loading
       run: |
         using Pkg, Dates
-        Pkg.add(["Literate", "JSON"])
-        Pkg.activate(".")
         Pkg.instantiate()
         Pkg.precompile()
         if ENV["RUNNER_ENVIRONMENT"] == "github-hosted"
