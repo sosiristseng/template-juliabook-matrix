@@ -1,9 +1,5 @@
 using JSON
 using Literate
-using MarkdownTables
-using Pkg
-using SHA
-using Tables
 
 ENV["GKSwstype"] = "100"
 
