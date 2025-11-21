@@ -63,7 +63,7 @@ jobs:
         JULIA_DEBUG: loading
       run: |
         using Pkg, Dates
-        Pkg.add(["Literate", "JSON", "Tables", "MarkdownTables", "SHA"])
+        Pkg.add(["Literate", "JSON"])
         Pkg.activate(".")
         Pkg.instantiate()
         Pkg.precompile()
