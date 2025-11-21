@@ -34,8 +34,10 @@ jobs:
       id: setup-python
       with:
         python-version: '3.13'
+    - name: Install the latest version of uv
+      uses: astral-sh/setup-uv@v7
     - name: Install Python dependencies
-      run: pip install -r requirements.txt
+      run: uv pip install --system -r requirements.txt
     - name: Read Julia version
       id: julia-version
       run: python -c 'import tomllib; from pathlib import Path; print("resolved=", tomllib.loads(Path("Manifest.toml").read_text())["julia_version"], sep="")' >> "$GITHUB_OUTPUT"
