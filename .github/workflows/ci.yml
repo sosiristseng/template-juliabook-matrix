@@ -48,6 +48,8 @@ jobs:
       uses: julia-actions/setup-julia@v2
       with:
         version: ${{ steps.julia-version.outputs.resolved }}
+        arch: ${{ runner.arch }}
+        show-versioninfo: 'true'
     - name: Cache Julia packages
       uses: actions/cache@v4
       id: cache-julia
@@ -105,6 +107,8 @@ jobs:
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         with:
           version: ${{ needs.setup.outputs.ver }}
+          arch: ${{ runner.arch }}
+          show-versioninfo: 'true'
       - name: Restore Julia packages
         uses: actions/cache/restore@v4
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
