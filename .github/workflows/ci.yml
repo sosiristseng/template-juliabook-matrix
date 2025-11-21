@@ -101,9 +101,6 @@ jobs:
         id: setup-python
         with:
           python-version: '3.13'
-      - name: Install Python dependencies
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: pip install -r requirements.txt
       - name: Install the latest version of uv
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         uses: astral-sh/setup-uv@v7
