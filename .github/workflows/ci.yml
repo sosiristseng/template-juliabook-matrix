@@ -19,6 +19,7 @@ env:
   JULIA_CPU_TARGET: 'generic;icelake-server,clone_all;znver3,clone_all'
   JULIA_NUM_THREADS: 'auto'
   NBCACHE: '.cache'
+  PY_VER: '3.13'
 
 jobs:
   setup:
@@ -34,7 +35,7 @@ jobs:
       uses: actions/setup-python@v6
       id: setup-python
       with:
-        python-version: '3.13'
+        python-version: ${{ env.PY_VER }}
     - name: Install the latest version of uv
       uses: astral-sh/setup-uv@v7
     - name: Install Python dependencies
@@ -52,7 +53,6 @@ jobs:
       with:
         version: ${{ steps.julia-version.outputs.resolved }}
         arch: ${{ runner.arch }}
-        show-versioninfo: 'true'
     - name: Cache Julia packages
       uses: actions/cache@v4
       id: cache-julia
@@ -68,6 +68,8 @@ jobs:
         JULIA_DEBUG: loading
       run: |
         using Pkg, Dates
+        Pkg.add(["Literate", "JSON"])
+        Pkg.activate(".")
         Pkg.instantiate()
         Pkg.precompile()
         if ENV["RUNNER_ENVIRONMENT"] == "github-hosted"
@@ -101,7 +103,7 @@ jobs:
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         id: setup-python
         with:
-          python-version: '3.13'
+          python-version: ${{ env.PY_VER }}
       - name: Install the latest version of uv
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         uses: astral-sh/setup-uv@v7
@@ -212,7 +214,7 @@ jobs:
         uses: actions/setup-python@v6
         id: setup-python
         with:
-          python-version: '3.13'
+          python-version: ${{ env.PY_VER }}
       - name: Install nbconvert
         run: pip install nbconvert
       - name: Find notebooks
