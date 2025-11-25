@@ -63,7 +63,7 @@ jobs:
           ${{ runner.os }}-julia-${{ steps.julia-version.outputs.resolved }}-
     - name: Install Julia packages
       if: ${{ steps.cache-julia.outputs.cache-hit != 'true' }}
-      shell: julia --color=yes --project=@. {0}
+      shell: julia --color=yes {0}
       run: |
         using Pkg, Dates
         Pkg.add(["Literate", "JSON"])
