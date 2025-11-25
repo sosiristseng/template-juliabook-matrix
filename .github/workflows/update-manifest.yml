@@ -22,7 +22,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -30,6 +30,7 @@ jobs:
         uses: julia-actions/setup-julia@v2
         with:
           version: '1'
+          arch: ${{ runner.arch }}
       - name: Update Julia dependencies
         env:
           JULIA_PKG_PRECOMPILE_AUTO: '0'
@@ -49,3 +50,8 @@ jobs:
           title: Julia Dependency Update
           token: ${{ steps.generate-token.outputs.token }}
           labels: automerge
+      - name: Enable auto-merge for the PR
+        run: gh pr merge --auto --squash "$PR_NUMBER"
+        env:
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
