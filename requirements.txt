@@ -1,2 +1,1 @@
 matplotlib==3.10.7
-jupyter-book<2
