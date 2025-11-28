@@ -20,7 +20,6 @@ end
 
 # Strip SVG output from a Jupyter notebook
 function strip_svg(ipynb)
-    @info "Stripping SVG in $(ipynb)"
     oldfilesize = filesize(ipynb)
     nb = open(JSON.parse, ipynb, "r")
     for cell in nb["cells"]
@@ -36,7 +35,7 @@ function strip_svg(ipynb)
     end
     rm(ipynb; force=true)
     write(ipynb, JSON.json(nb, 1))
-    @info "Stripped SVG in $(nbpath). The original size is $(Base.format_bytes(oldfilesize)). The new size is $(Base.format_bytes(filesize(nbpath)))."
+    @info "Stripped SVG in $(ipynb). The original size is $(Base.format_bytes(oldfilesize)). The new size is $(Base.format_bytes(filesize(ipynb)))."
     return ipynb
 end
 
