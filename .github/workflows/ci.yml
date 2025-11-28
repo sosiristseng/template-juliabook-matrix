@@ -150,6 +150,13 @@ jobs:
           merge-multiple: true
       - name: Copy back built notebooks
         run: cp --verbose -rf ${{ env.NBCACHE }}/docs/* docs/
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        id: setup-python
+        with:
+          python-version: ${{ env.PY_VER }}
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v7
       - name: Build website
         run: uvx --from 'jupyter-book<2' jupyter-book build docs/
       - name: Upload pages artifact
