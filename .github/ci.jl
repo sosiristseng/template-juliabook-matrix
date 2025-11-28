@@ -36,7 +36,7 @@ function strip_svg(ipynb)
     end
     rm(ipynb; force=true)
     write(ipynb, JSON.json(nb, 1))
-    @info "Stripped SVG in $(ipynb). The original size is $(oldfilesize). The new size is $(filesize(ipynb))."
+    @info "Stripped SVG in $(nbpath). The original size is $(Base.format_bytes(oldfilesize)). The new size is $(Base.format_bytes(filesize(nbpath)))."
     return ipynb
 end
 
