@@ -47,11 +47,6 @@ jobs:
       run: |
         echo "value=${{ hashFiles('Project.toml', 'Manifest.toml', 'src/**') }}" >> "$GITHUB_OUTPUT"
         echo "ver=${{ runner.os }}-julia-${{ steps.julia-version.outputs.resolved }}" >> "$GITHUB_OUTPUT"
-    - name: Setup Julia
-      uses: julia-actions/setup-julia@v2
-      with:
-        version: ${{ steps.julia-version.outputs.resolved }}
-        arch: ${{ runner.arch }}
     - name: Cache Julia packages
       uses: actions/cache@v4
       id: cache-julia
@@ -60,6 +55,12 @@ jobs:
         key: ${{ runner.os }}-julia-${{ steps.julia-version.outputs.resolved }}-${{ steps.hash.outputs.value }}
         restore-keys: |
           ${{ runner.os }}-julia-${{ steps.julia-version.outputs.resolved }}-
+    - name: Setup Julia
+      uses: julia-actions/setup-julia@v2
+      if: ${{ steps.cache-julia.outputs.cache-hit != 'true' }}
+      with:
+        version: ${{ steps.julia-version.outputs.resolved }}
+        arch: ${{ runner.arch }}
     - name: Install Julia packages
       if: ${{ steps.cache-julia.outputs.cache-hit != 'true' }}
       shell: julia --color=yes {0}
