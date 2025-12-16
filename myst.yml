@@ -1,0 +1,31 @@
+# See docs at: https://mystmd.org/guide/frontmatter
+version: 1
+project:
+  title: Julia Jupyter Book Template
+  description: Publish Julia Notebooks
+  # keywords: []
+  authors: ["Wen-Wei Tseng"]
+  license: CC-BY-4.0
+  open_access: true
+  github: https://github.com/sosiristseng/template-juliabook-matrix
+  # jupyter:
+  #   binder:
+  #     ref: ipynb
+  bibliography:
+    - docs/references.bib
+  # To autogenerate a Table of Contents, run "jupyter book init --write-toc"
+  # https://mystmd.org/guide/table-of-contents
+  toc:
+    - file: docs/index.md
+    - pattern: docs/*.ipynb
+    - title: Sub
+      children:
+        - pattern: docs/sub/*.ipynb
+
+site:
+  template: book-theme
+  options:
+    folders: true
+  #   favicon: favicon.ico
+  #   logo: site_logo.png
+  nav: []
