@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PY_VER: '3.13'
+  PY_VER: '3.14'
 
 jobs:
   linkcheck:
