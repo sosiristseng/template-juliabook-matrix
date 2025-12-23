@@ -6,16 +6,12 @@ ENV["GKSwstype"] = "100"
 function main(; rmsvg=true)
     file = get(ENV, "NB", "test.ipynb")
     cachedir = get(ENV, "NBCACHE", ".cache")
-    nb = if endswith(file, ".jl")
-        run_literate(file; cachedir)
+    if endswith(file, ".jl")
+        run_literate(file; cachedir, rmsvg)
     elseif endswith(file, ".ipynb")
         lit = to_literate(file)
-        run_literate(lit; cachedir)
-    else
-        error("$(file) is not a valid notebook file!")
+        run_literate(lit; cachedir, rmsvg)
     end
-    rmsvg && strip_svg(nb)
-    return nothing
 end
 
 # Strip SVG output from a Jupyter notebook
@@ -34,8 +30,8 @@ function strip_svg(ipynb)
         end
     end
     rm(ipynb; force=true)
-    write(ipynb, JSON.json(nb, 1))
-    @info "Stripped SVG in $(ipynb). The original size is $(Base.format_bytes(oldfilesize)). The new size is $(Base.format_bytes(filesize(ipynb)))."
+    write(ipynb, JSON.json(nb, 2))
+    @info "The original size is $(Base.format_bytes(oldfilesize)). The new size is $(Base.format_bytes(filesize(ipynb)))."
     return ipynb
 end
 
@@ -62,10 +58,11 @@ function to_literate(nbpath; shell_or_help = r"^\s*[;?]")
     return jlpath
 end
 
-function run_literate(file; cachedir = ".cache")
+function run_literate(file; cachedir = ".cache", rmsvg = true)
     outpath = joinpath(abspath(pwd()), cachedir, dirname(file))
     mkpath(outpath)
     ipynb = Literate.notebook(file, dirname(file); mdstrings=true, execute=true)
+    rmsvg && strip_svg(ipynb)
     cp(ipynb, joinpath(outpath, basename(ipynb)); force=true)
     return ipynb
 end
