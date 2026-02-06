@@ -108,6 +108,8 @@ jobs:
           key: ${{ runner.os }}-julia-${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}
       - name: Execute notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        env:
+          JULIA_CONDAPKG_OFFLINE: true
         run: julia --project=@. .github/ci.jl
       - name: Convert artifact Name
         id: art
