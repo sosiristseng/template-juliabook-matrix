@@ -62,7 +62,7 @@ jobs:
       shell: julia --color=yes {0}
       run: |
         using Pkg, Dates
-        Pkg.add(["JSON", "Literate", "MarkdownTables", "SHA", "Tables"])
+        Pkg.add(["JSON", "Literate"])
         Pkg.activate(".")
         Pkg.instantiate()
         Pkg.resolve()
