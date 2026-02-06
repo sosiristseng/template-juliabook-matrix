@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: weekly
+      interval: "weekly"
     groups:
       gha-dependencies:
         applies-to: "version-updates"
@@ -12,8 +12,4 @@ updates:
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: weekly
-  - package-ecosystem: docker
-    directory: "/.github"
-    schedule:
-      interval: weekly
+      interval: "weekly"

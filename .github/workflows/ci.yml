@@ -12,16 +12,21 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  JULIA_CI: 'true'
+  JULIA_CONDAPKG_ENV: '@jlpy'
+  JULIA_CPU_TARGET: 'generic;icelake-server,clone_all;znver3,clone_all'
+  JULIA_NUM_THREADS: 'auto'
+  OPENBLAS_NUM_THREADS: '1'
   NBCACHE: '.cache'
+  PY_VER: '3.14'
 
 jobs:
   setup:
-    permissions:
-      packages: write
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-      hash: ${{ steps.img.outputs.hash }}
+      hash: ${{ steps.hash.outputs.value }}
+      ver: ${{ steps.julia-version.outputs.resolved }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v6
@@ -29,28 +34,42 @@ jobs:
       uses: actions/setup-python@v6
       id: setup-python
       with:
-        python-version: '3.x'
-    - name: Login to ghcr.io
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner	}}
-        password: ${{ github.token }}
-    - name: Get docker image hash
-      id: img
-      run: echo "hash=${{ hashFiles('requirements.txt', 'Project.toml', 'Manifest.toml', 'src/**', '**/env.Dockerfile') }}" >> "$GITHUB_OUTPUT"
-    - name: Build Docker container
-      env:
-        IMG: ghcr.io/${{ github.repository }}:${{ steps.img.outputs.hash }}
+        python-version: ${{ env.PY_VER }}
+    - name: Read Julia version
+      id: julia-version
+      run: python -c 'import tomllib; from pathlib import Path; print("resolved=", tomllib.loads(Path("Manifest.toml").read_text())["julia_version"], sep="")' >> "$GITHUB_OUTPUT"
+    - name: Get environment hash
+      id: hash
       run: |
-        if ! docker manifest inspect "$IMG" >/dev/null 2>&1; then
-            echo "Image not found in registry. Building and pushing..."
-            docker build -f .github/env.Dockerfile -t "$IMG" .
-            docker push "$IMG"
-            echo "Image built and pushed successfully."
-        else
-            echo "Image already exists in the registry."
-        fi
+        echo "value=${{ hashFiles('Project.toml', 'Manifest.toml', 'src/**') }}" >> "$GITHUB_OUTPUT"
+        echo "ver=${{ runner.os }}-julia-${{ steps.julia-version.outputs.resolved }}" >> "$GITHUB_OUTPUT"
+    - name: Cache Julia packages
+      uses: actions/cache@v5
+      id: cache-julia
+      with:
+        path: ~/.julia
+        key: ${{ runner.os }}-julia-${{ steps.julia-version.outputs.resolved }}-${{ steps.hash.outputs.value }}
+        restore-keys: |
+          ${{ runner.os }}-julia-${{ steps.julia-version.outputs.resolved }}-
+    - name: Setup Julia
+      uses: julia-actions/setup-julia@v2
+      if: ${{ steps.cache-julia.outputs.cache-hit != 'true' }}
+      with:
+        version: ${{ steps.julia-version.outputs.resolved }}
+        arch: ${{ runner.arch }}
+    - name: Install Julia packages
+      if: ${{ steps.cache-julia.outputs.cache-hit != 'true' }}
+      shell: julia --color=yes --project=@. {0}
+      run: |
+        using Pkg, Dates
+        Pkg.add(["JSON", "Literate", "MarkdownTables", "SHA", "Tables"])
+        Pkg.activate(".")
+        Pkg.instantiate()
+        Pkg.resolve()
+        Pkg.precompile()
+        if ENV["RUNNER_ENVIRONMENT"] == "github-hosted"
+            Pkg.gc(;collect_delay=Day(0))
+        end
     - name: List notebooks as a JSON array
       id: set-matrix
       run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", root_dir="docs", recursive=True) + glob.glob("**/*.jl", root_dir="docs", recursive=True)))')" >> "$GITHUB_OUTPUT"
@@ -65,7 +84,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NB: docs/${{ matrix.notebook }}
-      IMG: ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.hash }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -75,23 +93,22 @@ jobs:
         with:
           path: ${{ env.NBCACHE }}
           key: notebook-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
-      - name: Pull docker image
+      - name: Setup Julia
+        uses: julia-actions/setup-julia@v2
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: |
-          docker pull ${{ env.IMG }}
-          docker images ${{ env.IMG }}
+        with:
+          version: ${{ needs.setup.outputs.ver }}
+          arch: ${{ runner.arch }}
+          show-versioninfo: 'true'
+      - name: Restore Julia packages
+        uses: actions/cache/restore@v5
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        with:
+          path: ~/.julia
+          key: ${{ runner.os }}-julia-${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}
       - name: Execute notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: >
-          docker run -w /tmp -v ${{ github.workspace }}:/tmp
-          -e NB=${{ env.NB }}
-          -e NBCACHE=${{ env.NBCACHE }}
-          -e JULIA_CONDAPKG_OFFLINE=true
-          ${{ env.IMG }}
-          julia --project=@. .github/ci.jl
-      - name: Claim output notebook
-        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: sudo chown -R $USER ${{ env.NBCACHE }}
+        run: julia --project=@. .github/ci.jl
       - name: Convert artifact Name
         id: art
         run: echo "name=$(echo ${{ env.NB }} | sed 's/\//-/g')" >> "$GITHUB_OUTPUT"
@@ -134,6 +151,7 @@ jobs:
           path: './_build/html'
 
   # CI conclusion for GitHub status check
+  # Adaped from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
   CI:
     needs: render
     if: always()
