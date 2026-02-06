@@ -32,7 +32,7 @@ jobs:
           -v ${{ github.workspace }}:/tmp
           -e JULIA_PKG_PRECOMPILE_AUTO=0
           julia:latest
-          julia --project=@. --color=yes -e 'import Pkg; Pkg.update(; outdated=true)'
+          julia --project=@. --color=yes -e 'using Pkg; Pkg.update()'
       # Authenticate with a custom GitHub APP
       # https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#authenticating-with-github-app-generated-tokens
       - name: Generate token for PR
