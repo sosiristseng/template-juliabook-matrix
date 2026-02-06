@@ -1,5 +1,5 @@
-FROM julia:1.12.4 as julia
-FROM python:3.14.2-slim as base
+FROM julia:1.12.4 AS julia
+FROM python:3.14.2-slim AS base
 
 # System config
 ENV OPENBLAS_NUM_THREADS=1
