@@ -1,8 +1,8 @@
 # See docs at: https://mystmd.org/guide/frontmatter
 version: 1
 project:
-  title: Julia Jupyter Book Template
-  description: Publish Julia Notebooks
+  title: Jupyter Book Template
+  description: Publish Julia Notebooks via JupyterBook
   # keywords: []
   authors: ["Wen-Wei Tseng"]
   license: CC-BY-4.0
