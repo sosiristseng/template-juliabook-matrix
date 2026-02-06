@@ -24,7 +24,7 @@ jobs:
       hash: ${{ steps.img.outputs.hash }}
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
     - name: Setup Python
       uses: actions/setup-python@v6
       id: setup-python
@@ -68,9 +68,9 @@ jobs:
       IMG: ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.hash }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Cache notebook
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: nb-cache
         with:
           path: ${{ env.NBCACHE }}
@@ -95,7 +95,7 @@ jobs:
         id: art
         run: echo "name=$(echo ${{ env.NB }} | sed 's/\//-/g')" >> "$GITHUB_OUTPUT"
       - name: Upload Notebook
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: notebook-${{ steps.art.outputs.name }}-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
           path: ${{ env.NBCACHE }}
@@ -107,9 +107,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Download notebooks
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           path: ${{ env.NBCACHE }}/
           pattern: notebook-*
