@@ -13,7 +13,8 @@ concurrency:
 
 env:
   JULIA_CI: 'true'
-  JULIA_CONDAPKG_ENV: '@jlpy'
+  JULIA_CONDAPKG_BACKEND: 'Null'
+  JULIA_CONDAPKG_OFFLINE: 'true'
   JULIA_CPU_TARGET: 'generic;icelake-server,clone_all;znver3,clone_all'
   JULIA_NUM_THREADS: 'auto'
   OPENBLAS_NUM_THREADS: '1'
@@ -93,6 +94,18 @@ jobs:
         with:
           path: ${{ env.NBCACHE }}
           key: notebook-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        id: setup-python
+        with:
+          python-version: ${{ env.PY_VER }}
+      - name: Install the latest version of uv
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        uses: astral-sh/setup-uv@v7
+      - name: Install Python dependencies
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        run: uv pip install --system -r requirements.txt
       - name: Setup Julia
         uses: julia-actions/setup-julia@v2
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
