@@ -60,17 +60,12 @@ jobs:
         arch: ${{ runner.arch }}
     - name: Install Julia packages
       if: ${{ steps.cache-julia.outputs.cache-hit != 'true' }}
-      shell: julia --color=yes {0}
+      shell: julia --color=yes --project=@. {0}
       run: |
         using Pkg, Dates
-        Pkg.add(["JSON", "Literate"])
-        Pkg.activate(".")
         Pkg.instantiate()
         Pkg.resolve()
         Pkg.precompile()
-        if ENV["RUNNER_ENVIRONMENT"] == "github-hosted"
-            Pkg.gc(;collect_delay=Day(0))
-        end
     - name: List notebooks as a JSON array
       id: set-matrix
       run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", root_dir="docs", recursive=True) + glob.glob("**/*.jl", root_dir="docs", recursive=True)))')" >> "$GITHUB_OUTPUT"
