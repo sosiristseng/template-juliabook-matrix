@@ -121,7 +121,7 @@ jobs:
         id: art
         run: echo "name=$(echo ${{ env.NB }} | sed 's/\//-/g')" >> "$GITHUB_OUTPUT"
       - name: Upload Notebook
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: notebook-${{ steps.art.outputs.name }}-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
           path: ${{ env.NBCACHE }}
@@ -135,7 +135,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Download notebooks
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           path: ${{ env.NBCACHE }}/
           pattern: notebook-*
