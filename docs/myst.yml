@@ -11,15 +11,15 @@ project:
     output_matplotlib_strings: remove
   github: https://github.com/sosiristseng/template-juliabook-matrix
   bibliography:
-    - docs/references.bib
+    - references.bib
   # To autogenerate a Table of Contents, run "jupyter book init --write-toc"
   # https://mystmd.org/guide/table-of-contents
   toc:
-    - file: docs/index.md
-    - pattern: docs/*.ipynb
+    - file: index.md
+    - pattern: "*.ipynb"
     - title: Sub
       children:
-        - pattern: docs/sub/*.ipynb
+        - pattern: sub/*.ipynb
 
 site:
   template: book-theme

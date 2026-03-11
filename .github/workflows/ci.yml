@@ -149,6 +149,7 @@ jobs:
       - name: Build website
         env:
           BASE_URL: /${{ github.event.repository.name }}
+        working-directory: docs
         run: |
           npm install -g "jupyter-book"
           jupyter-book build --html
