@@ -13,8 +13,7 @@ concurrency:
 
 env:
   JULIA_CI: 'true'
-  JULIA_CONDAPKG_BACKEND: 'Null'
-  JULIA_CONDAPKG_OFFLINE: 'true'
+  JULIA_CONDAPKG_ENV: '@mpl'
   JULIA_NUM_THREADS: 'auto'
   OPENBLAS_NUM_THREADS: '1'
   NBCACHE: '.cache'
@@ -116,6 +115,8 @@ jobs:
           key: ${{ runner.os }}-julia-${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}
       - name: Execute notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        env:
+          JULIA_CONDAPKG_OFFLINE: 'true'
         run: julia --project=@. .github/ci.jl
       - name: Convert artifact Name
         id: art
@@ -157,10 +158,9 @@ jobs:
         if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/upload-pages-artifact@v4
         with:
-          path: './_build/html'
+          path: 'docs/_build/html'
 
   # CI conclusion for GitHub status check
-  # Adaped from https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt
   CI:
     needs: render
     if: always()
