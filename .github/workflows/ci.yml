@@ -15,6 +15,8 @@ env:
   JULIA_CI: 'true'
   JULIA_NUM_THREADS: 'auto'
   OPENBLAS_NUM_THREADS: '1'
+  JULIA_CONDAPKG_BACKEND: 'Null'
+  JULIA_CONDAPKG_OFFLINE: 'true'
   NBCACHE: '.cache'
   PY_VER: '3.14'
 
@@ -33,12 +35,12 @@ jobs:
       id: setup-python
       with:
         python-version: ${{ env.PY_VER }}
+    - name: Install the latest version of uv
+      uses: astral-sh/setup-uv@v7
+    - run: uv pip install --system -r requirements.txt
     - name: Read Julia version
-      uses: SebRollen/toml-action@v1.2.0
       id: julia-version
-      with:
-        file: 'Manifest.toml'
-        field: 'julia_version'
+      run: python -c 'import tomllib; from pathlib import Path; print("value=", tomllib.loads(Path("Manifest.toml").read_text())["julia_version"], sep="")' >> "$GITHUB_OUTPUT"
     - name: Get environment hash
       id: hash
       run: |
@@ -83,6 +85,13 @@ jobs:
         with:
           path: ${{ env.NBCACHE }}
           key: notebook-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        id: setup-python
+        with:
+          python-version: ${{ env.PY_VER }}
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v7
       - name: Setup Julia
         uses: julia-actions/setup-julia@v2
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
@@ -96,7 +105,9 @@ jobs:
           key: ${{ runner.os }}-julia-${{ needs.setup.outputs.ver }}-${{ needs.setup.outputs.hash }}
       - name: Execute notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: julia --project=@. .github/ci.jl
+        run: |
+          uv pip install --system -r requirements.txt
+          julia --project=@. .github/ci.jl
       - name: Convert artifact Name
         id: art
         run: echo "name=$(echo ${{ env.NB }} | sed 's/\//-/g')" >> "$GITHUB_OUTPUT"
