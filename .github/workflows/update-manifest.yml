@@ -40,7 +40,7 @@ jobs:
         uses: actions/create-github-app-token@v3
         id: generate-token
         with:
-          app-id: ${{ env.APP_ID }}
+          client-id: ${{ env.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
       - name: Create Pull Request
         id: cpr
