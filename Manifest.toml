@@ -2,7 +2,7 @@
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "4c04c1e645c4648d633d8e53e8ebc93da2de46a5"
+project_hash = "8d177ae03d23dc2eb83a70b46996df798d22a986"
 
 [[deps.AliasTables]]
 deps = ["PtrArrays", "Random"]
@@ -797,6 +797,11 @@ deps = ["Random"]
 git-tree-sha1 = "4f96c596b8c8258cc7d3b19797854d368f243ddc"
 uuid = "860ef19b-820b-49d6-a774-d7a799459cd3"
 version = "1.0.4"
+
+[[deps.Startup]]
+path = "Startup"
+uuid = "e80f4348-e2eb-4374-9c6b-5eacfe337353"
+version = "0.1.0"
 
 [[deps.Statistics]]
 deps = ["LinearAlgebra"]
