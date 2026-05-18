@@ -12,53 +12,59 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  CACHE_NUM: '1'
+  LITERATE_PROC: '2'
   JULIA_CI: 'true'
-  JULIA_NUM_THREADS: 'auto'
   JULIA_CPU_TARGET: 'generic;icelake-server,clone_all;znver3,clone_all'
+  JULIA_NUM_THREADS: '2'
   OPENBLAS_NUM_THREADS: '1'
   NBCACHE: '.cache'
   PY_VER: '3.14'
-
-# needed to allow julia-actions/cache to delete old caches that it has created
-permissions:
-  actions: write
-  contents: read
+  JULIA_CONDAPKG_OFFLINE: true
+  JULIA_CONDAPKG_BACKEND: 'Null'
 
 jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-      hash: ${{ steps.hash.outputs.value }}
+      env: ${{ steps.hash.outputs.env }}
+      jl: ${{ steps.hash.outputs.jl }}
       ver: ${{ steps.julia-version.outputs.resolved }}
-      cachekey: ${{ steps.cache-julia.outputs.cache-key }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v6
-    - name: Setup Python
-      uses: actions/setup-python@v6
-      id: setup-python
+    - name: Setup uv
+      uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
       with:
         python-version: ${{ env.PY_VER }}
-    - name: Get environment hash
+        activate-environment: true
+    - name: Install Python deps
+      run: uv pip install -r requirements.txt
+    - name: Add python venv to path
+      run: |
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> $GITHUB_PATH
+          echo "VIRTUAL_ENV=$GITHUB_WORKSPACE/.venv" >> $GITHUB_ENV
+    - name: Read Julia version
+      id: julia-version
+      run: python -c 'import tomllib; from pathlib import Path; print("resolved=", tomllib.loads(Path("Manifest.toml").read_text())["julia_version"], sep="")' >> "$GITHUB_OUTPUT"
+    - name: Get environment hashes
       id: hash
       run: |
-        echo "value=${{ hashFiles('Project.toml', 'Manifest.toml', 'Startup/**') }}" >> "$GITHUB_OUTPUT"
-    - name: Read Julia version
-      uses: julia-actions/julia-version@main
-      id: julia-version
-      with:
-        versions: manifest
+        echo "jl=${{ runner.os }}-${{ runner.arch }}-julia-${{ steps.julia-version.outputs.resolved }}" >> "$GITHUB_OUTPUT"
+        echo "env=${{ env.CACHE_NUM }}-${{ hashFiles('Project.toml', 'Manifest.toml', 'Startup/**') }}" >> "$GITHUB_OUTPUT"
     - name: Setup Julia
       uses: julia-actions/setup-julia@v3
       with:
         version: ${{ steps.julia-version.outputs.resolved }}
     - name: Cache Julia packages
-      uses: julia-actions/cache@v3
+      uses: actions/cache@v5
       id: cache-julia
       with:
-        include-matrix: 'false'
-        cache-name: 'julia-cache'
+        path: ~/.julia
+        key: ${{ steps.hash.outputs.jl }}-${{ steps.hash.outputs.env }}
+        restore-keys: |
+          ${{ steps.hash.outputs.jl }}-
     - name: Install Julia packages
       shell: julia --color=yes --project=@. {0}
       run: using Pkg; Pkg.instantiate()
@@ -84,29 +90,39 @@ jobs:
         id: nb-cache
         with:
           path: ${{ env.NBCACHE }}
-          key: notebook-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
+          key: notebook-${{ needs.setup.outputs.env }}-${{ hashFiles(env.NB) }}
+      - name: Setup uv
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          python-version: ${{ env.PY_VER }}
+          activate-environment: true
       - name: Setup Julia
         uses: julia-actions/setup-julia@v3
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         with:
           version: ${{ needs.setup.outputs.ver }}
-      - name: Cache Julia packages
-        uses: julia-actions/cache@v3
+      - name: Restore Julia packages
+        uses: actions/cache/restore@v5
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         id: cache-julia
         with:
-          include-matrix: 'false'
-          cache-name: 'julia-cache'
+          path: ~/.julia
+          key: ${{ needs.setup.outputs.jl }}
       - name: Execute notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
-        run: julia --project=@. .github/ci.jl
+        run: |
+          uv pip install -r requirements.txt
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> $GITHUB_PATH
+          echo "VIRTUAL_ENV=$GITHUB_WORKSPACE/.venv" >> $GITHUB_ENV
+          julia --project=@. .github/ci.jl
       - name: Convert artifact Name
         id: art
         run: echo "name=$(echo ${{ env.NB }} | sed 's/\//-/g')" >> "$GITHUB_OUTPUT"
       - name: Upload Notebook
         uses: actions/upload-artifact@v7
         with:
-          name: notebook-${{ steps.art.outputs.name }}-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
+          name: notebook-${{ steps.art.outputs.name }}-${{ needs.setup.outputs.env }}-${{ hashFiles(env.NB) }}
           path: ${{ env.NBCACHE }}
           include-hidden-files: true
 
