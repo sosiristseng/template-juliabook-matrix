@@ -2,3 +2,9 @@ name = "Startup"
 uuid = "e80f4348-e2eb-4374-9c6b-5eacfe337353"
 version = "0.1.0"
 authors = ["Wen Wei Tseng <sosiristseng@gmail.com>"]
+
+[deps]
+PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
+
+[compat]
+PrecompileTools = "1"
