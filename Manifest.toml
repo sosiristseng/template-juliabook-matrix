@@ -799,6 +799,7 @@ uuid = "860ef19b-820b-49d6-a774-d7a799459cd3"
 version = "1.0.4"
 
 [[deps.Startup]]
+deps = ["PrecompileTools"]
 path = "Startup"
 uuid = "e80f4348-e2eb-4374-9c6b-5eacfe337353"
 version = "0.1.0"
