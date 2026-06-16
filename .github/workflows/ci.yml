@@ -25,7 +25,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       env: ${{ steps.hash.outputs.env }}
-      os: ${{ runner.os }}
+      os: ${{  steps.hash.outputs.os }}
       jl: ${{ steps.hash.outputs.jl }}
       ver: ${{ steps.julia-version.outputs.resolved }}
     steps:
