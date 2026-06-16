@@ -7,3 +7,9 @@ Startup = "e80f4348-e2eb-4374-9c6b-5eacfe337353"
 
 [workspace]
 projects = ["Startup"]
+
+[compat]
+JSON = "1.6.1"
+Literate = "2.21.0"
+Plots = "1.41.6"
+PythonPlot = "1.0.6"
