@@ -25,7 +25,6 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       env: ${{ steps.hash.outputs.env }}
-      os: ${{  steps.hash.outputs.os }}
       jl: ${{ steps.hash.outputs.jl }}
       ver: ${{ steps.julia-version.outputs.resolved }}
     steps:
@@ -71,7 +70,7 @@ jobs:
       fail-fast: false
       matrix:
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
-    runs-on: ${{ needs.setup.outputs.os }}
+    runs-on: ubuntu-24.04-arm
     env:
       NB: docs/${{ matrix.notebook }}
     steps:
