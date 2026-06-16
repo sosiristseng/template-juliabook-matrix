@@ -44,6 +44,7 @@ jobs:
       run: |
         echo "jl=${{ runner.os }}-${{ runner.arch }}-julia-${{ steps.julia-version.outputs.resolved }}" >> "$GITHUB_OUTPUT"
         echo "env=${{ env.CACHE_NUM }}-${{ hashFiles('Project.toml', 'Manifest.toml', 'Startup/**') }}" >> "$GITHUB_OUTPUT"
+        echo "os=${{ runner.os }}" >> "$GITHUB_OUTPUT"
     - name: Setup Julia
       uses: julia-actions/setup-julia@v3
       with:
