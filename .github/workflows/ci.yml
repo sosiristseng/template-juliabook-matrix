@@ -14,14 +14,14 @@ concurrency:
 env:
   CACHE_NUM: '1'
   JULIA_CI: 'true'
-  # JULIA_CPU_TARGET: 'generic;icelake-server,clone_all;znver3,clone_all'
+  JULIA_CPU_TARGET: 'generic;icelake-server,clone_all;znver3,clone_all'
   JULIA_NUM_THREADS: 'auto'
   OPENBLAS_NUM_THREADS: '1'
   NBCACHE: '.cache'
 
 jobs:
   setup:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       env: ${{ steps.hash.outputs.env }}
