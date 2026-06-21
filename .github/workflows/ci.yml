@@ -29,7 +29,7 @@ jobs:
       ver: ${{ steps.julia-version.outputs.resolved }}
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
     - name: Setup Python
       uses: actions/setup-python@v6
       id: setup-python
@@ -75,7 +75,7 @@ jobs:
       NB: docs/${{ matrix.notebook }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Cache notebook
         uses: actions/cache@v5
         id: nb-cache
@@ -112,7 +112,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Download notebooks
         uses: actions/download-artifact@v8
         with:
