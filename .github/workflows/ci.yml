@@ -38,7 +38,7 @@ jobs:
       with:
         python-version: 3.x
     - name: Install the latest version of uv
-      uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
     - name: Install python packages
       run: uv pip install --system -r requirements.txt
     - name: Read Julia version
@@ -55,7 +55,7 @@ jobs:
       with:
         version: ${{ steps.julia-version.outputs.resolved }}
     - name: Cache Julia packages
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       id: cache-julia
       with:
         path: ~/.julia
@@ -88,11 +88,11 @@ jobs:
         with:
           python-version: 3.x
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
       - name: Install python packages
         run: uv pip install --system -r requirements.txt
       - name: Cache notebook
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         id: nb-cache
         with:
           path: ${{ env.NBCACHE }}
@@ -103,7 +103,7 @@ jobs:
         with:
           version: ${{ needs.setup.outputs.ver }}
       - name: Restore Julia packages
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         id: cache-julia
         with:
