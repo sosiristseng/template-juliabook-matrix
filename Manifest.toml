@@ -342,9 +342,9 @@ version = "4.1.0+0"
 
 [[deps.LLVMOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "3ac157462e1e800777cc97d0eafd1bdb5356a470"
+git-tree-sha1 = "b7970cef8ae1c990ba0c09cd8bdc1145e006632f"
 uuid = "1d63c593-3942-5779-bab2-d838dc0a180e"
-version = "21.1.8+0"
+version = "22.1.7+0"
 
 [[deps.LaTeXStrings]]
 git-tree-sha1 = "dda21b8cbd6a6c40d9d02a73230f9d70fed6918c"
@@ -1076,9 +1076,9 @@ version = "1.4.7+0"
 
 [[deps.Xorg_xkeyboard_config_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_xkbcomp_jll"]
-git-tree-sha1 = "ed349d26affcacafbc7fc2941ace1fb98f71e715"
+git-tree-sha1 = "2e59214e017a55cb87474a00fa76035c82ac0e17"
 uuid = "33bec58e-1273-512f-9401-5d533626f822"
-version = "2.47.0+1"
+version = "2.47.0+2"
 
 [[deps.Xorg_xtrans_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
