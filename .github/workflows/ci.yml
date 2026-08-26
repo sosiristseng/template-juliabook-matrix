@@ -45,7 +45,7 @@ jobs:
       run: python -c 'import tomllib; from pathlib import Path; print("resolved=", tomllib.loads(Path("Manifest.toml").read_text())["julia_version"], sep="")' >> "$GITHUB_OUTPUT"
     # https://github.com/jupyter/docker-stacks/blob/main/images/minimal-notebook/setup-scripts/setup-julia-packages.bash
     - name: Set Julia CPU target (x64)
-      if: runner.arch == 'X64'
+      if: ${{ runner.arch == 'X64' }}
       run: echo 'JULIA_CPU_TARGET=generic;sandybridge,-xsaveopt,clone_all;znver3,-rdrnd,base(1);sapphirerapids,-rdrnd,base(1)' >> $GITHUB_ENV
     - name: Set outputs for downstream jobs
       id: hash
@@ -57,6 +57,7 @@ jobs:
       uses: julia-actions/setup-julia@v3
       with:
         version: ${{ steps.julia-version.outputs.resolved }}
+        show-versioninfo: 'true'
     - name: Cache Julia packages
       uses: actions/cache@v6
       id: cache-julia
