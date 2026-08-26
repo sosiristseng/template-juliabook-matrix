@@ -17,7 +17,8 @@ env:
   JULIA_NUM_THREADS: 'auto'
   OPENBLAS_NUM_THREADS: '1'
   NBCACHE: '.cache'
-  JULIA_CONDAPKG_ENV: '@mpl'
+  JULIA_CONDAPKG_OFFLINE: 'true'
+  JULIA_CONDAPKG_BACKEND: 'Null'
 
 jobs:
   setup:
@@ -36,23 +37,22 @@ jobs:
       id: setup-python
       with:
         python-version: 3.x
+        cache: 'pip'
+    - name: Install Python deps
+      run: pip install -r requirements.txt
     - name: Read Julia version
       id: julia-version
       run: python -c 'import tomllib; from pathlib import Path; print("resolved=", tomllib.loads(Path("Manifest.toml").read_text())["julia_version"], sep="")' >> "$GITHUB_OUTPUT"
     # https://github.com/jupyter/docker-stacks/blob/main/images/minimal-notebook/setup-scripts/setup-julia-packages.bash
     - name: Set Julia CPU target (x64)
       if: runner.arch == 'X64'
-      run: echo 'JULIA_CPU_TARGET=generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1);x86-64-v4,-rdrnd,base(1)' >> $GITHUB_ENV
-    - name: Set Julia CPU target (ARM64)
-      if: runner.arch == 'ARM64'
-      run: echo 'JULIA_CPU_TARGET=generic;cortex-a57;thunderx2t99;carmel,clone_all;apple-m1,base(3);neoverse-512tvb,base(3)' >> $GITHUB_ENV
+      run: echo 'JULIA_CPU_TARGET=generic;sandybridge,-xsaveopt,clone_all;znver3,-rdrnd,base(1);saphirerapids,-rdrnd,base(1)' >> $GITHUB_ENV
     - name: Set outputs for downstream jobs
       id: hash
       run: |
         echo "jl=${{ runner.os }}-${{ runner.arch }}-julia-${{ steps.julia-version.outputs.resolved }}" >> "$GITHUB_OUTPUT"
         echo "env=${{ env.CACHE_NUM }}-${{ hashFiles('Project.toml', 'Manifest.toml', 'Startup/**') }}" >> "$GITHUB_OUTPUT"
         echo "os=${{ runner.os }}" >> "$GITHUB_OUTPUT"
-        echo "cputarget=${{ env.JULIA_CPU_TARGET }}" >> "$GITHUB_OUTPUT"
     - name: Setup Julia
       uses: julia-actions/setup-julia@v3
       with:
@@ -82,7 +82,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NB: docs/${{ matrix.notebook }}
-      JULIA_CPU_TARGET: ${{ needs.setup.outputs.cputarget }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -92,6 +91,16 @@ jobs:
         with:
           path: ${{ env.NBCACHE }}
           key: notebook-${{ needs.setup.outputs.env }}-${{ hashFiles(env.NB) }}
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        id: setup-python
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        with:
+          python-version: 3.x
+          cache: 'pip'
+      - name: Install Python deps
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        run: pip install -r requirements.txt
       - name: Setup Julia
         uses: julia-actions/setup-julia@v3
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
