@@ -46,7 +46,7 @@ jobs:
     # https://github.com/jupyter/docker-stacks/blob/main/images/minimal-notebook/setup-scripts/setup-julia-packages.bash
     - name: Set Julia CPU target (x64)
       if: runner.arch == 'X64'
-      run: echo 'JULIA_CPU_TARGET=generic;sandybridge,-xsaveopt,clone_all;znver3,-rdrnd,base(1);saphirerapids,-rdrnd,base(1)' >> $GITHUB_ENV
+      run: echo 'JULIA_CPU_TARGET=generic;sandybridge,-xsaveopt,clone_all;znver3,-rdrnd,base(1);sapphirerapids,-rdrnd,base(1)' >> $GITHUB_ENV
     - name: Set outputs for downstream jobs
       id: hash
       run: |
