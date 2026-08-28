@@ -27,14 +27,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
       - name: Login to Docker Hub
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
       - name: Get docker image hash
         id: hash
         run: echo "id=${{ hashFiles('Project.toml', 'Manifest.toml', 'Startup/**', '.github/Dockerfile') }}" >> "$GITHUB_OUTPUT"
@@ -47,8 +47,8 @@ jobs:
           file: '.github/Dockerfile'
           tags: ${{ env.IMG }}
           push: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=registry,ref=${{ env.IMG }}-cache
+          cache-to: type=registry,ref=${{ env.IMG }}-cache,mode=max,compression=zstd
       - name: List notebooks as a JSON array
         id: set-matrix
         run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", root_dir="docs", recursive=True) + glob.glob("**/*.jl", root_dir="docs", recursive=True)))')" >> "$GITHUB_OUTPUT"
