@@ -12,6 +12,10 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/.github"
+    schedule:
+      interval: "weekly"
   # - package-ecosystem: "julia"
   #   directory: "/"
   #   schedule:
