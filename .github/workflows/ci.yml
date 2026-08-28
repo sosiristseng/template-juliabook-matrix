@@ -73,6 +73,9 @@ jobs:
         with:
           path: ${{ env.NBCACHE }}
           key: notebook-${{ needs.setup.outputs.hash }}-${{ hashFiles(env.NB) }}
+      - name: Pull docker image
+        if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
+        run: docker pull ${{ env.IMAGE }}
       - name: Execute Notebook
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         run: >
