@@ -85,7 +85,7 @@ jobs:
       - name: Convert artifact Name
         id: art
         run: |
-          chown -R $USER ${{ env.NBCACHE }}
+          sudo chown -R $USER ${{ env.NBCACHE }}
           echo "name=$(echo ${{ env.NB }} | sed 's/\//-/g')" >> "$GITHUB_OUTPUT"
       - name: Upload Notebook
         uses: actions/upload-artifact@v7
