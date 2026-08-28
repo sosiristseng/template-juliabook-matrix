@@ -1,9 +1,9 @@
 FROM julia:1.12.7
 
-ENV JULIA_CI "true"
-ENV JULIA_NUM_THREADS "auto"
-ENV OPENBLAS_NUM_THREADS "1"
-ENV JULIA_DEPOT_PATH /srv/julia/
+ENV JULIA_CI="true"
+ENV JULIA_NUM_THREADS="auto"
+ENV OPENBLAS_NUM_THREADS="1"
+ENV JULIA_DEPOT_PATH="/srv/julia/"
 
 # Expose the target architecture argument
 ARG TARGETARCH
