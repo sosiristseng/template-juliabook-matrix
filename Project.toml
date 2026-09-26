@@ -12,5 +12,4 @@ Startup = "e80f4348-e2eb-4374-9c6b-5eacfe337353"
 Startup = {path = "Startup"}
 
 [compat]
-JSON = "1"
-Literate = "2"
+julia = "1.13"
