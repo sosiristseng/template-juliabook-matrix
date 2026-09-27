@@ -15,6 +15,7 @@ env:
   CACHE_NUM: '1'
   JULIA_CI: 'true'
   JULIA_NUM_THREADS: 'auto'
+  JULIA_CPU_TARGET: 'sysimage'
   OPENBLAS_NUM_THREADS: '1'
   NBCACHE: '.cache'
 
@@ -39,9 +40,6 @@ jobs:
         echo "jl=${{ runner.os }}-${{ runner.arch }}-julia-${{ steps.julia-version.outputs.resolved }}" >> "$GITHUB_OUTPUT"
         echo "env=${{ env.CACHE_NUM }}-${{ hashFiles('Project.toml', 'Manifest.toml', 'Startup/**') }}" >> "$GITHUB_OUTPUT"
         echo "os=${{ runner.os }}" >> "$GITHUB_OUTPUT"
-    - name: Set Julia CPU target
-      if: ${{ runner.arch == 'X64' }}
-      run: echo 'JULIA_CPU_TARGET=generic;x86-64-v3,clone_all;x86-64-v4,base(1);sapphirerapids,base(1);graniterapids,base(1)' >> $GITHUB_ENV
     - name: Setup Julia
       uses: julia-actions/setup-julia@v3
       with:
@@ -81,15 +79,11 @@ jobs:
         with:
           path: ${{ env.NBCACHE }}
           key: notebook-${{ needs.setup.outputs.env }}-${{ hashFiles(env.NB) }}
-      - name: Set Julia CPU target
-        if: ${{ runner.arch == 'X64' }}
-        run: echo 'JULIA_CPU_TARGET=generic;x86-64-v3,clone_all;x86-64-v4,base(1);sapphirerapids,base(1);graniterapids,base(1)' >> $GITHUB_ENV
       - name: Setup Julia
         uses: julia-actions/setup-julia@v3
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
         with:
           version: ${{ needs.setup.outputs.ver }}
-          show-versioninfo: 'true'
       - name: Restore Julia packages
         uses: actions/cache/restore@v6
         if: ${{ steps.nb-cache.outputs.cache-hit != 'true' }}
