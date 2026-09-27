@@ -15,13 +15,12 @@ env:
   CACHE_NUM: '1'
   JULIA_CI: 'true'
   JULIA_NUM_THREADS: 'auto'
-  JULIA_CPU_TARGET: 'sysimage'
   OPENBLAS_NUM_THREADS: '1'
   NBCACHE: '.cache'
 
 jobs:
   setup:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04-arm
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       env: ${{ steps.hash.outputs.env }}
@@ -31,6 +30,10 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v7
+    - name: Setup Python
+      uses: actions/setup-python@v7
+      with:
+        python-version: '3.x'
     - name: Read Julia version
       id: julia-version
       run: echo "resolved=$(awk -F '"' '/^[[:space:]]*julia_version/ {print $2}' Manifest.toml)" >> "$GITHUB_OUTPUT"
@@ -44,7 +47,6 @@ jobs:
       uses: julia-actions/setup-julia@v3
       with:
         version: ${{ steps.julia-version.outputs.resolved }}
-        show-versioninfo: 'true'
     - name: Cache Julia packages
       uses: actions/cache@v6
       id: cache-julia
@@ -67,7 +69,7 @@ jobs:
       fail-fast: false
       matrix:
         notebook: ${{ fromJSON(needs.setup.outputs.matrix) }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04-arm
     env:
       NB: docs/${{ matrix.notebook }}
     steps:
@@ -106,7 +108,7 @@ jobs:
 
   render:
     needs: execute
-    runs-on: ubuntu-latest
+    runs-on: uubuntu-26.04-arm
     steps:
       - name: Checkout
         uses: actions/checkout@v7
