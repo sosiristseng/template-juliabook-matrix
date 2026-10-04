@@ -108,7 +108,7 @@ jobs:
 
   render:
     needs: execute
-    runs-on: uubuntu-26.04-arm
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v7
