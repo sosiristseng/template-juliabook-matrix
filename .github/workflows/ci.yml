@@ -29,7 +29,6 @@ jobs:
       env: ${{ steps.hash.outputs.env }}
       jl: ${{ steps.hash.outputs.jl }}
       ver: ${{ steps.julia-version.outputs.resolved }}
-      cputarget: ${{ steps.julia-version.outputs.cputarget }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v7
