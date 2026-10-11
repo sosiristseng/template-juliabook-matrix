@@ -50,6 +50,9 @@ jobs:
       uses: julia-actions/setup-julia@v3
       with:
         version: ${{ steps.julia-version.outputs.resolved }}
+    - name: Set Julia CPU target (x64)
+      if: ${{ runner.arch == 'X64' && runner.environment == 'github-hosted' }}
+      run: echo 'JULIA_CPU_TARGET=sysimage' >> $GITHUB_ENV
     - name: Cache Julia packages
       uses: actions/cache@v6
       id: cache-julia
@@ -59,8 +62,15 @@ jobs:
         restore-keys: |
           ${{ steps.hash.outputs.jl }}-
     - name: Install Julia packages
-      shell: julia --color=yes --project=@. {0}
-      run: using Pkg; Pkg.instantiate(); Pkg.precompile()
+      shell: julia --color=yes {0}
+      run: |
+        using Pkg
+        Pkg.add(["JSON", "Literate", "MarkdownTables", "SHA", "Tables"])
+        Pkg.activate(".")
+        Pkg.resolve()
+        Pkg.instantiate()
+        Pkg.precompile()
+        get(ENV, "RUNNER_ENVIRONMENT", "") == "github-hosted" && Pkg.gc()
     - name: List notebooks as a JSON array
       id: set-matrix
       run: echo "matrix=$(python -c 'import glob, json; print(json.dumps(glob.glob("**/*.ipynb", root_dir="docs", recursive=True) + glob.glob("**/*.jl", root_dir="docs", recursive=True)))')" >> "$GITHUB_OUTPUT"
