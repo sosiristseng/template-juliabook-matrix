@@ -4,7 +4,7 @@ using Literate
 ENV["GKSwstype"] = "100"
 
 function main(; rmsvg=true)
-    file = get(ENV, "NB")
+    file = get(ENV, "NB", "test")
     cachedir = get(ENV, "NBCACHE", ".cache")
     if endswith(file, ".jl")
         run_literate(file; cachedir, rmsvg)
