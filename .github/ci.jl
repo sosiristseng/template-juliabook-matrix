@@ -4,13 +4,12 @@ using Literate
 ENV["GKSwstype"] = "100"
 
 function main(; rmsvg=true)
-    file = get(ENV, "NB", "test.ipynb")
+    file = get(ENV, "NB")
     cachedir = get(ENV, "NBCACHE", ".cache")
     if endswith(file, ".jl")
         run_literate(file; cachedir, rmsvg)
-    elseif endswith(file, ".ipynb")
-        lit = to_literate(file)
-        run_literate(lit; cachedir, rmsvg)
+    else
+        @warn "$(file) is not a Literate notebook!"
     end
 end
 
@@ -35,7 +34,7 @@ function strip_svg(ipynb)
     return ipynb
 end
 
-# Convert a Jupyter notebook into a Literate notebook. Adapted from https://github.com/JuliaInterop/NBInclude.jl.
+# Kept to manually convert a Jupyter notebook into a Literate notebook. Adapted from https://github.com/JuliaInterop/NBInclude.jl.
 function to_literate(nbpath; shell_or_help = r"^\s*[;?]")
     nb = open(JSON.parse, nbpath, "r")
     jlpath = splitext(nbpath)[1] * ".jl"

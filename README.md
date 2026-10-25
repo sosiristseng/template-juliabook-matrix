@@ -4,10 +4,10 @@ Click `Use this template` button to copy this repository.
 
 Publish Julia notebooks using [Jupyter Book](https://jupyterbook.org/stable/).
 
-- Supports both [Literate](https://github.com/fredrikekre/Literate.jl) (`*.jl`) and Jupyter (`*.ipynb`) notebooks. Jupyter notebooks will be converted to the Literate format before execution.
-- Uses dynamic matrix and runs notebooks in parallel in GitHub actions. See `ci.yml`.
-- Automatic dependency updates by dependabot and `update-manifest.yml` GitHub actions.
-- Checks if the links in the notebooks are valid with `lychee`. (See `linkcheck.yml`).
+- Supports [Literate](https://github.com/fredrikekre/Literate.jl) (`*.jl`) notebooks.
+- Detects available notebooks in the `docs` folder and uses dynamic matrix to run one notebook concurrently in each runner. See `.github/ci.yml`.
+- Automatic dependency updates by dependabot and `.github/update-manifest.yml` GitHub actions.
+- Checks if the links in the notebooks are valid with `lychee`. (See `.github/linkcheck.yml`).
 
 See also:
 
@@ -25,13 +25,13 @@ From your repository settings => Pages => GitHub Pages => Build and deployment =
 
 ### GitHub actions version updates
 
-See `.kodiak.toml` and `dependabot.yml`.
+See `.github/.kodiak.toml` and `.github/dependabot.yml`.
 
 This repository uses [Dependabot](https://docs.github.com/en/code-security/getting-started/dependabot-quickstart-guide) and [Kodiak Bot](https://kodiakhq.com/docs/quickstart) to automatically merge Python and GitHub actions updates.
 
 ### Julia dependencies
 
-See `update-manifest.yml`.
+See `.github/update-manifest.yml`.
 
 This repository can regularly update Julia in the `Manifest.toml`, make a PR with the updated packages, and automatically merge the updates if the notebooks are executed without any problem.
 
